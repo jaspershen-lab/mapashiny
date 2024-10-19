@@ -47,3 +47,9 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+demo_data
+demo_data/
+
+files/
+files/
