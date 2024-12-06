@@ -1,4 +1,4 @@
-server <-
+app_server <-
   function(input, output, session) {
     ###Step 1: Upload data
     ###read the uploaded data
@@ -26,9 +26,7 @@ server <-
       shiny::renderDataTable({
         req(variable_info())
         variable_info()
-      },
-      options = list(pageLength = 10,
-                     scrollX = TRUE))
+      }, options = list(pageLength = 10, scrollX = TRUE))
     
     #####define variable_info_new
     variable_info_new <-
@@ -82,8 +80,7 @@ server <-
           colnames(variable_info_old) <-
             c("ensembl", "uniprot", "entrezid", "symbol")
           
-        },
-        error = function(e) {
+        }, error = function(e) {
           showModal(modalDialog(
             title = "Error",
             paste("Details:", e$message),
@@ -136,8 +133,7 @@ server <-
                              by = c("uniprot" = "UNIPROT"))
           colnames(variable_info_old) <-
             c("uniprot", "ensembl", "entrezid", "symbol")
-        },
-        error = function(e) {
+        }, error = function(e) {
           showModal(modalDialog(
             title = "Error",
             paste("Details:", e$message),
@@ -189,8 +185,7 @@ server <-
                              by = c("entrezid" = "ENTREZID"))
           colnames(variable_info_old) <-
             c("entrezid", "ensembl", "entrezid", "symbol")
-        },
-        error = function(e) {
+        }, error = function(e) {
           showModal(modalDialog(
             title = "Error",
             paste("Details:", e$message),
@@ -230,9 +225,7 @@ server <-
       shiny::renderDataTable({
         req(variable_info_new())
         variable_info_new()
-      },
-      options = list(pageLength = 10,
-                     scrollX = TRUE))
+      }, options = list(pageLength = 10, scrollX = TRUE))
     
     ###download the variable_info------------------------------------------
     output$download_variable_info <-
@@ -241,9 +234,7 @@ server <-
           "variable_info.csv"
         },
         content = function(file) {
-          write.csv(variable_info_new(),
-                    file,
-                    row.names = FALSE)
+          write.csv(variable_info_new(), file, row.names = FALSE)
         }
       )
     
@@ -362,8 +353,7 @@ server <-
                   readable = FALSE,
                   pool = FALSE
                 )
-            },
-            error = function(e) {
+            }, error = function(e) {
               showModal(
                 modalDialog(
                   title = "Error",
@@ -384,8 +374,7 @@ server <-
             paste0("c(", paste(unlist(
               lapply(paste(input$pathway_database), function(x)
                 paste0('"', x, '"'))
-            ),
-            collapse = ", "), ")")
+            ), collapse = ", "), ")")
           
           enrich_pathways_code <-
             sprintf(
@@ -422,9 +411,7 @@ server <-
           error = function(e)
             NULL
         ))
-      },
-      options = list(pageLength = 10,
-                     scrollX = TRUE))
+      }, options = list(pageLength = 10, scrollX = TRUE))
     
     output$enriched_pathways_kegg <-
       shiny::renderDataTable({
@@ -433,9 +420,7 @@ server <-
           error = function(e)
             NULL
         ))
-      },
-      options = list(pageLength = 10,
-                     scrollX = TRUE))
+      }, options = list(pageLength = 10, scrollX = TRUE))
     
     output$enriched_pathways_reactome <-
       shiny::renderDataTable({
@@ -444,21 +429,16 @@ server <-
           error = function(e)
             NULL
         ))
-      },
-      options = list(pageLength = 10,
-                     scrollX = TRUE))
+      }, options = list(pageLength = 10, scrollX = TRUE))
     
     
     output$enriched_pathways_object <- renderText({
       req(enriched_pathways())
       enriched_pathways <- enriched_pathways()
-      captured_output1 <- capture.output(enriched_pathways,
-                                         type = "message")
-      captured_output2 <- capture.output(enriched_pathways,
-                                         type = "output")
+      captured_output1 <- capture.output(enriched_pathways, type = "message")
+      captured_output2 <- capture.output(enriched_pathways, type = "output")
       captured_output <-
-        c(captured_output1,
-          captured_output2)
+        c(captured_output1, captured_output2)
       paste(captured_output, collapse = "\n")
     })
     
@@ -654,8 +634,7 @@ server <-
                 path = "result",
                 save_to_local = FALSE
               )
-          },
-          error = function(e) {
+          }, error = function(e) {
             showModal(modalDialog(
               title = "Error",
               paste("Details:", e$message),
@@ -711,13 +690,10 @@ server <-
       renderText({
         req(enriched_modules())
         enriched_modules <- enriched_modules()
-        captured_output1 <- capture.output(enriched_modules,
-                                           type = "message")
-        captured_output2 <- capture.output(enriched_modules,
-                                           type = "output")
+        captured_output1 <- capture.output(enriched_modules, type = "message")
+        captured_output2 <- capture.output(enriched_modules, type = "output")
         captured_output <-
-          c(captured_output1,
-            captured_output2)
+          c(captured_output1, captured_output2)
         paste(captured_output, collapse = "\n")
       })
     
@@ -728,9 +704,7 @@ server <-
           error = function(e)
             NULL
         ))
-      },
-      options = list(pageLength = 10,
-                     scrollX = TRUE))
+      }, options = list(pageLength = 10, scrollX = TRUE))
     
     output$merged_pathway_kegg <-
       shiny::renderDataTable({
@@ -739,9 +713,7 @@ server <-
           error = function(e)
             NULL
         ))
-      },
-      options = list(pageLength = 10,
-                     scrollX = TRUE))
+      }, options = list(pageLength = 10, scrollX = TRUE))
     
     output$merged_pathway_reactome <-
       shiny::renderDataTable({
@@ -750,9 +722,7 @@ server <-
           error = function(e)
             NULL
         ))
-      },
-      options = list(pageLength = 10,
-                     scrollX = TRUE))
+      }, options = list(pageLength = 10, scrollX = TRUE))
     
     output$download_merged_pathway_go <-
       shiny::downloadHandler(
@@ -1107,8 +1077,7 @@ server <-
                 path = "result",
                 save_to_local = FALSE
               )
-          },
-          error = function(e) {
+          }, error = function(e) {
             showModal(modalDialog(
               title = "Error",
               paste("Details:", e$message),
@@ -1145,14 +1114,11 @@ server <-
         req(enriched_functional_module())
         enriched_functional_module <- enriched_functional_module()
         captured_output1 <-
-          capture.output(enriched_functional_module,
-                         type = "message")
+          capture.output(enriched_functional_module, type = "message")
         captured_output2 <-
-          capture.output(enriched_functional_module,
-                         type = "output")
+          capture.output(enriched_functional_module, type = "output")
         captured_output <-
-          c(captured_output1,
-            captured_output2)
+          c(captured_output1, captured_output2)
         paste(captured_output, collapse = "\n")
       })
     
@@ -1163,9 +1129,7 @@ server <-
           error = function(e)
             NULL
         ))
-      },
-      options = list(pageLength = 10,
-                     scrollX = TRUE))
+      }, options = list(pageLength = 10, scrollX = TRUE))
     
     output$download_enriched_functional_modules <-
       shiny::downloadHandler(
@@ -1441,8 +1405,7 @@ server <-
                 engine = input$translation_model,
                 to = input$translation_to
               )
-          },
-          error = function(e) {
+          }, error = function(e) {
             showModal(modalDialog(
               title = "Error",
               paste("Details:", e$message),
@@ -1480,14 +1443,11 @@ server <-
         req(enriched_functional_module2())
         enriched_functional_module <- enriched_functional_module2()
         captured_output1 <-
-          capture.output(enriched_functional_module,
-                         type = "message")
+          capture.output(enriched_functional_module, type = "message")
         captured_output2 <-
-          capture.output(enriched_functional_module,
-                         type = "output")
+          capture.output(enriched_functional_module, type = "output")
         captured_output <-
-          c(captured_output1,
-            captured_output2)
+          c(captured_output1, captured_output2)
         paste(captured_output, collapse = "\n")
       })
     
@@ -1527,8 +1487,7 @@ server <-
         content = function(file) {
           enriched_functional_module <-
             enriched_functional_module2()
-          save(enriched_functional_module,
-               file = file)
+          save(enriched_functional_module, file = file)
         }
       )
     
@@ -1682,13 +1641,11 @@ server <-
               paste0('"', input$barplot_reactome_color, '"')
             ),
             sep = " = "
-          ),
-          collapse = ", "), ")")
+          ), collapse = ", "), ")")
         
         barplot_database <-
           paste0("c(", paste(unlist(lapply(paste(input$barplot_database), function(x)
-            paste0('"', x, '"'))),
-            collapse = ", "), ")")
+            paste0('"', x, '"'))), collapse = ", "), ")")
         
         barplot_code <-
           sprintf(
@@ -2082,9 +2039,9 @@ server <-
             database = %s,
             module_id = %s)
             ',
-            paste0('"', input$module_information_level, '"'),
-            paste0('"', input$module_information_database, '"'),
-            paste0('"', input$module_information_module_id, '"')
+              paste0('"', input$module_information_level, '"'),
+              paste0('"', input$module_information_database, '"'),
+              paste0('"', input$module_information_module_id, '"')
             )
           
           module_information_code(module_information_code)
@@ -2268,8 +2225,7 @@ server <-
                 level = input$relationship_network_level,
                 remain_id = input$relationship_network_module_id
               )
-          },
-          error = function(e) {
+          }, error = function(e) {
             showModal(modalDialog(
               title = "Error",
               paste("Details:", e$message),
@@ -2342,14 +2298,10 @@ server <-
         
         ###save code
         relationship_network_module_id <-
-          paste0("c(",
-                 paste0(
-                   paste0('"',
-                          input$relationship_network_module_id,
-                          '"'),
-                   collapse = ", "
-                 ),
-                 ")")
+          paste0("c(", paste0(
+            paste0('"', input$relationship_network_module_id, '"'),
+            collapse = ", "
+          ), ")")
         
         relationship_network_code1 <-
           sprintf(
@@ -2678,8 +2630,7 @@ server <-
                 top_n = input$llm_interpretation_top_n
               )
             llm_interpretation_result(llm_interpretation_result)
-          },
-          error = function(e) {
+          }, error = function(e) {
             showModal(modalDialog(
               title = "Error",
               paste("Details:", e$message),
@@ -2715,8 +2666,7 @@ server <-
     
     output$llm_interpretation_result <-
       renderUI({
-        shiny::HTML(markdown::markdownToHTML(llm_interpretation_result(),
-                                             fragment.only = TRUE))
+        shiny::HTML(markdown::markdownToHTML(llm_interpretation_result(), fragment.only = TRUE))
       })
     
     output$download_llm_interpretation_result <-
@@ -2746,9 +2696,7 @@ server <-
           error = function(e)
             NULL
         ))
-      },
-      options = list(pageLength = 10,
-                     scrollX = TRUE))
+      }, options = list(pageLength = 10, scrollX = TRUE))
     
     output$llm_enriched_functional_modules2 <-
       shiny::renderDataTable({
@@ -2757,9 +2705,7 @@ server <-
           error = function(e)
             NULL
         ))
-      },
-      options = list(pageLength = 10,
-                     scrollX = TRUE))
+      }, options = list(pageLength = 10, scrollX = TRUE))
     
     observe({
       if (is.null(llm_interpretation_result()) ||
@@ -2858,11 +2804,9 @@ server <-
           withProgress(message = 'Analysis in progress...', {
             tryCatch({
               report_path <-
-                file.path("files",
-                          paste(sample(
-                            c(letters, LETTERS, 0:9),
-                            30, replace = TRUE
-                          ), collapse = ""))
+                file.path("files", paste(sample(
+                  c(letters, LETTERS, 0:9), 30, replace = TRUE
+                ), collapse = ""))
               
               report_functional_module(
                 object = enriched_functional_module(),
@@ -2870,8 +2814,7 @@ server <-
                 path = report_path,
                 type = "html"
               )
-            },
-            error = function(e) {
+            }, error = function(e) {
               showModal(
                 modalDialog(
                   title = "Error",
@@ -2897,7 +2840,7 @@ server <-
               path = %s,
               type = "html")
             ',
-            paste0('"', report_path(), '"')
+              paste0('"', report_path(), '"')
             )
           report_code(report_code)
         }
@@ -2927,8 +2870,7 @@ server <-
           zip_path <-
             paste0(report_path(), "/Report.zip")
           zip(zipfile = zip_path,
-              files = paste0(report_path(),
-                             "/Report"))
+              files = paste0(report_path(), "/Report"))
           file.copy(zip_path, file)
         }
       )
