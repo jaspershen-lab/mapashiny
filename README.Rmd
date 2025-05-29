@@ -16,6 +16,7 @@ output: github_document
 ## `mapashiny`: A user-friendly shinyapp designed for mapa. <a href="https://github.com/jaspershen-lab/mapashiny"><img src="inst/app/www/mapa_logo.png" align="right" height="139" alt="maapashiny github repo" /></a>
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![R-CMD-check](https://github.com/jaspershen-lab/mapashiny/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jaspershen-lab/mapashiny/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 ## Installation
