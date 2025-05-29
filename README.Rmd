@@ -13,26 +13,25 @@ output: github_document
 )
 ```
 
-# `{mapashiny}`
-
+## `mapashiny`: A user-friendly shinyapp designed for mapa. <a href="https://github.com/jaspershen-lab/mapashiny"><img src="inst/app/www/mapa_logo.png" align="right" height="139" alt="maapashiny github repo" /></a>
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
 ## Installation
 
-You can install the development version of `{mapashiny}` like so:
+You can install the development version of `mapashiny` like so:
 
 ```{r}
-# if (!requireNamespace("BiocManager", quietly = TRUE))
-#     install.packages("BiocManager")
-# 
-# remotes::install_github(
-#   "jaspershen-lab/mapashiny",
-#   dependencies = TRUE,
-#   repos        = BiocManager::repositories(),
-#   upgrade      = "ask" 
-# )
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+remotes::install_github(
+  "jaspershen-lab/mapashiny",
+  dependencies = TRUE,
+  repos        = BiocManager::repositories(),
+  upgrade      = "ask"
+)
 ```
 
 ## Run
@@ -56,7 +55,7 @@ Sys.time()
 Here are the tests results and package coverage:
 
 ```{r, error = TRUE}
-devtools::check(quiet = TRUE)
+# devtools::check(quiet = TRUE)
 ```
 
 ```{r echo = FALSE}

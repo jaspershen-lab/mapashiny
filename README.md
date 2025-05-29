@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# `{mapashiny}`
+## `mapashiny`: A user-friendly shinyapp designed for mapa. <a href="https://github.com/jaspershen-lab/mapashiny"><img src="inst/app/www/mapa_logo.png" align="right" height="139" alt="maapashiny github repo" /></a>
 
 <!-- badges: start -->
 
@@ -11,18 +11,61 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 
 ## Installation
 
-You can install the development version of `{mapashiny}` like so:
+You can install the development version of `mapashiny` like so:
 
 ``` r
-# if (!requireNamespace("BiocManager", quietly = TRUE))
-#     install.packages("BiocManager")
-# 
-# remotes::install_github(
-#   "jaspershen-lab/mapashiny",
-#   dependencies = TRUE,
-#   repos        = BiocManager::repositories(),
-#   upgrade      = "ask" 
-# )
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+remotes::install_github(
+  "jaspershen-lab/mapashiny",
+  dependencies = TRUE,
+  repos        = BiocManager::repositories(),
+  upgrade      = "ask"
+)
+#> Using GitHub PAT from the git credential store.
+#> Downloading GitHub repo jaspershen-lab/mapashiny@HEAD
+#> 'getOption("repos")' replaces Bioconductor standard repositories, see
+#> 'help("repositories", package = "BiocManager")' for details.
+#> Replacement repositories:
+#>     CRAN: https://cran.rstudio.com/
+#> pkgbuild   (1.4.7        -> 1.4.8       ) [CRAN]
+#> openssl    (2.3.2        -> 2.3.3       ) [CRAN]
+#> curl       (6.2.2        -> 6.2.3       ) [CRAN]
+#> data.table (1.17.2       -> 1.17.4      ) [CRAN]
+#> mapa       (d1cc7c121... -> b50217ffd...) [GitHub]
+#> Installing 4 packages: pkgbuild, openssl, curl, data.table
+#> Installing packages into '/private/var/folders/6d/g00_j1mn3wddb038xh8zrn6h0000gn/T/RtmpZx7WWj/temp_libpath31b458de180f'
+#> (as 'lib' is unspecified)
+#> 
+#> The downloaded binary packages are in
+#>  /var/folders/6d/g00_j1mn3wddb038xh8zrn6h0000gn/T//RtmpHfSHRb/downloaded_packages
+#> Downloading GitHub repo jaspershen-lab/mapa@HEAD
+#> RcppArmad... (14.4.2-1 -> 14.4.3-1) [CRAN]
+#> Installing 1 packages: RcppArmadillo
+#> Installing package into '/private/var/folders/6d/g00_j1mn3wddb038xh8zrn6h0000gn/T/RtmpZx7WWj/temp_libpath31b458de180f'
+#> (as 'lib' is unspecified)
+#> 
+#> The downloaded binary packages are in
+#>  /var/folders/6d/g00_j1mn3wddb038xh8zrn6h0000gn/T//RtmpHfSHRb/downloaded_packages
+#> ── R CMD build ─────────────────────────────────────────────────────────────────
+#> * checking for file ‘/private/var/folders/6d/g00_j1mn3wddb038xh8zrn6h0000gn/T/RtmpHfSHRb/remotes3d1a27c7e1cd/jaspershen-lab-mapa-b50217ffd0b0e8c4fc5f998cdac8c7cd12dff1c8/DESCRIPTION’ ... OK
+#> * preparing ‘mapa’:
+#> * checking DESCRIPTION meta-information ... OK
+#> * checking for LF line-endings in source and make files and shell scripts
+#> * checking for empty or unneeded directories
+#> * building ‘mapa_0.1.30.tar.gz’
+#> Installing package into '/private/var/folders/6d/g00_j1mn3wddb038xh8zrn6h0000gn/T/RtmpZx7WWj/temp_libpath31b458de180f'
+#> (as 'lib' is unspecified)
+#> ── R CMD build ─────────────────────────────────────────────────────────────────
+#> * checking for file ‘/private/var/folders/6d/g00_j1mn3wddb038xh8zrn6h0000gn/T/RtmpHfSHRb/remotes3d1a51361869/jaspershen-lab-mapashiny-4114b1b/DESCRIPTION’ ... OK
+#> * preparing ‘mapashiny’:
+#> * checking DESCRIPTION meta-information ... OK
+#> * checking for LF line-endings in source and make files and shell scripts
+#> * checking for empty or unneeded directories
+#> * building ‘mapashiny_0.0.0.9000.tar.gz’
+#> Installing package into '/private/var/folders/6d/g00_j1mn3wddb038xh8zrn6h0000gn/T/RtmpZx7WWj/temp_libpath31b458de180f'
+#> (as 'lib' is unspecified)
 ```
 
 ## Run
@@ -41,96 +84,13 @@ This README has been compiled on the
 
 ``` r
 Sys.time()
-#> [1] "2025-05-29 09:54:22 +08"
+#> [1] "2025-05-29 10:13:19 +08"
 ```
 
 Here are the tests results and package coverage:
 
 ``` r
-devtools::check(quiet = TRUE)
-#> 
-#> 
-#> ℹ Loading mapashiny
-#> ── R CMD check results ─────────────────────────────── mapashiny 0.0.0.9000 ────
-#> Duration: 2m 34.8s
-#> 
-#> ❯ checking for future file timestamps ... NOTE
-#>   unable to verify current time
-#> 
-#> ❯ checking top-level files ... NOTE
-#>   Non-standard files/directories found at top level:
-#>     ‘deprec-R’ ‘deprec-renv’
-#> 
-#> ❯ checking R code for possible problems ... [21s/21s] NOTE
-#>   data_visualization_server : <anonymous>: no visible global function
-#>     definition for ‘plot_pathway_bar’
-#>   data_visualization_server : <anonymous> : <anonymous>: no visible
-#>     global function definition for ‘ggsave’
-#>   data_visualization_server : <anonymous>: no visible global function
-#>     definition for ‘plot_similarity_network’
-#>   data_visualization_server : <anonymous>: no visible global function
-#>     definition for ‘plot_module_info’
-#>   data_visualization_server : <anonymous>: no visible global function
-#>     definition for ‘filter_functional_module’
-#>   data_visualization_server : <anonymous>: no visible global function
-#>     definition for ‘plot_relationship_network’
-#>   embed_cluster_pathways_server : <anonymous>: no visible global function
-#>     definition for ‘get_bioembedsim’
-#>   embed_cluster_pathways_server : <anonymous>: no visible global function
-#>     definition for ‘merge_pathways_bioembedsim’
-#>   embed_cluster_pathways_server : <anonymous>: no visible global function
-#>     definition for ‘plot_similarity_network’
-#>   enrich_pathway_server : <anonymous>: no visible binding for global
-#>     variable ‘describtion’
-#>   enrich_pathway_server : <anonymous> : <anonymous>: no visible binding
-#>     for global variable ‘describtion’
-#>   id_conversion: no visible global function definition for ‘%>%’
-#>   id_conversion: no visible binding for global variable ‘ENTREZID’
-#>   id_conversion: no visible binding for global variable ‘.’
-#>   id_conversion: no visible binding for global variable ‘HMDB.ID’
-#>   id_conversion: no visible binding for global variable ‘KEGG.ID’
-#>   id_conversion: no visible global function definition for ‘across’
-#>   id_conversion: no visible global function definition for ‘everything’
-#>   id_conversion: no visible binding for global variable ‘.data’
-#>   llm_interpretation_server : <anonymous>: no visible binding for global
-#>     variable ‘future’
-#>   llm_interpretation_server : <anonymous>: no visible binding for global
-#>     variable ‘promises’
-#>   llm_interpretation_server : <anonymous>: no visible binding for global
-#>     variable ‘mapa’
-#>   merge_modules_server : <anonymous>: no visible global function
-#>     definition for ‘merge_modules’
-#>   merge_modules_server : <anonymous>: no visible global function
-#>     definition for ‘plot_similarity_network’
-#>   merge_pathways_server : <anonymous>: no visible global function
-#>     definition for ‘merge_pathways’
-#>   merge_pathways_server : <anonymous>: no visible global function
-#>     definition for ‘plot_similarity_network’
-#>   results_server : <anonymous> : <anonymous>: no visible global function
-#>     definition for ‘zip’
-#>   run_app: no visible binding for global variable ‘mapa’
-#>   upload_data_server : <anonymous>: no visible global function definition
-#>     for ‘data’
-#>   upload_data_server : <anonymous>: no visible binding for global
-#>     variable ‘example_ora_data’
-#>   upload_data_server : <anonymous>: no visible binding for global
-#>     variable ‘example_gsea’
-#>   upload_data_server : <anonymous>: no visible binding for global
-#>     variable ‘example_met_data’
-#>   upload_data_server : <anonymous>: no visible global function definition
-#>     for ‘read.csv’
-#>   Undefined global functions or variables:
-#>     %>% . .data ENTREZID HMDB.ID KEGG.ID across data describtion
-#>     everything example_gsea example_met_data example_ora_data
-#>     filter_functional_module future get_bioembedsim ggsave mapa
-#>     merge_modules merge_pathways merge_pathways_bioembedsim
-#>     plot_module_info plot_pathway_bar plot_relationship_network
-#>     plot_similarity_network promises read.csv zip
-#>   Consider adding
-#>     importFrom("utils", "data", "read.csv", "zip")
-#>   to your NAMESPACE file.
-#> 
-#> 0 errors ✔ | 0 warnings ✔ | 3 notes ✖
+# devtools::check(quiet = TRUE)
 ```
 
 ``` r
