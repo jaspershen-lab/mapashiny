@@ -123,8 +123,6 @@ merge_modules_ui <- function(id) {
 #'
 #' @import shiny
 #' @importFrom shinyjs toggleState useShinyjs enable disable
-#' @importFrom clusterProfiler merge_modules
-#' @importFrom ReactomePA (imported for compatibility)
 #'
 #' @examples
 #' \dontrun{
@@ -141,6 +139,7 @@ merge_modules_server <- function(id, enriched_modules, enriched_functional_modul
   moduleServer(
     id,
     function(input, output, session) {
+      ns <- session$ns
       merge_modules_code <- reactiveVal()
 
       ### merge modules ====
@@ -160,9 +159,6 @@ merge_modules_server <- function(id, enriched_modules, enriched_functional_modul
           # shinyjs::show("loading")
           withProgress(message = 'Analysis in progress...', {
             tryCatch({
-              library(clusterProfiler)
-              library(ReactomePA)
-
               result <-
                 merge_modules(
                   object = enriched_modules(),

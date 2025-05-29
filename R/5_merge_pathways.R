@@ -598,8 +598,6 @@ merge_pathways_ui <- function(id) {
 #'
 #' @import shiny
 #' @importFrom shinyjs toggleState useShinyjs toggleElement enable disable
-#' @importFrom clusterProfiler merge_pathways
-#' @importFrom ReactomePA enrichPathway
 #'
 #' @note This function requires the clusterProfiler and ReactomePA packages
 #'   to be installed and loaded. For GO analysis, appropriate organism databases
@@ -752,8 +750,6 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
 
           withProgress(message = 'Analysis in progress...', {
             tryCatch({
-              library(clusterProfiler)
-              library(ReactomePA)
 
               if (!is.null(go_orgdb())) {
                 # Validate input format

@@ -1,0 +1,57 @@
+/* Make sidebar wider */
+.main-sidebar {
+  width: 230px !important;
+}
+
+/* Content wrapper padding */
+.content-wrapper {
+  padding-bottom: 120px;
+}
+
+/* Loading style */
+.loading-style {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 100;
+}
+
+/* Footer styles */
+.app-footer {
+  background-color: #ecf0f4;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  padding: 10px;
+  height: 80px;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  z-index: 100;
+  border-top: 1px solid #ccc;
+}
+
+.footer-logo {
+  height: 50px;
+  margin-right: 15px;
+}
+
+.footer-content {
+  text-align: left;
+}
+
+.footer-link {
+  text-align: left;
+  margin-left: 10px;
+}
+
+.footer-icon {
+  color: #e04c3c;
+}
+
+.footer-logo-right {
+  height: 50px;
+  margin-left: 15px;
+}

@@ -407,6 +407,7 @@ embed_cluster_pathways_server <- function(id, enriched_pathways, enriched_functi
   moduleServer(
     id,
     function(input, output, session) {
+      ns <- session$ns
       ### Step0: Load enrichment analysis result ====
       observeEvent(input$upload_enriched_pathways, {
         if (!is.null(input$upload_enriched_pathways$datapath)) {

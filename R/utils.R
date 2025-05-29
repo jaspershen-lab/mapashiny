@@ -1,4 +1,5 @@
 #' Process ID conversion
+#' @noRd
 id_conversion <- function(query_type = c("gene", "metabolite"),
                           data = NULL,
                           from_id_type = NULL,
@@ -12,7 +13,6 @@ id_conversion <- function(query_type = c("gene", "metabolite"),
   if (query_type == "gene") {
     if (!requireNamespace("clusterProfiler", quietly = TRUE))
       BiocManager::install("clusterProfiler")
-    library(clusterProfiler)
 
     converted <- clusterProfiler::bitr(
       geneID  = data[[tolower(from_id_type)]],
@@ -29,7 +29,7 @@ id_conversion <- function(query_type = c("gene", "metabolite"),
       if (!requireNamespace(\"clusterProfiler\", quietly = TRUE)) {
         BiocManager::install(\"clusterProfiler\")
       }
-      library(clusterProfiler)
+      
       converted <- clusterProfiler::bitr(
         geneID  = data[[tolower(\"%s\")]],
         fromType = \"%s\",
@@ -48,7 +48,6 @@ id_conversion <- function(query_type = c("gene", "metabolite"),
 
   if (query_type == "metabolite" && organism == "hsa") {
     if (!requireNamespace("metpath", quietly = TRUE)) {BiocManager::install("metpath")}
-    library(metpath)
 
     id_lookup <- metpath::hmdb_compound_database@spectra.info %>%
       dplyr::select(HMDB.ID, KEGG.ID) %>%

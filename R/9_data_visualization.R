@@ -783,6 +783,8 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
   moduleServer(
     id,
     function(input, output, session) {
+      ns <- session$ns
+      
       query_type <- reactive({
         req(enriched_functional_module())
         if ("enrich_pathway" %in% names(enriched_functional_module()@process_info)) {

@@ -1,0 +1,45 @@
+Package: mapashiny
+Title: Functional Module Annotation for Pathway Analysis Results Using LLM
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Xiaotao", "Shen", , "shenxt1990@outlook.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-9608-9964")),
+    person("Yifei", "Ge", , "yifeii.ge@outlook.com", role = "aut"),
+    person("feifan", "Zhang", , "FEIFAN004@e.ntu.edu.sg", role = "aut")
+  )
+Description: A shiny app for mapa.
+License: MIT + file LICENSE
+URL: https://github.com/jaspershen-lab/mapashiny
+BugReports: https://github.com/jaspershen-lab/mapashiny/issues
+Depends: 
+    R (>= 4.1.0)
+Imports: 
+    BiocManager,
+    clusterProfiler,
+    config,
+    dplyr,
+    future,
+    golem,
+    htmltools,
+    mapa,
+    markdown,
+    metpath,
+    org.Hs.eg.db,
+    patchwork,
+    promises,
+    readxl,
+    shiny,
+    shinyBS,
+    shinydashboard,
+    shinyFiles,
+    shinyjs,
+    shinyWidgets,
+    stringr
+Suggests: 
+    spelling,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Encoding: UTF-8
+Language: en-US
+LazyData: true
+RoxygenNote: 7.3.2

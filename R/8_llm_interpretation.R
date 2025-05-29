@@ -14,7 +14,6 @@
 #' @importFrom shinyBS bsButton bsPopover
 #' @importFrom shinyFiles shinyDirButton
 #' @importFrom shinyjs useShinyjs
-#' @importFrom DT dataTableOutput
 #' @noRd
 
 llm_interpretation_ui <- function(id) {
@@ -241,8 +240,8 @@ llm_interpretation_ui <- function(id) {
 #' @import shiny
 #' @importFrom shinyjs disable enable useShinyjs
 #' @importFrom shinyFiles shinyDirChoose parseDirPath getVolumes
-#' @importFrom future plan multisession future_promise
-#' @importFrom promises %...>% %...!%
+#' @importFrom future plan multisession
+#' @importFrom promises %...>% %...!% future_promise
 #' @importFrom markdown markdownToHTML
 #' @importFrom mapa llm_interpret_module
 #' @noRd
@@ -391,10 +390,10 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
         req(input$submit_llm_interpretation, enriched_functional_module())
         message("Interpreting functional modules in progress. This comprehensive analysis requires some time...")
 
-        library(future)
-        library(promises)
-        library(mapa)
-
+        requireNamespace(future)
+        requireNamespace(promises)
+        requireNamespace(mapa)
+        
         object <- enriched_functional_module()
         llm_model <- input$llm_model
         embedding_model <- input$embedding_model
@@ -425,11 +424,49 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
         }
 
         # Run the interpretation asynchronously
+        # promises::future_promise({
+        #   requireNamespace(mapa)
+        #   # This code runs in a separate R process
+        #   result <-
+        #     mapa::llm_interpret_module(
+        #     object = object,
+        #     llm_model = llm_model,
+        #     embedding_model = embedding_model,
+        #     api_key = api_key,
+        #     embedding_output_dir = embedding_output_dir,
+        #     local_corpus_dir = local_corpus_dir,
+        #     phenotype = phenotype,
+        #     years = years
+        #   )
+        # },
+        # globals = TRUE, seed = TRUE) %...>%
+        #   # This runs when the future completes successfully
+        #   (function(result) {
+        #     # Store the results
+        #     enriched_functional_module(result)
+        #     annotation_result(result@llm_module_interpretation)
+        # 
+        #     # # Show success notification
+        #     showNotification("LLM interpretation completed successfully!", type = "message")
+        #   }) %...!%
+        #   # This runs if the future encounters an error
+        #   (function(error) {
+        #     # Close the modal
+        #     removeModal()
+        # 
+        #     # Show error message
+        #     showModal(modalDialog(
+        #       title = "Error",
+        #       HTML(paste("An error occurred during LLM interpretation:<br><pre>",
+        #                  error$message, "</pre>")),
+        #       easyClose = TRUE,
+        #       footer = modalButton("Close")
+        #     ))
+        #   })
         promises::future_promise({
-          library(mapa)
+          requireNamespace("mapa", quietly = TRUE)
           # This code runs in a separate R process
-          result <-
-            mapa::llm_interpret_module(
+          result <- mapa::llm_interpret_module(
             object = object,
             llm_model = llm_model,
             embedding_model = embedding_model,
@@ -439,31 +476,26 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
             phenotype = phenotype,
             years = years
           )
-        },
-        globals = TRUE, seed = TRUE) %...>%
-          # This runs when the future completes successfully
-          (function(result) {
-            # Store the results
-            enriched_functional_module(result)
-            annotation_result(result@llm_module_interpretation)
-
-            # # Show success notification
-            showNotification("LLM interpretation completed successfully!", type = "message")
-          }) %...!%
-          # This runs if the future encounters an error
-          (function(error) {
-            # Close the modal
-            removeModal()
-
-            # Show error message
-            showModal(modalDialog(
-              title = "Error",
-              HTML(paste("An error occurred during LLM interpretation:<br><pre>",
-                         error$message, "</pre>")),
-              easyClose = TRUE,
-              footer = modalButton("Close")
-            ))
-          })
+        }) |>
+          promises::then(
+            # Success handler
+            function(result) {
+              enriched_functional_module(result)
+              annotation_result(result@llm_module_interpretation)
+              showNotification("LLM interpretation completed successfully!", type = "message")
+            },
+            # Error handler
+            function(error) {
+              removeModal()
+              showModal(modalDialog(
+                title = "Error",
+                HTML(paste("An error occurred during LLM interpretation:<br><pre>",
+                           error$message, "</pre>")),
+                easyClose = TRUE,
+                footer = modalButton("Close")
+              ))
+            }
+          )
       })
 
       output$module_details <- renderUI({

@@ -261,40 +261,58 @@ upload_data_server <- function(id, processed_info, tab_switch) {
       # Observer for gene example data selection
       observeEvent(input$example_choice, {
         if (input$query_type == "gene" && length(input$example_choice) > 0) {
-          # Example data selected
-          example_path <- switch(input$example_choice,
-                                 "example_enrich_pathway" = "inst/shinyapp/files/example_enrich_pathway.csv",
-                                 "example_gsea" = "inst/shinyapp/files/example_gsea.csv",
+          # Example data selected - load from package data
+          example_data <- switch(input$example_choice,
+                                 "example_enrich_pathway" = {
+                                   # Load the package data object
+                                   data("example_ora_data", envir = environment())
+                                   example_ora_data
+                                 },
+                                 "example_gsea" = {
+                                   # Load the package data object
+                                   data("example_gsea", envir = environment())
+                                   example_gsea
+                                 },
                                  NULL)
-
-          if (!is.null(example_path)) {
+          
+          if (!is.null(example_data)) {
             tryCatch({
-              data_values$raw_data <- read.csv(example_path)
+              data_values$raw_data <- example_data
+              showNotification("Example data loaded successfully!", type = "message")
             }, error = function(e) {
               showNotification(paste("Failed to load example data:", e$message), type = "error")
             })
+          } else {
+            showNotification("Selected example data not available", type = "warning")
           }
         }
       }, ignoreNULL = FALSE)
-
+      
       # Observer for metabolite example data selection
       observeEvent(input$met_example_choice, {
         if (input$query_type == "metabolite" && length(input$met_example_choice) > 0) {
-          # Example data selected
-          example_path <- switch(input$met_example_choice,
-                                 "example_enrich_pathway" = "inst/shinyapp/files/example_enrich_pathway_metabolite.csv",
+          # Example data selected - load from package data
+          example_data <- switch(input$met_example_choice,
+                                 "example_enrich_pathway" = {
+                                   # Load the package data object
+                                   data("example_met_data", envir = environment())
+                                   example_met_data
+                                 },
                                  NULL)
-
-          if (!is.null(example_path)) {
+          
+          if (!is.null(example_data)) {
             tryCatch({
-              data_values$raw_data <- read.csv(example_path)
+              data_values$raw_data <- example_data
+              showNotification("Example data loaded successfully!", type = "message")
             }, error = function(e) {
               showNotification(paste("Failed to load example data:", e$message), type = "error")
             })
+          } else {
+            showNotification("Selected example data not available", type = "warning")
           }
         }
       }, ignoreNULL = FALSE)
-
+      
       # Observer for file uploads (works for both gene and metabolite)
       observeEvent(input$variable_info, {
         if (!is.null(input$variable_info)) {
@@ -308,6 +326,7 @@ upload_data_server <- function(id, processed_info, tab_switch) {
             } else {
               showNotification("Unsupported file format. Please upload CSV or Excel file.", type = "error")
             }
+            showNotification("File uploaded successfully!", type = "message")
           }, error = function(e) {
             showNotification(paste("Error reading uploaded file:", e$message), type = "error")
           })

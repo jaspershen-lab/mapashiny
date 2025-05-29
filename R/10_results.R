@@ -60,12 +60,15 @@ results_ui <- function(id) {
 #'
 #' @import shiny
 #' @importFrom shinyjs useShinyjs
+#' @importFrom mapa report_functional_module
+#' 
 #' @noRd
 
 results_server <- function(id, enriched_functional_module, tab_switch) {
   moduleServer(
     id,
     function(input, output, session) {
+      ns <- session$ns
 
       report_code <- reactiveVal()
       report_path <- reactiveVal()
@@ -95,7 +98,7 @@ results_server <- function(id, enriched_functional_module, tab_switch) {
                             30, replace = TRUE
                           ), collapse = ""))
 
-              report_functional_module(
+              mapa::report_functional_module(
                 object = enriched_functional_module(),
                 path = report_path,
                 type = "html"
