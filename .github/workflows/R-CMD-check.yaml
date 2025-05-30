@@ -58,7 +58,7 @@ jobs:
             upgrade = "never"
           )
           remotes::install_github(
-            "jaspershen-lab/metpath",
+            "tidymass/metpath",
             dependencies = TRUE,
             repos = BiocManager::repositories(),
             upgrade = "never"
