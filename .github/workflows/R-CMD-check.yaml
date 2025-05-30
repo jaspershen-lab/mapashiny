@@ -45,6 +45,26 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
 
+      - name: Install GitHub dependencies
+        run: |
+          if (!requireNamespace("BiocManager", quietly = TRUE))
+              install.packages("BiocManager")
+          if (!requireNamespace("remotes", quietly = TRUE))
+              install.packages("remotes")
+          remotes::install_github(
+            "jaspershen-lab/mapa",
+            dependencies = TRUE,
+            repos = BiocManager::repositories(),
+            upgrade = "never"
+          )
+          remotes::install_github(
+            "jaspershen-lab/metpath",
+            dependencies = TRUE,
+            repos = BiocManager::repositories(),
+            upgrade = "never"
+          )
+        shell: Rscript {0}
+
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
