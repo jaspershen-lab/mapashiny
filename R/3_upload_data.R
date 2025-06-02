@@ -336,7 +336,7 @@ upload_data_server <- function(id, processed_info, tab_switch) {
       # Process data when Submit button is clicked
       observeEvent(input$map_id, {
         if (is.null(data_values$raw_data)) {
-          showModal(modalDialog(
+          shiny::showModal(modalDialog(
             title = "Warning",
             "No data is available. Please upload a file or select an example dataset.",
             easyClose = TRUE,
@@ -371,7 +371,7 @@ upload_data_server <- function(id, processed_info, tab_switch) {
 
           # Check if package is installed
           if (!requireNamespace(input$organism, quietly = TRUE)) {
-            showModal(modalDialog(
+            shiny::showModal(modalDialog(
               title = "Missing Package",
               paste0("Package ", input$organism, " is not installed. Please install it using:\n",
                      "BiocManager::install('", input$organism, "')"),
@@ -404,7 +404,7 @@ upload_data_server <- function(id, processed_info, tab_switch) {
             # Show success message
             showNotification("Data successfully processed", type = "message")
           }, error = function(e) {
-            showModal(modalDialog(
+            shiny::showModal(modalDialog(
               title = "Error",
               paste("Conversion failed:", e$message),
               easyClose = TRUE,
@@ -432,7 +432,7 @@ upload_data_server <- function(id, processed_info, tab_switch) {
             # Show success message
             showNotification("Data successfully processed", type = "message")
           }, error = function(e) {
-            showModal(modalDialog(
+            shiny::showModal(modalDialog(
               title = "Error",
               paste("Conversion failed:", e$message),
               easyClose = TRUE,
@@ -473,14 +473,14 @@ upload_data_server <- function(id, processed_info, tab_switch) {
       # Show conversion code when requested
       observeEvent(input$show_conversion_code, {
         if (is.null(data_values$conversion_code)) {
-          showModal(modalDialog(
+          shiny::showModal(modalDialog(
             title = "Warning",
             "No conversion code available. Please process data first.",
             easyClose = TRUE,
             footer = modalButton("Close")
           ))
         } else {
-          showModal(modalDialog(
+          shiny::showModal(modalDialog(
             title = "Conversion Code",
             tags$pre(data_values$conversion_code),
             easyClose = TRUE,
@@ -493,7 +493,7 @@ upload_data_server <- function(id, processed_info, tab_switch) {
       # Handle navigation to next tab
       observeEvent(input$go2enrich_pathways, {
         if (is.null(data_values$converted_data)) {
-          showModal(modalDialog(
+          shiny::showModal(modalDialog(
             title = "Warning",
             "Please process data before proceeding to the next step.",
             easyClose = TRUE,

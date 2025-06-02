@@ -883,7 +883,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
             enriched_functional_module(get(names[1], envir = tempEnv))
           } else {
             message("The .rda file does not contain exactly one object.")
-            showModal(
+            shiny::showModal(
               modalDialog(
                 title = "Error",
                 "The uploaded file should contain exactly one object.",
@@ -996,7 +996,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
         message("generating barplot")
         if (is.null(enriched_functional_module())) {
           # No enriched functional module available
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No enriched functional module data available. Please complete the previous steps or upload the data",
@@ -1050,7 +1050,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
               }
               },
               error = function(e) {
-                showModal(modalDialog(
+                shiny::showModal(modalDialog(
                   title = "Error",
                   paste("Details:", e$message),
                   easyClose = TRUE,
@@ -1156,7 +1156,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
             paste0("pathway_barplot.", input$barplot_type)
           },
           content = function(file) {
-            ggsave(
+            ggplot2::ggsave(
               file,
               plot = barplot(),
               width = input$barplot_width,
@@ -1178,7 +1178,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
       observeEvent(input$show_barplot_code, {
         if (is.null(barplot_code()) ||
             length(barplot_code()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No available code",
@@ -1191,7 +1191,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
             barplot_code()
           code_content <-
             paste(code_content, collapse = "\n")
-          showModal(modalDialog(
+          shiny::showModal(modalDialog(
             title = "Code",
             tags$pre(code_content),
             easyClose = TRUE,
@@ -1213,7 +1213,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
       observeEvent(input$generate_module_similarity_network, {
         if (is.null(enriched_functional_module())) {
           # No enriched functional module available
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No enriched functional module data available. Please complete the previous steps or upload the data.",
@@ -1226,19 +1226,23 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
 
           withProgress(message = 'Analysis in progress...', {
             tryCatch(
-              plot <-
-                plot_similarity_network(
-                  object = enriched_functional_module(),
-                  level = input$module_similarity_network_level,
-                  database = input$module_similarity_network_database,
-                  degree_cutoff = input$module_similarity_network_degree_cutoff,
-                  text = input$module_similarity_network_text,
-                  llm_text = input$module_similarity_network_llm_text,
-                  text_all = input$module_similarity_network_text_all
-                  # translation = input$module_similarity_network_translation
-                ),
+              {
+                plot <-
+                  mapa::plot_similarity_network(
+                    object = enriched_functional_module(),
+                    level = input$module_similarity_network_level,
+                    database = input$module_similarity_network_database,
+                    degree_cutoff = input$module_similarity_network_degree_cutoff,
+                    text = input$module_similarity_network_text,
+                    llm_text = input$module_similarity_network_llm_text,
+                    text_all = input$module_similarity_network_text_all
+                    # translation = input$module_similarity_network_translation
+                  )
+                
+                module_similarity_network(plot)
+              },
               error = function(e) {
-                showModal(
+                shiny::showModal(
                   modalDialog(
                     title = "Error",
                     paste("Details:", e$message),
@@ -1251,8 +1255,6 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
           })
 
           # shinyjs::hide("loading")
-
-          module_similarity_network(plot)
 
           ###save code
           module_similarity_network_code <-
@@ -1293,7 +1295,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
       observeEvent(input$show_module_similarity_network_code, {
         if (is.null(module_similarity_network_code()) ||
             length(module_similarity_network_code()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No available code",
@@ -1306,7 +1308,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
             module_similarity_network_code()
           code_content <-
             paste(code_content, collapse = "\n")
-          showModal(modalDialog(
+          shiny::showModal(modalDialog(
             title = "Code",
             tags$pre(code_content),
             easyClose = TRUE,
@@ -1331,7 +1333,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
             )
           },
           content = function(file) {
-            ggsave(
+            ggplot2::ggsave(
               file,
               plot = module_similarity_network(),
               width = input$module_similarity_network_width,
@@ -1456,7 +1458,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
       observeEvent(input$generate_module_information, {
         if (is.null(enriched_functional_module())) {
           # No enriched functional module available
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No enriched functional module data available. Please complete the previous steps or upload the data.",
@@ -1467,7 +1469,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
         } else {
           if (is.null(module_information_module_id())) {
             # No enriched functional module available
-            showModal(
+            shiny::showModal(
               modalDialog(
                 title = "Warning",
                 "Select a module ID first",
@@ -1481,7 +1483,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
             withProgress(message = 'Analysis in progress...', {
               tryCatch(
                 plot <-
-                  plot_module_info(
+                  mapa::plot_module_info(
                     object = enriched_functional_module(),
                     level = input$module_information_level,
                     llm_text = input$module_information_llm_text,
@@ -1490,7 +1492,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
                     # translation = input$module_information_translation
                   ),
                 error = function(e) {
-                  showModal(
+                  shiny::showModal(
                     modalDialog(
                       title = "Error",
                       paste("Details:", e$message),
@@ -1577,7 +1579,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
       observeEvent(input$show_module_information_code, {
         if (is.null(module_information_code()) ||
             length(module_information_code()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No available code",
@@ -1590,7 +1592,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
             module_information_code()
           code_content <-
             paste(code_content, collapse = "\n")
-          showModal(modalDialog(
+          shiny::showModal(modalDialog(
             title = "Code",
             tags$pre(code_content),
             easyClose = TRUE,
@@ -1611,7 +1613,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
             )
           },
           content = function(file) {
-            ggsave(
+            ggplot2::ggsave(
               file,
               plot = module_information(),
               width = input$module_information_width,
@@ -1721,7 +1723,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
       observeEvent(input$generate_relationship_network, {
         if (is.null(enriched_functional_module())) {
           # No enriched functional module available
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No enriched functional module data available. Please complete the previous steps or upload the data.",
@@ -1743,7 +1745,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
                 )
             },
             error = function(e) {
-              showModal(modalDialog(
+              shiny::showModal(modalDialog(
                 title = "Error",
                 paste("Details:", e$message),
                 easyClose = TRUE,
@@ -1759,7 +1761,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
           withProgress(message = 'Analysis in progress...', {
             tryCatch(
               plot <-
-                plot_relationship_network(
+                mapa::plot_relationship_network(
                   object = object(),
                   include_functional_modules = input$relationship_network_include_functional_modules,
                   include_modules = input$relationship_network_include_modules,
@@ -1798,7 +1800,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
                   # translation = input$relationship_network_translation
                 ),
               error = function(e) {
-                showModal(
+                shiny::showModal(
                   modalDialog(
                     title = "Error",
                     paste("Details:", e$message),
@@ -1957,7 +1959,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
       observeEvent(input$show_relationship_network_code, {
         if (is.null(relationship_network_code()) ||
             length(relationship_network_code()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No available code",
@@ -1970,7 +1972,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
             relationship_network_code()
           code_content <-
             paste(code_content, collapse = "\n")
-          showModal(modalDialog(
+          shiny::showModal(modalDialog(
             title = "Code",
             tags$pre(code_content),
             easyClose = TRUE,
@@ -1991,7 +1993,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
             )
           },
           content = function(file) {
-            ggsave(
+            ggplot2::ggsave(
               file,
               plot = relationship_network(),
               width = input$relationship_network_width,
@@ -2016,7 +2018,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
         # Check if enriched_functional_module is available
         if (is.null(enriched_functional_module()) ||
             length(enriched_functional_module()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No enriched_functional_module available",
@@ -2033,7 +2035,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
         # Check if enriched_functional_module is available
         if (is.null(enriched_functional_module()) ||
             length(enriched_functional_module()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No enriched_functional_module available",
@@ -2050,7 +2052,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
         # Check if enriched_functional_module is available
         if (is.null(enriched_functional_module()) ||
             length(enriched_functional_module()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No enriched_functional_module available",
@@ -2067,7 +2069,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
         # Check if enriched_functional_module is available
         if (is.null(enriched_functional_module()) ||
             length(enriched_functional_module()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No enriched_functional_module available",

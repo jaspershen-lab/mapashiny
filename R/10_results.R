@@ -78,7 +78,7 @@ results_server <- function(id, enriched_functional_module, tab_switch) {
         #  available
         if (is.null(enriched_functional_module()) ||
             length(enriched_functional_module()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No enriched functional modules data available.",
@@ -105,7 +105,7 @@ results_server <- function(id, enriched_functional_module, tab_switch) {
               )
             },
             error = function(e) {
-              showModal(
+              shiny::showModal(
                 modalDialog(
                   title = "Error",
                   paste("Details:", e$message),
@@ -198,7 +198,7 @@ results_server <- function(id, enriched_functional_module, tab_switch) {
       observeEvent(input$show_report_code, {
         if (is.null(report_code()) ||
             length(report_code()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No available code",
@@ -211,7 +211,7 @@ results_server <- function(id, enriched_functional_module, tab_switch) {
             report_code()
           code_content <-
             paste(code_content, collapse = "\n")
-          showModal(modalDialog(
+          shiny::showModal(modalDialog(
             title = "Code",
             tags$pre(code_content),
             easyClose = TRUE,

@@ -55,3 +55,8 @@
   height: 50px;
   margin-left: 15px;
 }
+
+/* Normal-weight labels */
+.normal-label {
+  font-weight: normal !important;
+}

@@ -147,7 +147,7 @@ merge_modules_server <- function(id, enriched_modules, enriched_functional_modul
         # Check if enriched_modules is available
         if (is.null(enriched_modules()) ||
             length(enriched_modules()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No enriched modules data available. Please 'Enrich modules' first.",
@@ -160,16 +160,18 @@ merge_modules_server <- function(id, enriched_modules, enriched_functional_modul
           withProgress(message = 'Analysis in progress...', {
             tryCatch({
               result <-
-                merge_modules(
+                mapa::merge_modules(
                   object = enriched_modules(),
                   sim.cutoff = input$sim.cutoff.module,
                   measure_method = input$measure.method.module,
                   path = "result",
                   save_to_local = FALSE
                 )
+              
+              enriched_functional_module(result)
             },
             error = function(e) {
-              showModal(modalDialog(
+              shiny::showModal(modalDialog(
                 title = "Error",
                 paste("Details:", e$message),
                 easyClose = TRUE,
@@ -178,7 +180,6 @@ merge_modules_server <- function(id, enriched_modules, enriched_functional_modul
             })
           })
 
-          enriched_functional_module(result)
           # shinyjs::hide("loading")
 
           ##save code
@@ -203,7 +204,7 @@ merge_modules_server <- function(id, enriched_modules, enriched_functional_modul
       observeEvent(input$show_merge_modules_code, {
         if (is.null(merge_modules_code()) ||
             length(merge_modules_code()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No available code",
@@ -216,7 +217,7 @@ merge_modules_server <- function(id, enriched_modules, enriched_functional_modul
             merge_modules_code()
           code_content <-
             paste(code_content, collapse = "\n")
-          showModal(modalDialog(
+          shiny::showModal(modalDialog(
             title = "Code",
             tags$pre(code_content),
             easyClose = TRUE,
@@ -309,7 +310,7 @@ merge_modules_server <- function(id, enriched_modules, enriched_functional_modul
         # Check if enriched_functional_module is available
         if (is.null(enriched_functional_module()) ||
             length(enriched_functional_module()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No enriched functional modules data available. Please 'Merge modules' first.",
@@ -321,16 +322,20 @@ merge_modules_server <- function(id, enriched_modules, enriched_functional_modul
           # shinyjs::show("loading")
           withProgress(message = 'Analysis in progress...', {
             tryCatch(
-              plot <-
-                plot_similarity_network(
-                  object = enriched_functional_module(),
-                  level = "functional_module",
-                  degree_cutoff = input$enirched_functional_module_plot_degree_cutoff,
-                  text = input$enirched_functional_module_plot_text,
-                  text_all = input$enirched_functional_module_plot_text_all
-                ),
+              {
+                plot <-
+                  mapa::plot_similarity_network(
+                    object = enriched_functional_module(),
+                    level = "functional_module",
+                    degree_cutoff = input$enirched_functional_module_plot_degree_cutoff,
+                    text = input$enirched_functional_module_plot_text,
+                    text_all = input$enirched_functional_module_plot_text_all
+                  )
+                
+                enirched_functional_module_plot(plot)
+              },
               error = function(e) {
-                showModal(
+                shiny::showModal(
                   modalDialog(
                     title = "Error",
                     "Please check your input parameters.",
@@ -342,7 +347,6 @@ merge_modules_server <- function(id, enriched_modules, enriched_functional_modul
             )
           })
 
-          enirched_functional_module_plot(plot)
           # shinyjs::hide("loading")
         }
       })
@@ -363,7 +367,7 @@ merge_modules_server <- function(id, enriched_modules, enriched_functional_modul
         # Check if enriched_functional_module is available
         if (is.null(enriched_functional_module()) ||
             length(enriched_functional_module()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "Please merge modules first.",

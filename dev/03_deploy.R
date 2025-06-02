@@ -42,6 +42,7 @@ golem::add_shinyserver_file()
 ## Add/update manifest file (optional; for Git backed deployment on Posit )
 rsconnect::writeManifest()
 
+options(renv.config.snapshot.validate = FALSE)
 ## In command line.
 rsconnect::deployApp(
   appName = desc::desc_get_field("Package"),
@@ -51,6 +52,7 @@ rsconnect::deployApp(
     "R/",
     "inst/",
     "data/",
+    "man/",
     "NAMESPACE",
     "DESCRIPTION",
     "app.R"
@@ -59,3 +61,6 @@ rsconnect::deployApp(
   lint = FALSE,
   forceUpdate = TRUE
 )
+
+# check the dependency source
+# deps <- rsconnect::appDependencies(".")

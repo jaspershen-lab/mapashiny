@@ -546,7 +546,7 @@ enrich_pathway_server <- function(id, processed_info, enriched_pathways, tab_swi
       observeEvent(input$submit_enrich_pathways, {
         ### Check if variable_info is available
         if (is.null(variable_info()) || length(variable_info()) == 0) {
-          showModal(modalDialog(
+          shiny::showModal(modalDialog(
             title = "Warning",
             "No data available. Please 'Upload data' first.",
             easyClose = TRUE,
@@ -661,7 +661,7 @@ enrich_pathway_server <- function(id, processed_info, enriched_pathways, tab_swi
                 do.call(do_gsea, common_params)
               }
             }, error = function(e) {
-              showModal(modalDialog(
+              shiny::showModal(modalDialog(
                 title = "Error",
                 paste("Details:", e$message),
                 easyClose = TRUE,
@@ -1125,7 +1125,7 @@ enrich_pathway_server <- function(id, processed_info, enriched_pathways, tab_swi
       observeEvent(input$show_enrich_pathways_code, {
         if (is.null(enrich_pathways_code()) ||
             length(enrich_pathways_code()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No available code",
@@ -1138,7 +1138,7 @@ enrich_pathway_server <- function(id, processed_info, enriched_pathways, tab_swi
             enrich_pathways_code()
           code_content <-
             paste(code_content, collapse = "\n")
-          showModal(modalDialog(
+          shiny::showModal(modalDialog(
             title = "Code",
             tags$pre(code_content),
             easyClose = TRUE,
@@ -1153,7 +1153,7 @@ enrich_pathway_server <- function(id, processed_info, enriched_pathways, tab_swi
       observeEvent(input$go2merge_pathways, {
         if (is.null(enriched_pathways$enriched_pathways_res) ||
             length(enriched_pathways$enriched_pathways_res) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "Please enrich pathways first",

@@ -9,3 +9,8 @@ $run_dev.*
 ^README\.Rmd$
 ^CODE_OF_CONDUCT\.md$
 ^\.github$
+^app\.R$
+^rsconnect$
+^\.rscignore$
+
+.DS_Store

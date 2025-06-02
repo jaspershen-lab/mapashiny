@@ -19,9 +19,9 @@ id_conversion <- function(query_type = c("gene", "metabolite"),
       fromType = from_id_type,
       toType   = to_id_type,
       OrgDb    = organism
-    ) %>%
-      dplyr::distinct(ENTREZID, .keep_all = TRUE) %>%
-      dplyr::rename_with(tolower) %>%
+    ) |>
+      dplyr::distinct(ENTREZID, .keep_all = TRUE) |>
+      dplyr::rename_with(tolower) |>
       dplyr::left_join(data, ., by = tolower(from_id_type))
 
     conversion_code <- sprintf(
@@ -49,11 +49,11 @@ id_conversion <- function(query_type = c("gene", "metabolite"),
   if (query_type == "metabolite" && organism == "hsa") {
     if (!requireNamespace("metpath", quietly = TRUE)) {BiocManager::install("metpath")}
 
-    id_lookup <- metpath::hmdb_compound_database@spectra.info %>%
-      dplyr::select(HMDB.ID, KEGG.ID) %>%
+    id_lookup <- metpath::hmdb_compound_database@spectra.info |>
+      dplyr::select(HMDB.ID, KEGG.ID) |>
       dplyr::rename(hmdbid = HMDB.ID,
-                    keggid = KEGG.ID) %>%
-      dplyr::mutate(across(everything(), as.character)) %>%
+                    keggid = KEGG.ID) |>
+      dplyr::mutate(across(everything(), as.character)) |>
       dplyr::distinct()
 
     converted <- data |>

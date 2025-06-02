@@ -647,7 +647,7 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
             }
           } else {
             message("The .rda file does not contain exactly one object.")
-            showModal(
+            shiny::showModal(
               modalDialog(
                 title = "Error",
                 "The uploaded file should contain exactly one object.",
@@ -737,7 +737,7 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
         input$submit_merge_pathways,
         {
           if (is.null(enriched_pathways$enriched_pathways_res) || length(enriched_pathways$enriched_pathways_res) == 0) {
-            showModal(
+            shiny::showModal(
               modalDialog(
                 title = "Warning",
                 "No enriched pathways data available. Please 'Enrich pathways' first.",
@@ -769,7 +769,7 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
               }
 
               result <-
-                merge_pathways(
+                mapa::merge_pathways(
                   object = enriched_pathways$enriched_pathways_res,
                   database = input$cluster_module_database,
                   go.orgdb = org_db_obj,
@@ -796,9 +796,11 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
                   path = "result",
                   save_to_local = FALSE
                 )
+              
+              enriched_modules(result)
             },
             error = function(e) {
-              showModal(modalDialog(
+              shiny::showModal(modalDialog(
                 title = "Error",
                 paste("Details:", e$message),
                 easyClose = TRUE,
@@ -807,7 +809,7 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
             })
           })
 
-          enriched_modules(result)
+          # enriched_modules(result)
 
           # shinyjs::hide("loading")
 
@@ -1169,7 +1171,7 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
         # Check if enriched_modules is available
         if (is.null(enriched_modules()) ||
             length(enriched_modules()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No enriched modules data available. Please 'Merge pathways' first.",
@@ -1182,17 +1184,21 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
 
           withProgress(message = 'Analysis in progress...', {
             tryCatch(
-              plot <-
-                plot_similarity_network(
-                  object = enriched_modules(),
-                  level = "module",
-                  database = "go",
-                  degree_cutoff = input$enirched_module_plot_degree_cutoff_go,
-                  text = input$enirched_module_plot_text_go,
-                  text_all = input$enirched_module_plot_text_all_go
-                ),
+              {
+                plot <-
+                  mapa::plot_similarity_network(
+                    object = enriched_modules(),
+                    level = "module",
+                    database = "go",
+                    degree_cutoff = input$enirched_module_plot_degree_cutoff_go,
+                    text = input$enirched_module_plot_text_go,
+                    text_all = input$enirched_module_plot_text_all_go
+                  )
+                
+                enirched_module_go_plot(plot)
+              },
               error = function(e) {
-                showModal(
+                shiny::showModal(
                   modalDialog(
                     title = "Error",
                     paste("Details:", e$message),
@@ -1204,8 +1210,6 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
             )
 
           })
-
-          enirched_module_go_plot(plot)
           # shinyjs::hide("loading")
         }
       })
@@ -1226,7 +1230,7 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
         # Check if enriched_modules is available
         if (is.null(enriched_modules()) ||
             length(enriched_modules()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No enriched modules data available. Please 'Merge pathways' first.",
@@ -1239,17 +1243,21 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
 
           withProgress(message = 'Analysis in progress...', {
             tryCatch(
-              plot <-
-                plot_similarity_network(
-                  object = enriched_modules(),
-                  level = "module",
-                  database = "kegg",
-                  degree_cutoff = input$enirched_module_plot_degree_cutoff_kegg,
-                  text = input$enirched_module_plot_text_kegg,
-                  text_all = input$enirched_module_plot_text_all_kegg
-                ),
+              {
+                plot <-
+                  mapa::plot_similarity_network(
+                    object = enriched_modules(),
+                    level = "module",
+                    database = "kegg",
+                    degree_cutoff = input$enirched_module_plot_degree_cutoff_kegg,
+                    text = input$enirched_module_plot_text_kegg,
+                    text_all = input$enirched_module_plot_text_all_kegg
+                  )
+                
+                enirched_module_kegg_plot(plot)
+              },
               error = function(e) {
-                showModal(
+                shiny::showModal(
                   modalDialog(
                     title = "Error",
                     paste("Details:", e$message),
@@ -1260,8 +1268,6 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
               }
             )
           })
-
-          enirched_module_kegg_plot(plot)
 
           # shinyjs::hide("loading")
         }
@@ -1283,7 +1289,7 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
         # Check if enriched_modules is available
         if (is.null(enriched_modules()) ||
             length(enriched_modules()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No enriched modules data available. Please 'Merge pathways' first.",
@@ -1296,17 +1302,21 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
 
           withProgress(message = 'Analysis in progress...', {
             tryCatch(
-              plot <-
-                plot_similarity_network(
-                  object = enriched_modules(),
-                  level = "module",
-                  database = "reactome",
-                  degree_cutoff = input$enirched_module_plot_degree_cutoff_reactome,
-                  text = input$enirched_module_plot_text_reactome,
-                  text_all = input$enirched_module_plot_text_all_reactome
-                ),
+              {
+                plot <-
+                  mapa::plot_similarity_network(
+                    object = enriched_modules(),
+                    level = "module",
+                    database = "reactome",
+                    degree_cutoff = input$enirched_module_plot_degree_cutoff_reactome,
+                    text = input$enirched_module_plot_text_reactome,
+                    text_all = input$enirched_module_plot_text_all_reactome
+                  )
+                
+                enirched_module_reactome_plot(plot)
+              },
               error = function(e) {
-                showModal(
+                shiny::showModal(
                   modalDialog(
                     title = "Error",
                     paste("Details:", e$message),
@@ -1318,8 +1328,6 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
             )
 
           })
-
-          enirched_module_reactome_plot(plot)
           # shinyjs::hide("loading")
         }
       })
@@ -1340,7 +1348,7 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
         # Check if enriched_modules is available
         if (is.null(enriched_modules()) ||
             length(enriched_modules()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No enriched modules data available. Please 'Merge pathways' first.",
@@ -1353,17 +1361,21 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
 
           withProgress(message = 'Analysis in progress...', {
             tryCatch(
-              plot <-
-                plot_similarity_network(
-                  object = enriched_modules(),
-                  level = "module",
-                  database = "hmdb",
-                  degree_cutoff = input$enirched_module_plot_degree_cutoff_hmdb,
-                  text = input$enirched_module_plot_text_hmdb,
-                  text_all = input$enirched_module_plot_text_all_hmdb
-                ),
+              {
+                plot <- 
+                  mapa::plot_similarity_network(
+                    object = enriched_modules(),
+                    level = "module",
+                    database = "hmdb",
+                    degree_cutoff = input$enirched_module_plot_degree_cutoff_hmdb,
+                    text = input$enirched_module_plot_text_hmdb,
+                    text_all = input$enirched_module_plot_text_all_hmdb
+                )
+                
+                enirched_module_hmdb_plot(plot)
+              },
               error = function(e) {
-                showModal(
+                shiny::showModal(
                   modalDialog(
                     title = "Error",
                     paste("Details:", e$message),
@@ -1374,8 +1386,6 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
               }
             )
           })
-
-          enirched_module_hmdb_plot(plot)
 
           # shinyjs::hide("loading")
         }
@@ -1397,7 +1407,7 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
         # Check if enriched_modules is available
         if (is.null(enriched_modules()) ||
             length(enriched_modules()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No enriched modules data available. Please 'Merge pathways' first.",
@@ -1410,17 +1420,21 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
 
           withProgress(message = 'Analysis in progress...', {
             tryCatch(
-              plot <-
-                plot_similarity_network(
-                  object = enriched_modules(),
-                  level = "module",
-                  database = "metkegg",
-                  degree_cutoff = input$enirched_module_plot_degree_cutoff_metkegg,
-                  text = input$enirched_module_plot_text_metkegg,
-                  text_all = input$enirched_module_plot_text_all_metkegg
-                ),
+              {
+                plot <- 
+                  mapa::plot_similarity_network(
+                    object = enriched_modules(),
+                    level = "module",
+                    database = "metkegg",
+                    degree_cutoff = input$enirched_module_plot_degree_cutoff_metkegg,
+                    text = input$enirched_module_plot_text_metkegg,
+                    text_all = input$enirched_module_plot_text_all_metkegg
+                  )
+                
+                enirched_module_metkegg_plot(plot)
+                },
               error = function(e) {
-                showModal(
+                shiny::showModal(
                   modalDialog(
                     title = "Error",
                     paste("Details:", e$message),
@@ -1431,9 +1445,6 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
               }
             )
           })
-
-          enirched_module_metkegg_plot(plot)
-
           # shinyjs::hide("loading")
         }
       })
@@ -1452,7 +1463,7 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
       observeEvent(input$show_merge_pathways_code, {
         if (is.null(merge_pathways_code()) ||
             length(merge_pathways_code()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No available code",
@@ -1465,7 +1476,7 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
             merge_pathways_code()
           code_content <-
             paste(code_content, collapse = "\n")
-          showModal(modalDialog(
+          shiny::showModal(modalDialog(
             title = "Code",
             tags$pre(code_content),
             easyClose = TRUE,
@@ -1480,7 +1491,7 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
         # Check if enriched_modules is available
         if (is.null(enriched_modules()) ||
             length(enriched_modules()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "Please merge pathways first.",

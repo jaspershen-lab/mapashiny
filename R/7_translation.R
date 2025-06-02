@@ -127,7 +127,7 @@
 #     }
 #
 #     if (translation_model_ai_key() == "") {
-#       showModal(
+#       shiny::showModal(
 #         modalDialog(
 #           title = "Warning",
 #           "No OpenAI Key provided. No translation will be generated.",
@@ -151,7 +151,7 @@
 #     }
 #
 #     if (translation_model_ai_key() == "") {
-#       showModal(
+#       shiny::showModal(
 #         modalDialog(
 #           title = "Warning",
 #           "No Gemini Key provided. No translation will be generated.",
@@ -167,7 +167,7 @@
 #   # Check if enriched_modules is available
 #   if (is.null(enriched_functional_module()) ||
 #       length(enriched_functional_module()) == 0) {
-#     showModal(
+#     shiny::showModal(
 #       modalDialog(
 #         title = "Warning",
 #         "No enriched functional modules data available.",
@@ -188,7 +188,7 @@
 #           )
 #       },
 #       error = function(e) {
-#         showModal(modalDialog(
+#         shiny::showModal(modalDialog(
 #           title = "Error",
 #           paste("Details:", e$message),
 #           easyClose = TRUE,
@@ -241,7 +241,7 @@
 # observeEvent(input$show_translation_code, {
 #   if (is.null(translation_code()) ||
 #       length(translation_code()) == 0) {
-#     showModal(
+#     shiny::showModal(
 #       modalDialog(
 #         title = "Warning",
 #         "No available code",
@@ -254,7 +254,7 @@
 #       translation_code()
 #     code_content <-
 #       paste(code_content, collapse = "\n")
-#     showModal(modalDialog(
+#     shiny::showModal(modalDialog(
 #       title = "Code",
 #       tags$pre(code_content),
 #       easyClose = TRUE,
@@ -292,7 +292,7 @@
 #   # Check if enriched_functional_module is available
 #   if (is.null(enriched_functional_module()) ||
 #       length(enriched_functional_module()) == 0) {
-#     showModal(
+#     shiny::showModal(
 #       modalDialog(
 #         title = "Warning",
 #         "No enriched functional modules data available.",
@@ -323,7 +323,7 @@
 #   # Check if enriched_functional_module is available
 #   if (is.null(enriched_functional_module()) ||
 #       length(enriched_functional_module()) == 0) {
-#     showModal(
+#     shiny::showModal(
 #       modalDialog(
 #         title = "Warning",
 #         "No enriched functional modules data available.",

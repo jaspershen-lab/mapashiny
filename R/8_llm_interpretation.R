@@ -268,7 +268,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
               # uploaded_enriched_functional_module(get(names[1], envir = tempEnv))
             } else {
               message("The .rda file does not contain exactly one object.")
-              showModal(
+              shiny::showModal(
                 modalDialog(
                   title = "Error",
                   "The uploaded file should contain exactly one object.",
@@ -295,7 +295,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
           showNotification("Interpretation result loaded successfully!",
                            type = "message")
         } else {
-          showModal(modalDialog(
+          shiny::showModal(modalDialog(
             title   = "Error",
             "The uploaded .rda must contain exactly one object
        (what `mapa::llm_interpret_module()` saves).",
@@ -390,9 +390,9 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
         req(input$submit_llm_interpretation, enriched_functional_module())
         message("Interpreting functional modules in progress. This comprehensive analysis requires some time...")
 
-        requireNamespace(future)
-        requireNamespace(promises)
-        requireNamespace(mapa)
+        requireNamespace("future")
+        requireNamespace("promises")
+        requireNamespace("mapa")
         
         object <- enriched_functional_module()
         llm_model <- input$llm_model
@@ -404,7 +404,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
         years <- input$years
 
         # Show a modal with a spinner to indicate work is happening
-        showModal(modalDialog(
+        shiny::showModal(modalDialog(
           title = "Analysis in Progress",
           "The LLM interpretation is running in the background. Results will appear when ready.",
           footer = modalButton("Close"),
@@ -414,7 +414,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
 
         if (is.null(enriched_functional_module())) {
           removeModal()
-          showModal(modalDialog(
+          shiny::showModal(modalDialog(
             title = "Warning",
             "No enriched functional module data available. Please complete the previous steps or upload the data",
             easyClose = TRUE,
@@ -425,7 +425,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
 
         # Run the interpretation asynchronously
         # promises::future_promise({
-        #   requireNamespace(mapa)
+        #   requireNamespace("mapa")
         #   # This code runs in a separate R process
         #   result <-
         #     mapa::llm_interpret_module(
@@ -455,7 +455,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
         #     removeModal()
         # 
         #     # Show error message
-        #     showModal(modalDialog(
+        #     shiny::showModal(modalDialog(
         #       title = "Error",
         #       HTML(paste("An error occurred during LLM interpretation:<br><pre>",
         #                  error$message, "</pre>")),
@@ -487,7 +487,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
             # Error handler
             function(error) {
               removeModal()
-              showModal(modalDialog(
+              shiny::showModal(modalDialog(
                 title = "Error",
                 HTML(paste("An error occurred during LLM interpretation:<br><pre>",
                            error$message, "</pre>")),
@@ -626,7 +626,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
       observeEvent(input$show_llm_interpretation_code, {
         if (is.null(llm_interpretation_code()) ||
             length(llm_interpretation_code()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No available code",
@@ -639,7 +639,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
             llm_interpretation_code()
           code_content <-
             paste(code_content, collapse = "\n")
-          showModal(modalDialog(
+          shiny::showModal(modalDialog(
             title = "Code",
             tags$pre(code_content),
             easyClose = TRUE,
@@ -779,7 +779,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
       #   # Check if enriched_modules is available
       #   if (is.null(enriched_functional_module()) ||
       #       length(enriched_functional_module()) == 0) {
-      #     showModal(
+      #     shiny::showModal(
       #       modalDialog(
       #         title = "Warning",
       #         "No enriched functional modules data available.",
@@ -799,7 +799,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
       #     }
       #
       #     if (openai_key() == "") {
-      #       showModal(
+      #       shiny::showModal(
       #         modalDialog(
       #           title = "Warning",
       #           "No OpenAI Key provided. No interpretation will be generated.",
@@ -826,7 +826,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
       #         llm_interpretation_result(llm_interpretation_result)
       #       },
       #       error = function(e) {
-      #         showModal(modalDialog(
+      #         shiny::showModal(modalDialog(
       #           title = "Error",
       #           paste("Details:", e$message),
       #           easyClose = TRUE,
@@ -907,7 +907,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
         # Check if enriched_functional_module is available
         if ((is.null(enriched_functional_module()) ||
             length(enriched_functional_module()) == 0)) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No enriched functional modules data available.",

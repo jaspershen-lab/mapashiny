@@ -312,13 +312,13 @@ embed_cluster_pathways_ui <- function(id) {
               ),
 
               ### Add CSS class
-              tags$head(
-                tags$style(HTML("
-                 .normal-label {
-                   font-weight: normal !important;
-                 }
-                "))
-              ),
+              # tags$head(
+              #   tags$style(HTML("
+              #    .normal-label {
+              #      font-weight: normal !important;
+              #    }
+              #   "))
+              # ),
               style = "border-right: 1px solid #ddd; padding-right: 20px;"
         ),
 
@@ -422,7 +422,7 @@ embed_cluster_pathways_server <- function(id, enriched_pathways, enriched_functi
             enriched_pathways$enriched_pathways_res <- get(names[1], envir = tempEnv)
           } else {
             message("The .rda file does not contain exactly one object.")
-            showModal(
+            shiny::showModal(
               modalDialog(
                 title = "Error",
                 "The uploaded file should contain exactly one object.",
@@ -498,7 +498,7 @@ embed_cluster_pathways_server <- function(id, enriched_pathways, enriched_functi
         input$submit_merge_pathways,
         {
           if (is.null(enriched_pathways$enriched_pathways_res) || length(enriched_pathways$enriched_pathways_res) == 0) {
-            showModal(
+            shiny::showModal(
               modalDialog(
                 title = "Warning",
                 "No enriched pathways data available. Please 'Enrich pathways' first.",
@@ -512,7 +512,7 @@ embed_cluster_pathways_server <- function(id, enriched_pathways, enriched_functi
             withProgress(message = 'Analysis in progress...', {
               tryCatch({
                 ### Step1: Embedding ====
-                bioembed_sim_matrix <-
+                mapa::bioembed_sim_matrix <-
                   get_bioembedsim(
                     object = enriched_pathways$enriched_pathways_res,
                     api_provider = input$api_provider,
@@ -534,16 +534,18 @@ embed_cluster_pathways_server <- function(id, enriched_pathways, enriched_functi
 
                 ### Step2: Clustering ====
                 result <-
-                  merge_pathways_bioembedsim(
+                  mapa::merge_pathways_bioembedsim(
                     object = bioembed_sim_matrix,
                     sim.cutoff = input$sim_cutoff,
                     cluster_method = input$cluster_method,
                     hclust.method = input$hclust.method,
                     save_to_local = FALSE
                   )
+                
+                enriched_functional_module(result)
               },
               error = function(e) {
-                showModal(modalDialog(
+                shiny::showModal(modalDialog(
                   title = "Error",
                   paste("Details:", e$message),
                   easyClose = TRUE,
@@ -551,8 +553,6 @@ embed_cluster_pathways_server <- function(id, enriched_pathways, enriched_functi
                 ))
               })
             })
-
-            enriched_functional_module(result)
 
             ### Save code ====
             if (query_type() == "gene") {
@@ -685,7 +685,7 @@ embed_cluster_pathways_server <- function(id, enriched_pathways, enriched_functi
       observeEvent(input$show_merge_modules_code, {
         if (is.null(merge_modules_code()) ||
             length(merge_modules_code()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No available code",
@@ -698,7 +698,7 @@ embed_cluster_pathways_server <- function(id, enriched_pathways, enriched_functi
             merge_modules_code()
           code_content <-
             paste(code_content, collapse = "\n")
-          showModal(modalDialog(
+          shiny::showModal(modalDialog(
             title = "Code",
             tags$pre(code_content),
             easyClose = TRUE,
@@ -790,7 +790,7 @@ embed_cluster_pathways_server <- function(id, enriched_pathways, enriched_functi
         # Check if enriched_functional_module is available
         if (is.null(enriched_functional_module()) ||
             length(enriched_functional_module()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "No enriched functional modules data available. Please 'Merge modules' first.",
@@ -801,16 +801,20 @@ embed_cluster_pathways_server <- function(id, enriched_pathways, enriched_functi
         } else {
           withProgress(message = 'Analysis in progress...', {
             tryCatch(
-              plot <-
-                plot_similarity_network(
-                  object = enriched_functional_module(),
-                  level = "functional_module",
-                  degree_cutoff = input$enirched_functional_module_plot_degree_cutoff,
-                  text = input$enirched_functional_module_plot_text,
-                  text_all = input$enirched_functional_module_plot_text_all
-                ),
+              {
+                plot <-
+                  mapa::plot_similarity_network(
+                    object = enriched_functional_module(),
+                    level = "functional_module",
+                    degree_cutoff = input$enirched_functional_module_plot_degree_cutoff,
+                    text = input$enirched_functional_module_plot_text,
+                    text_all = input$enirched_functional_module_plot_text_all
+                  )
+                
+                enirched_functional_module_plot(plot)
+              },
               error = function(e) {
-                showModal(
+                shiny::showModal(
                   modalDialog(
                     title = "Error",
                     paste("Details:", e$message),
@@ -821,8 +825,6 @@ embed_cluster_pathways_server <- function(id, enriched_pathways, enriched_functi
               }
             )
           })
-
-          enirched_functional_module_plot(plot)
         }
       })
 
@@ -841,7 +843,7 @@ embed_cluster_pathways_server <- function(id, enriched_pathways, enriched_functi
         # Check if enriched_functional_module is available
         if (is.null(enriched_functional_module()) ||
             length(enriched_functional_module()) == 0) {
-          showModal(
+          shiny::showModal(
             modalDialog(
               title = "Warning",
               "Please merge modules first.",

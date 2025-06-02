@@ -26,6 +26,7 @@ Imports:
     metpath,
     org.Hs.eg.db,
     patchwork,
+    pkgload,
     promises,
     readxl,
     shiny,

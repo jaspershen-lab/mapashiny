@@ -16,7 +16,7 @@ run_app <- function(
 ) {
   options(shiny.maxRequestSize = 300 * 1024 ^ 2)
   options(shiny.legacy.datatable = TRUE)
-  requireNamespace(mapa)
+  requireNamespace("mapa")
   
   with_golem_options(
     app = shinyApp(
