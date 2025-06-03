@@ -633,17 +633,32 @@ merge_pathways_server <- function(id, enriched_pathways, enriched_modules, tab_s
           if (length(names) == 1) {
             enriched_pathways$enriched_pathways_res <- get(names[1], envir = tempEnv)
             if ("enrich_pathway" %in% names(enriched_pathways$enriched_pathways_res@process_info)) {
-              enriched_pathways$available_db <- enriched_pathways$enriched_pathways_res@process_info$enrich_pathway@parameter$database
               enriched_pathways$query_type <- enriched_pathways$enriched_pathways_res@process_info$enrich_pathway@parameter$query_type
+              enriched_pathways$available_db <- enriched_pathways$enriched_pathways_res@process_info$enrich_pathway@parameter$database
               if (enriched_pathways$query_type == "gene") {
                 enriched_pathways$organism <- enriched_pathways$enriched_pathways_res@process_info$enrich_pathway@parameter$go.orgdb
-              } else {
+              } else if (enriched_pathways$query_type == "metabolite") {
                 enriched_pathways$organism <- enriched_pathways$enriched_pathways_res@process_info$enrich_pathway@parameter$met_organism
               }
-            } else {
+            } else if ("do_gsea" %in% names(enriched_pathways$enriched_pathways_res@process_info)) {
               enriched_pathways$query_type <- enriched_pathways$enriched_pathways_res@process_info$do_gsea@parameter$query_type
               enriched_pathways$available_db <- enriched_pathways$enriched_pathways_res@process_info$do_gsea@parameter$database
-              enriched_pathways$organism <- enriched_pathways$enriched_pathways_res@process_info$do_gsea@parameter$go.orgdb
+              if (enriched_pathways$query_type == "gene") {
+                enriched_pathways$organism <- enriched_pathways$enriched_pathways_res@process_info$do_gsea@parameter$go.orgdb
+              } else if (enriched_pathways$query_type == "metabolite") {
+                enriched_pathways$organism <- enriched_pathways$enriched_pathways_res@process_info$do_gsea@parameter$met_organism
+              }
+            }
+            
+            if (is.null(enriched_pathways$organism)) {
+              shiny::showModal(
+                modalDialog(
+                  title = "Error",
+                  "Organism information is not available. For gene-cnetric analysis, please provide organism in this way: `enriched_pathways@process_info$enrich_pathway@parameter$go.orgdb <- \"org.Hs.eg.db\"`. For metabolite-centric analysis, please provide organism in this way: `enriched_pathways@process_info$do_gsea@parameter$met_organism <- \"hsa\"`",
+                  easyClose = TRUE,
+                  footer = modalButton("Close")
+                )
+              )
             }
           } else {
             message("The .rda file does not contain exactly one object.")

@@ -306,24 +306,33 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
       })
 
       ### Set up shinyFiles directory selection
-      volumes <- shinyFiles::getVolumes()
+      # volumes <- shinyFiles::getVolumes()
+      volumes <- reactive({
+        c("Current Directory" = getwd(), 
+          "Home" = path.expand("~"))
+      })
       ### Define reactive values to store the selected directories
       selected_dirs <- reactiveValues(
         local_corpus_dir = NULL,
         embedding_output_dir = NULL
       )
       ### Set up the directory chooser for the local corpus directory
-      shinyFiles::shinyDirChoose(
-        input,
-        "local_corpus_dir",
-        roots = volumes(),
-        session = session,
-        restrictions = system.file(package = "base")
-      )
+      observe({
+        req(volumes())
+        shinyFiles::shinyDirChoose(
+          input,
+          "local_corpus_dir",
+          roots = volumes(),
+          session = session,
+          restrictions = system.file(package = "base")
+        )
+      })
+      
       ### Observer for the corpus directory selection
       observeEvent(input$local_corpus_dir, {
         if (!is.null(input$local_corpus_dir)) {
           # Get the directory path
+          req(volumes())
           local_corpus_path <- shinyFiles::parseDirPath(volumes(), input$local_corpus_dir)
 
           # Update the reactive value
@@ -339,17 +348,21 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
         }
       })
       ### Set up the directory chooser for the embedding output directory
-      shinyFiles::shinyDirChoose(
-        input,
-        "embedding_output_dir",
-        roots = volumes(),
-        session = session,
-        restrictions = system.file(package = "base")
-      )
+      observe({
+        req(volumes())
+        shinyFiles::shinyDirChoose(
+          input,
+          "embedding_output_dir",
+          roots = volumes(),
+          session = session,
+          restrictions = system.file(package = "base")
+        )
+      })
       ### Observer for the embedding directory selection
       observeEvent(input$embedding_output_dir, {
         if (!is.null(input$embedding_output_dir)) {
           # Get the directory path
+          req(volumes())
           embedding_output_path <- shinyFiles::parseDirPath(volumes(), input$embedding_output_dir)
 
           # Update the reactive value

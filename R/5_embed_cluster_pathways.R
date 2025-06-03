@@ -420,6 +420,34 @@ embed_cluster_pathways_server <- function(id, enriched_pathways, enriched_functi
 
           if (length(names) == 1) {
             enriched_pathways$enriched_pathways_res <- get(names[1], envir = tempEnv)
+            if ("enrich_pathway" %in% names(enriched_pathways$enriched_pathways_res@process_info)) {
+              enriched_pathways$query_type <- enriched_pathways$enriched_pathways_res@process_info$enrich_pathway@parameter$query_type
+              enriched_pathways$available_db <- enriched_pathways$enriched_pathways_res@process_info$enrich_pathway@parameter$database
+              if (enriched_pathways$query_type == "gene") {
+                enriched_pathways$organism <- enriched_pathways$enriched_pathways_res@process_info$enrich_pathway@parameter$go.orgdb
+              } else if (enriched_pathways$query_type == "metabolite") {
+                enriched_pathways$organism <- enriched_pathways$enriched_pathways_res@process_info$enrich_pathway@parameter$met_organism
+              }
+            } else if ("do_gsea" %in% names(enriched_pathways$enriched_pathways_res@process_info)) {
+              enriched_pathways$query_type <- enriched_pathways$enriched_pathways_res@process_info$do_gsea@parameter$query_type
+              enriched_pathways$available_db <- enriched_pathways$enriched_pathways_res@process_info$do_gsea@parameter$database
+              if (enriched_pathways$query_type == "gene") {
+                enriched_pathways$organism <- enriched_pathways$enriched_pathways_res@process_info$do_gsea@parameter$go.orgdb
+              } else if (enriched_pathways$query_type == "metabolite") {
+                enriched_pathways$organism <- enriched_pathways$enriched_pathways_res@process_info$do_gsea@parameter$met_organism
+              }
+            }
+            
+            if (is.null(enriched_pathways$organism)) {
+              shiny::showModal(
+                modalDialog(
+                  title = "Error",
+                  "Organism information is not available. For gene-cnetric analysis, please provide organism in this way: `enriched_pathways@process_info$enrich_pathway@parameter$go.orgdb <- \"org.Hs.eg.db\"`. For metabolite-centric analysis, please provide organism in this way: `enriched_pathways@process_info$do_gsea@parameter$met_organism <- \"hsa\"`",
+                  easyClose = TRUE,
+                  footer = modalButton("Close")
+                )
+              )
+            }
           } else {
             message("The .rda file does not contain exactly one object.")
             shiny::showModal(
@@ -512,8 +540,8 @@ embed_cluster_pathways_server <- function(id, enriched_pathways, enriched_functi
             withProgress(message = 'Analysis in progress...', {
               tryCatch({
                 ### Step1: Embedding ====
-                mapa::bioembed_sim_matrix <-
-                  get_bioembedsim(
+                bioembed_sim_matrix <-
+                  mapa::get_bioembedsim(
                     object = enriched_pathways$enriched_pathways_res,
                     api_provider = input$api_provider,
                     text_embedding_model = input$embedding_model,
@@ -556,7 +584,7 @@ embed_cluster_pathways_server <- function(id, enriched_pathways, enriched_functi
 
             ### Save code ====
             if (query_type() == "gene") {
-
+              
               go_params <- ""
               if ("go" %in% input$cluster_module_database) {
                 go_params <- sprintf(
@@ -567,36 +595,43 @@ embed_cluster_pathways_server <- function(id, enriched_pathways, enriched_functi
                   input$p.adjust.cutoff.go,
                   input$count.cutoff.go
                 )}
-
+              
               kegg_params <- ""
               if ("kegg" %in% input$cluster_module_database) {
                 kegg_params <- sprintf(
-                 'p.adjust.cutoff.kegg = %s,
+                  'p.adjust.cutoff.kegg = %s,
                   count.cutoff.kegg = %s,
                   ',
                   input$p.adjust.cutoff.kegg,
                   input$count.cutoff.kegg
                 )}
-
+              
               reactome_params <- ""
               if ("reactome" %in% input$cluster_module_database) {
                 reactome_params <- sprintf(
-                 'p.adjust.cutoff.reactome = %s,
+                  'p.adjust.cutoff.reactome = %s,
                   count.cutoff.reactome = %s',
                   input$p.adjust.cutoff.reactome,
                   input$count.cutoff.reactome
                 )}
-
+              
               db_vector <- paste0('c("', paste(input$cluster_module_database, collapse = '", "'), '")')
-
+              
+              # Conditional hclust.method parameter
+              hclust_param <- ""
+              if (input$cluster_method == "hierarchical") {
+                hclust_param <- sprintf(',
+                   hclust.method = "%s"', input$hclust.method)
+              }
+              
               merge_modules_code_str <- sprintf(
                 '
               bioembed_sim_matrix <-
                 get_bioembedsim(
                   object = enriched_pathways,
-                  api_provider = %s,
-                  text_embedding_model = %s,
-                  api_key = %s,
+                  api_provider = "%s",
+                  text_embedding_model = "%s",
+                  api_key = "%s",
                   database = %s,%s%s%s
                   save_to_local = FALSE
                   )
@@ -604,8 +639,7 @@ embed_cluster_pathways_server <- function(id, enriched_pathways, enriched_functi
                  merge_pathways_bioembedsim(
                    object = bioembed_sim_matrix,
                    sim.cutoff = %s,
-                   cluster_method = %s,
-                   hclust.method = %s,
+                   cluster_method = "%s",%s,
                    save_to_local = FALSE
                  )
               ',
@@ -618,9 +652,9 @@ embed_cluster_pathways_server <- function(id, enriched_pathways, enriched_functi
                 reactome_params,
                 input$sim_cutoff,
                 input$cluster_method,
-                input$hclust.method
+                hclust_param
               )
-
+              
             } else if (query_type() == "metabolite") {
               hmdb_params <- ""
               if ("hmdb" %in% input$cluster_module_database) {
@@ -632,26 +666,33 @@ embed_cluster_pathways_server <- function(id, enriched_pathways, enriched_functi
                   input$p.adjust.cutoff.hmdb,
                   input$count.cutoff.hmdb
                 )}
-
+              
               metkegg_params <- ""
               if ("metkegg" %in% input$cluster_module_database) {
                 metkegg_params <- sprintf(
-                 'p.adjust.cutoff.metkegg = %s,
+                  'p.adjust.cutoff.metkegg = %s,
                   count.cutoff.metkegg = %s,',
                   input$p.adjust.cutoff.metkegg,
                   input$count.cutoff.metkegg
                 )}
-
+              
               db_vector <- paste0('c("', paste(input$cluster_module_database, collapse = '", "'), '")')
-
+              
+              # Conditional hclust.method parameter
+              hclust_param <- ""
+              if (input$cluster_method == "hierarchical") {
+                hclust_param <- sprintf(',
+                   hclust.method = "%s"', input$hclust.method)
+              }
+              
               merge_modules_code_str <- sprintf(
                 '
               bioembed_sim_matrix <-
                 get_bioembedsim(
                   object = enriched_pathways,
-                  api_provider = %s,
-                  text_embedding_model = %s,
-                  api_key = %s,
+                  api_provider = "%s",
+                  text_embedding_model = "%s",
+                  api_key = "%s",
                   database = %s,%s%s
                   save_to_local = FALSE
                   )
@@ -659,8 +700,7 @@ embed_cluster_pathways_server <- function(id, enriched_pathways, enriched_functi
                  merge_pathways_bioembedsim(
                    object = bioembed_sim_matrix,
                    sim.cutoff = %s,
-                   cluster_method = %s,
-                   hclust.method = %s,
+                   cluster_method = "%s"%s,
                    save_to_local = FALSE
                  )
               ',
@@ -672,9 +712,9 @@ embed_cluster_pathways_server <- function(id, enriched_pathways, enriched_functi
                 metkegg_params,
                 input$sim_cutoff,
                 input$cluster_method,
-                input$hclust.method
+                hclust_param
               )
-
+              
             }
 
             merge_modules_code(merge_modules_code_str)

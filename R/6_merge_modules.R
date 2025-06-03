@@ -32,7 +32,34 @@ merge_modules_ui <- function(id) {
                                     min = 0,
                                     max = 1)
                            )),
-
+                          fluidRow(
+                             column(6,
+                                    selectInput(
+                                      ns("cluster_method"),
+                                      "Clustering method",
+                                      choices = c("Binary cut" = "binary cut",
+                                                  "Girvan Newman" = "girvan newman",
+                                                  "Hierarchical" = "hierarchical"),
+                                      selected = "Binary cut"),
+                                    )
+                              ),
+                           shinyjs::hidden(
+                             div(
+                               id = ns("hclust.method_panel"),
+                               fluidRow(
+                                 column(6,
+                                        selectInput(
+                                          ns("hclust.method"),
+                                          "Linkage methods",
+                                          choices = c("ward.D", "ward.D2", "single",
+                                                      "complete", "average (UPGMA)",
+                                                      "mcquitty (WPGMA)", "median (WPGMC)",
+                                                      "centroid (UPGMC)"),
+                                          selected = "complete"))
+                               )
+                             )
+                           ),
+                         
                          actionButton(
                            ns("submit_merge_modules"),
                            "Submit",
@@ -142,6 +169,15 @@ merge_modules_server <- function(id, enriched_modules, enriched_functional_modul
       ns <- session$ns
       merge_modules_code <- reactiveVal()
 
+      observe({
+        req(input$cluster_method)
+        
+        shinyjs::toggleElement(
+          id = "hclust.method_panel",
+          condition = input$cluster_method == "hierarchical"
+        )
+      })
+      
       ### merge modules ====
       observeEvent(input$submit_merge_modules, {
         # Check if enriched_modules is available
@@ -164,6 +200,8 @@ merge_modules_server <- function(id, enriched_modules, enriched_functional_modul
                   object = enriched_modules(),
                   sim.cutoff = input$sim.cutoff.module,
                   measure_method = input$measure.method.module,
+                  cluster_method = input$cluster_method,
+                  hclust.method = input$hclust.method,
                   path = "result",
                   save_to_local = FALSE
                 )
@@ -183,6 +221,13 @@ merge_modules_server <- function(id, enriched_modules, enriched_functional_modul
           # shinyjs::hide("loading")
 
           ##save code
+          
+          hclust_param <- ""
+          if (input$cluster_method == "hierarchical") {
+            hclust_param <- sprintf(',
+                   hclust.method = "%s"', input$hclust.method)
+          }
+          
           merge_modules_code <-
             sprintf(
             '
@@ -190,10 +235,14 @@ merge_modules_server <- function(id, enriched_modules, enriched_functional_modul
               merge_modules(
                 object = enriched_modules,
                 sim.cutoff = %s,
-                measure_method = %s)
+                measure_method = %s,
+                cluster_method = "%s",%s
+              )
             ',
               input$sim.cutoff.module,
-              paste0('"', input$measure.method.module, '"')
+              paste0('"', input$measure.method.module, '"'),
+              input$cluster_method,
+              hclust_param
             )
 
           merge_modules_code(merge_modules_code)
