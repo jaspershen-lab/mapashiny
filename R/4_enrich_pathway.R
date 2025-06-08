@@ -454,13 +454,29 @@ enrich_pathway_server <- function(id, processed_info, enriched_pathways, tab_swi
           enriched_pathways$organism <- processed_info$organism
           orgdb <- processed_info$organism
           gene_params$go.orgdb <- orgdb
-          gene_params$kegg.organism <- unname(org2kegg[orgdb])
-          gene_params$reactome.organism <- unname(org2react[orgdb])
+          if (processed_info$return_orgdb) {
+            gene_params$reactome.organism <- NA
+            
+            sci_name <- BiocGenerics::species(orgdb)
+            # Search for KEGG organism using the scientific name
+            kegg_result <- clusterProfiler::search_kegg_organism(str = sci_name, by = "scientific_name", ignore.case = TRUE)
+            # Check if KEGG code is available and extract it
+            if (nrow(kegg_result) > 0 && !is.na(kegg_result$kegg_code[1])) {
+              gene_params$kegg.organism <- kegg_result$kegg_code[1]
+              cat("Get KEGG organism code using the scientific name provided by OrgDb object:", gene_params$kegg.organism, "\n")
+            } else {
+              message("No KEGG organism code available according to the scientific name provided by OrgDb object: ", sci_name)
+              gene_params$kegg.organism <- NA
+            }
+          } else {
+            gene_params$kegg.organism <- unname(org2kegg[orgdb])
+            gene_params$reactome.organism <- unname(org2react[orgdb])
+          }
 
           gene_params$db_choices <- c("GO" = "go")
           if (!is.na(gene_params$kegg.organism)) {gene_params$db_choices <- c(gene_params$db_choices, "KEGG" = "kegg")}
           if (!is.na(gene_params$reactome.organism)) {gene_params$db_choices <- c(gene_params$db_choices, "Reactome" = "reactome")}
-
+          
           updateCheckboxGroupInput(
             session, "pathway_database",
             choices  = gene_params$db_choices,
@@ -487,7 +503,11 @@ enrich_pathway_server <- function(id, processed_info, enriched_pathways, tab_swi
 
       output$organism <- renderText({
         req(processed_info)
-        unname(org_kegg_2name[processed_info$organism])
+        if (processed_info$return_orgdb) {
+          BiocGenerics::species(processed_info$organism)
+        } else {
+          unname(org_kegg_2name[processed_info$organism])
+        }
       })
       outputOptions(output, "organism",
                     suspendWhenHidden = FALSE,  # keep it running
@@ -578,17 +598,22 @@ enrich_pathway_server <- function(id, processed_info, enriched_pathways, tab_swi
                     common_params$go.ont <- input$go_ont
 
                     # Validate input format
-                    if (!grepl("^org\\.[A-Za-z]+\\..+\\.db$", gene_params$go.orgdb)) {
-                      stop("Invalid OrgDb package name. Expected format: org.XX.eg.db")
+                    if (processed_info$return_orgdb) {
+                      org_db_obj <- processed_info$organism
+                    } else {
+                      if (!grepl("^org\\.[A-Za-z]+\\..+\\.db$", gene_params$go.orgdb)) {
+                        stop("Invalid OrgDb package name. Expected format: org.XX.eg.db")
+                      }
+                      # Check if the package is installed
+                      if (!requireNamespace(gene_params$go.orgdb, quietly = TRUE)) {
+                        stop(paste("Package", gene_params$go.orgdb, "is not installed. Please install it using BiocManager::install('", gene_params$go.orgdb, "')"))
+                      }
+                      # Load the package
+                      requireNamespace(gene_params$go.orgdb)
+                      # Get the OrgDb object
+                      org_db_obj <- get(gene_params$go.orgdb)
                     }
-                    # Check if the package is installed
-                    if (!requireNamespace(gene_params$go.orgdb, quietly = TRUE)) {
-                      stop(paste("Package", gene_params$go.orgdb, "is not installed. Please install it using BiocManager::install('", gene_params$go.orgdb, "')"))
-                    }
-                    # Load the package
-                    requireNamespace(gene_params$go.orgdb)
-                    # Get the OrgDb object
-                    org_db_obj <- get(gene_params$go.orgdb)
+                    
                     common_params$go.orgdb <- org_db_obj
                   }
 
@@ -632,18 +657,22 @@ enrich_pathway_server <- function(id, processed_info, enriched_pathways, tab_swi
                   common_params$go.keytype <- input$go_keytype
                   common_params$go.ont <- input$go_ont
 
-                  # Validate input format
-                  if (!grepl("^org\\.[A-Za-z]+\\..+\\.db$", gene_params$go.orgdb)) {
-                    stop("Invalid OrgDb package name. Expected format: org.XX.eg.db")
+                  if (processed_info$return_orgdb) {
+                    # Validate input format
+                    if (!grepl("^org\\.[A-Za-z]+\\..+\\.db$", gene_params$go.orgdb)) {
+                      stop("Invalid OrgDb package name. Expected format: org.XX.eg.db")
+                    }
+                    # Check if the package is installed
+                    if (!requireNamespace(gene_params$go.orgdb, quietly = TRUE)) {
+                      stop(paste("Package", gene_params$go.orgdb, "is not installed. Please install it using BiocManager::install('", gene_params$go.orgdb, "')"))
+                    }
+                    # Load the package
+                    requireNamespace(gene_params$go.orgdb)
+                    # Get the OrgDb object
+                    org_db_obj <- get(gene_params$go.orgdb)
+                  } else {
+                    org_db_obj <- processed_info$organism
                   }
-                  # Check if the package is installed
-                  if (!requireNamespace(gene_params$go.orgdb, quietly = TRUE)) {
-                    stop(paste("Package", gene_params$go.orgdb, "is not installed. Please install it using BiocManager::install('", gene_params$go.orgdb, "')"))
-                  }
-                  # Load the package
-                  requireNamespace(gene_params$go.orgdb)
-                  # Get the OrgDb object
-                  org_db_obj <- get(gene_params$go.orgdb)
                   common_params$go.orgdb <- org_db_obj
                 }
 
@@ -717,17 +746,33 @@ enrich_pathway_server <- function(id, processed_info, enriched_pathways, tab_swi
                 # Build parameter parts based on selected databases
                 go_params <- ""
                 if ("go" %in% input$pathway_database) {
-                  go_params <- sprintf(
-                    ' go.orgdb = "%s",
+                  if (processed_info$return_orgdb) {
+                    go_params <- sprintf(
+                      ' 
+                      go.orgdb = your_orgdb,
                       go.keytype = "%s",
                       go.ont = "%s",
                       go.universe = NULL,
                       go.pool = FALSE,
                       ',
-                    gene_params$go.orgdb,
-                    input$go_keytype,
-                    input$go_ont
-                  )}
+                      input$go_keytype,
+                      input$go_ont
+                    )
+                  } else {
+                    go_params <- sprintf(
+                      ' 
+                      go.orgdb = "%s",
+                      go.keytype = "%s",
+                      go.ont = "%s",
+                      go.universe = NULL,
+                      go.pool = FALSE,
+                      ',
+                      gene_params$go.orgdb,
+                      input$go_keytype,
+                      input$go_ont
+                    )
+                  }
+                  }
 
                 kegg_params <- ""
                 if ("kegg" %in% input$pathway_database) {
@@ -816,14 +861,27 @@ enrich_pathway_server <- function(id, processed_info, enriched_pathways, tab_swi
               # Build parameter parts based on selected databases
               go_params <- ""
               if ("go" %in% input$pathway_database) {
-                go_params <- sprintf(
-                  '   go.orgdb = "%s",
-                      go.keytype = "ENTREZID",
-                      go.ont = "%s",
-                  ',
-                  gene_params$go.orgdb,
-                  input$go_ont
-                )}
+                if (processed_info$return_orgdb) {
+                  go_params <- sprintf(
+                    ' 
+                    go.orgdb = your_orgdb,
+                    go.keytype = "ENTREZID",
+                    go.ont = "%s",
+                    ',
+                    input$go_ont
+                  )
+                } else {
+                  go_params <- sprintf(
+                    '   
+                    go.orgdb = "%s",
+                    go.keytype = "ENTREZID",
+                    go.ont = "%s",
+                    ',
+                    gene_params$go.orgdb,
+                    input$go_ont
+                  )
+                }
+              }
 
               kegg_params <- ""
               if ("kegg" %in% input$pathway_database) {

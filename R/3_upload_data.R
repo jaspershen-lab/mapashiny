@@ -49,11 +49,12 @@ upload_data_ui <- function(id) {
                        ),
                        selected = character(0)
                      ),
-
+                     tags$h5("Organism"),
                      selectInput(
                        ns("organism"),
-                       "Organism",
+                       "Model organism",
                        choices = c(
+                         " " = "",
                          "Human (org.Hs.eg.db)" = "org.Hs.eg.db",
                          "Mouse (org.Mm.eg.db)" = "org.Mm.eg.db",
                          "Rat (org.Rn.eg.db)" = "org.Rn.eg.db",
@@ -75,7 +76,7 @@ upload_data_ui <- function(id) {
                          "Malaria (org.Pf.plasmo.db)" = "org.Pf.plasmo.db",
                          "Myxococcus xanthus DK 1622" = "org.Mxanthus.db"
                        ),
-                       selected = "org.Hs.eg.db"
+                       selected = ""
                      ),
                      helpText("Enter the name of an OrgDb package that is installed on your system.",
                               "Common examples: org.Hs.eg.db (Human), org.Mm.eg.db (Mouse), org.Rn.eg.db (Rat)",
@@ -85,6 +86,19 @@ upload_data_ui <- function(id) {
                                 "Bioconductor OrgDb packages",
                                 target = "_blank"
                               )),
+                     strong("Non-model organism"),
+                     fluidRow(
+                       column(6,
+                              textInput(ns("ah_id"),
+                                        "AnnotationHub ID",
+                                        value = "")),
+                       column(6,
+                              tags$div(
+                                style = "display: flex; flex-direction: column;",
+                                tags$label("Return OrgDb", `for` = ns("return_orgdb")),
+                                checkboxInput(ns("return_orgdb"), "", TRUE)
+                              ))
+                     ),
 
                      selectInput(
                        ns("id_type"),
@@ -92,7 +106,8 @@ upload_data_ui <- function(id) {
                        choices = list(
                          "ENSEMBL" = "ensembl",
                          "UniProt" = "uniprot",
-                         "EntrezID" = "entrezid"
+                         "EntrezID" = "entrezid",
+                         "Symbol" = "symbol"
                        ),
                        selected = "ensembl"
                      )
@@ -225,7 +240,7 @@ upload_data_server <- function(id, processed_info, tab_switch) {
       data_values <- reactiveValues(
         raw_data = NULL,        # Original uploaded or example data
         converted_data = NULL,  # Data after ID conversion
-        conversion_code = NULL  # The code used for conversion
+        conversion_code = NULL
       )
 
       ## Toggle UI panels based on query type
@@ -348,59 +363,96 @@ upload_data_server <- function(id, processed_info, tab_switch) {
         # Process based on query type
         if (input$query_type == "gene") {
           # Set up conversion parameters
-          conversion_params <- switch(input$id_type,
-                                      "ensembl" = list(
-                                        from_id_type = "ENSEMBL",
-                                        to_id_type = c("UNIPROT", "ENTREZID", "SYMBOL")
-                                      ),
-                                      "uniprot" = list(
-                                        from_id_type = "UNIPROT",
-                                        to_id_type = c("ENSEMBL", "ENTREZID", "SYMBOL")
-                                      ),
-                                      "entrezid" = list(
-                                        from_id_type = "ENTREZID",
-                                        to_id_type = c("ENSEMBL", "UNIPROT", "SYMBOL")
-                                      )
-          )
+          # conversion_params <- switch(input$id_type,
+          #                             "ensembl" = list(
+          #                               from_id_type = "ENSEMBL",
+          #                               to_id_type = c("UNIPROT", "ENTREZID", "SYMBOL")
+          #                             ),
+          #                             "uniprot" = list(
+          #                               from_id_type = "UNIPROT",
+          #                               to_id_type = c("ENSEMBL", "ENTREZID", "SYMBOL")
+          #                             ),
+          #                             "entrezid" = list(
+          #                               from_id_type = "ENTREZID",
+          #                               to_id_type = c("ENSEMBL", "UNIPROT", "SYMBOL")
+          #                             )
+          # )
 
           # Validate OrgDb format
-          if (!grepl("^org\\.[A-Za-z]+\\..+\\.db$", input$organism)) {
-            showNotification("Invalid OrgDb package name. Expected format: org.XX.eg.db", type = "error")
-            return()
+          if (input$organism != "") {
+            if (!grepl("^org\\.[A-Za-z]+\\..+\\.db$", input$organism)) {
+              showNotification("Invalid OrgDb package name. Expected format: org.XX.eg.db", type = "error")
+              return()
+            }
+            
+            # Check if package is installed
+            if (!requireNamespace(input$organism, quietly = TRUE)) {
+              shiny::showModal(modalDialog(
+                title = "Missing Package",
+                paste0("Package ", input$organism, " is not installed. Please install it using:\n",
+                       "BiocManager::install('", input$organism, "')"),
+                easyClose = TRUE,
+                footer = modalButton("Close")
+              ))
+              return()
+            }
+            
+            # Load the package and get OrgDb object
+            requireNamespace(input$organism)
+            org_db_obj <- get(input$organism)
+            ah_id <- NULL
+            conversion_param <- sprintf(
+              '
+              organism = %s',
+              input$organism
+            )
+          } else if (input$ah_id != "") {
+            org_db_obj <- NULL
+            ah_id <- input$ah_id
+            conversion_param <- sprintf(
+              '
+              ah_id = "%s",
+              return_orgdb = %s',
+              input$ah_id,
+              input$return_orgdb
+            )
           }
-
-          # Check if package is installed
-          if (!requireNamespace(input$organism, quietly = TRUE)) {
-            shiny::showModal(modalDialog(
-              title = "Missing Package",
-              paste0("Package ", input$organism, " is not installed. Please install it using:\n",
-                     "BiocManager::install('", input$organism, "')"),
-              easyClose = TRUE,
-              footer = modalButton("Close")
-            ))
-            return()
-          }
-
-          # Load the package and get OrgDb object
-          requireNamespace(input$organism)
-          org_db_obj <- get(input$organism)
 
           # Perform conversion
           tryCatch({
-            result <- id_conversion(
-              query_type = input$query_type,
+            result <- mapa::convert_id(
               data = data_values$raw_data,
-              from_id_type = conversion_params$from_id_type,
-              to_id_type = conversion_params$to_id_type,
-              organism = org_db_obj
+              query_type = input$query_type,
+              from_id_type = input$id_type,
+              organism = org_db_obj,
+              ah_id = ah_id,
+              return_orgdb = input$return_orgdb
             )
-
-            data_values$converted_data <- result$converted_id
-            data_values$conversion_code <- result$conversion_code
-
-            processed_info$variable_info <- result$converted_id
+            
+            conversion_code <- sprintf(
+            '
+            result <- mapa::convert_id(
+              data = your_input_data,
+              query_type = "gene",
+              from_id_type = "%s",%s
+            )
+            ',
+            input$id_type,
+            conversion_param
+            )
+            data_values$conversion_code <- conversion_code
+            
+            if (input$return_orgdb) {
+              data_values$converted_data <- result$data
+              processed_info$organism <- result$orgdb
+              processed_info$return_orgdb = TRUE
+            } else {
+              data_values$converted_data <- result
+              processed_info$organism <- input$organism
+            }
+            
+            processed_info$variable_info <- data_values$converted_data
             processed_info$query_type <- input$query_type
-            processed_info$organism <- input$organism
             # Show success message
             showNotification("Data successfully processed", type = "message")
           }, error = function(e) {
@@ -415,17 +467,30 @@ upload_data_server <- function(id, processed_info, tab_switch) {
         else if (input$query_type == "metabolite") {
           # Perform metabolite conversion
           tryCatch({
-            result <- id_conversion(
-              query_type = input$query_type,
+            result <- mapa::convert_id(
               data = data_values$raw_data,
-              from_id_type = input$met_id_type,
+              query_type = input$query_type,
+              from_id_type = input$id_type,
               organism = input$met_organism
             )
+            
+            conversion_code <- sprintf(
+              '
+            result <- mapa::convert_id(
+              data = your_input_data,
+              query_type = "metabolite",
+              from_id_type = "%s",
+              organism = "%s"
+            )
+            ',
+              input$id_type,
+              input$met_organism
+            )
 
-            data_values$converted_data <- result$converted_id
-            data_values$conversion_code <- result$conversion_code
+            data_values$converted_data <- result
+            data_values$conversion_code <- conversion_code
 
-            processed_info$variable_info <- result$converted_id
+            processed_info$variable_info <- data_values$converted_data
             processed_info$query_type <- input$query_type
             processed_info$organism <- input$met_organism
 

@@ -18,7 +18,8 @@ app_server <- function(input, output, session) {
   processed_info <- reactiveValues(
     variable_info = NULL,
     query_type = NULL,
-    organism = NULL
+    organism = NULL,
+    return_orgdb = FALSE
   )
   upload_data_server("upload_data_tab",
                      processed_info = processed_info,

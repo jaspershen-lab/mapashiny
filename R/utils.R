@@ -1,91 +1,90 @@
-#' Process ID conversion
-#' @noRd
-id_conversion <- function(query_type = c("gene", "metabolite"),
-                          data = NULL,
-                          from_id_type = NULL,
-                          to_id_type = NULL,
-                          organism = NULL) {
-  if (missing(query_type)){
-    stop("query_type is missing")
-  }
-  query_type <- match.arg(query_type, c("gene", "metabolite"))
 
-  if (query_type == "gene") {
-    if (!requireNamespace("clusterProfiler", quietly = TRUE))
-      BiocManager::install("clusterProfiler")
-
-    converted <- clusterProfiler::bitr(
-      geneID  = data[[tolower(from_id_type)]],
-      fromType = from_id_type,
-      toType   = to_id_type,
-      OrgDb    = organism
-    ) |>
-      dplyr::distinct(ENTREZID, .keep_all = TRUE) |>
-      dplyr::rename_with(tolower) |>
-      dplyr::left_join(data, ., by = tolower(from_id_type))
-
-    conversion_code <- sprintf(
-      "
-      if (!requireNamespace(\"clusterProfiler\", quietly = TRUE)) {
-        BiocManager::install(\"clusterProfiler\")
-      }
-      
-      converted <- clusterProfiler::bitr(
-        geneID  = data[[tolower(\"%s\")]],
-        fromType = \"%s\",
-        toType   = c(\"%s\"),
-        OrgDb    = %s
-       ) %%>%%
-       dplyr::distinct(ENTREZID, .keep_all = TRUE) %%>%%
-       dplyr::rename_with(tolower) %%>%%
-       dplyr::left_join(data, ., by = tolower(\"%s\"))",
-      from_id_type, from_id_type,
-      paste(to_id_type, collapse = "\", \""), deparse(substitute(organism)), from_id_type)
-
-    return(list(converted_id   = converted,
-                conversion_code = conversion_code))
-  }
-
-  if (query_type == "metabolite" && organism == "hsa") {
-    if (!requireNamespace("metpath", quietly = TRUE)) {BiocManager::install("metpath")}
-
-    id_lookup <- metpath::hmdb_compound_database@spectra.info |>
-      dplyr::select(HMDB.ID, KEGG.ID) |>
-      dplyr::rename(hmdbid = HMDB.ID,
-                    keggid = KEGG.ID) |>
-      dplyr::mutate(across(everything(), as.character)) |>
-      dplyr::distinct()
-
-    converted <- data |>
-      dplyr::filter(!is.na(.data[[tolower(from_id_type)]])) |>
-      dplyr::left_join(id_lookup, by = tolower(from_id_type))
-
-    conversion_code <- sprintf(
-    "
-    if (!requireNamespace(\"metpath\", quietly = TRUE)) {
-      BiocManager::install(\"metpath\")
-    }
-    library(metpath)
-
-    id_lookup <- metpath::hmdb_compound_database@spectra.info %%>%%
-      dplyr::select(HMDB.ID, KEGG.ID) %%>%%
-      dplyr::rename(hmdbid = HMDB.ID, keggid = KEGG.ID)
-
-    converted <- data %%>%%
-      dplyr::filter(!is.na(.data[[\"%s\"]])) %%>%%
-      dplyr::left_join(id_lookup, by = \"%s\")",
-    from_id_type,
-    from_id_type)
-
-    return(list(converted_id   = converted,
-                conversion_code = conversion_code))
-  }
-
-  if (query_type == "metabolite" && organism != "hsa") {
-    return(list(converted_id   = data,
-                conversion_code = NA_character_))
-  }
-}
+# id_conversion <- function(query_type = c("gene", "metabolite"),
+#                           data = NULL,
+#                           from_id_type = NULL,
+#                           to_id_type = NULL,
+#                           organism = NULL) {
+#   if (missing(query_type)){
+#     stop("query_type is missing")
+#   }
+#   query_type <- match.arg(query_type, c("gene", "metabolite"))
+# 
+#   if (query_type == "gene") {
+#     if (!requireNamespace("clusterProfiler", quietly = TRUE))
+#       BiocManager::install("clusterProfiler")
+# 
+#     converted <- clusterProfiler::bitr(
+#       geneID  = data[[tolower(from_id_type)]],
+#       fromType = from_id_type,
+#       toType   = to_id_type,
+#       OrgDb    = organism
+#     ) |>
+#       dplyr::distinct(ENTREZID, .keep_all = TRUE) |>
+#       dplyr::rename_with(tolower) |>
+#       dplyr::left_join(data, ., by = tolower(from_id_type))
+# 
+#     conversion_code <- sprintf(
+#       "
+#       if (!requireNamespace(\"clusterProfiler\", quietly = TRUE)) {
+#         BiocManager::install(\"clusterProfiler\")
+#       }
+# 
+#       converted <- clusterProfiler::bitr(
+#         geneID  = data[[tolower(\"%s\")]],
+#         fromType = \"%s\",
+#         toType   = c(\"%s\"),
+#         OrgDb    = %s
+#        ) %%>%%
+#        dplyr::distinct(ENTREZID, .keep_all = TRUE) %%>%%
+#        dplyr::rename_with(tolower) %%>%%
+#        dplyr::left_join(data, ., by = tolower(\"%s\"))",
+#       from_id_type, from_id_type,
+#       paste(to_id_type, collapse = "\", \""), deparse(substitute(organism)), from_id_type)
+# 
+#     return(list(converted_id   = converted,
+#                 conversion_code = conversion_code))
+#   }
+# 
+#   if (query_type == "metabolite" && organism == "hsa") {
+#     if (!requireNamespace("metpath", quietly = TRUE)) {BiocManager::install("metpath")}
+# 
+#     id_lookup <- metpath::hmdb_compound_database@spectra.info |>
+#       dplyr::select(HMDB.ID, KEGG.ID) |>
+#       dplyr::rename(hmdbid = HMDB.ID,
+#                     keggid = KEGG.ID) |>
+#       dplyr::mutate(across(everything(), as.character)) |>
+#       dplyr::distinct()
+# 
+#     converted <- data |>
+#       dplyr::filter(!is.na(.data[[tolower(from_id_type)]])) |>
+#       dplyr::left_join(id_lookup, by = tolower(from_id_type))
+# 
+#     conversion_code <- sprintf(
+#     "
+#     if (!requireNamespace(\"metpath\", quietly = TRUE)) {
+#       BiocManager::install(\"metpath\")
+#     }
+#     library(metpath)
+# 
+#     id_lookup <- metpath::hmdb_compound_database@spectra.info %%>%%
+#       dplyr::select(HMDB.ID, KEGG.ID) %%>%%
+#       dplyr::rename(hmdbid = HMDB.ID, keggid = KEGG.ID)
+# 
+#     converted <- data %%>%%
+#       dplyr::filter(!is.na(.data[[\"%s\"]])) %%>%%
+#       dplyr::left_join(id_lookup, by = \"%s\")",
+#     from_id_type,
+#     from_id_type)
+# 
+#     return(list(converted_id   = converted,
+#                 conversion_code = conversion_code))
+#   }
+# 
+#   if (query_type == "metabolite" && organism != "hsa") {
+#     return(list(converted_id   = data,
+#                 conversion_code = NA_character_))
+#   }
+# }
 
 # Organism name conversion
 org_kegg_2name <- c(

@@ -24,14 +24,20 @@
 
 #' Example Metabolomics Data
 #'
-#' A dataset containing example metabolomics data for pathway analysis.
-#' Includes metabolite identifiers and their corresponding HMDB (Human Metabolome
-#' Database) identifiers.
+#' A dataset containing example metabolomics data for pathway enrichment analysis.
+#' This dataset includes metabolite identifiers, KEGG compound annotations, and 
+#' statistical measures from differential abundance analysis.
 #'
-#' @format A data frame with 17 rows and 2 columns:
+#' @format A tibble with 106 rows and 4 variables:
 #' \describe{
-#'   \item{metabolite_id}{Character vector of metabolite identifiers (metabolite_1, metabolite_2, etc.)}
-#'   \item{hmdbid}{Character vector of HMDB identifiers for metabolite database mapping}
+#'   \item{variable_id}{Character vector of metabolite identifiers in the format 
+#'                     "M[mass]T[retention_time]_[ionization_mode]"}
+#'   \item{keggid}{Character vector of KEGG compound identifiers (e.g., "C05466"). 
+#'                 Contains NA values for unidentified metabolites}
+#'   \item{fdr}{Numeric vector of false discovery rate adjusted p-values from 
+#'              differential abundance testing}
+#'   \item{score}{Numeric vector of abundance fold change scores or effect sizes}
 #' }
+#'
 
 "example_met_data"
