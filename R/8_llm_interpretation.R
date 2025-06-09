@@ -71,6 +71,16 @@ llm_interpretation_ui <- function(id) {
                   # br(),
                   fluidRow(
                     column(
+                      12,
+                      numericInput(ns("module_content_number_cutoff"),
+                                   "Cutoff for module content number",
+                                   value = 1,
+                                   min = 0,
+                                   max = 1000)     
+                    )
+                  ),
+                  fluidRow(
+                    column(
                       6,
                       textInput(ns("llm_model"),
                                 "LLM model",
@@ -305,6 +315,20 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
         }
       })
 
+      observe(
+        {
+          req(enriched_functional_module())
+          max_module_content_number <- max(enriched_functional_module()@merged_module$functional_module_result$module_content_number)
+          updateNumericInput(
+            session,
+            inputId = "module_content_number_cutoff",  # No need for ns() here
+            label = "Cutoff for module content number",
+            value = 1,
+            min = 0,
+            max = max_module_content_number - 1
+          ) 
+        }
+      )
       ### Set up shinyFiles directory selection
       # volumes <- shinyFiles::getVolumes()
       volumes <- reactive({
