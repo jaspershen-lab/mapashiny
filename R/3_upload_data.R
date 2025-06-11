@@ -124,27 +124,35 @@ upload_data_ui <- function(id) {
                        selected = character(0)
                      ),
 
-                     selectInput(
-                       ns("met_organism"),
-                       "Organism",
-                       choices = c(
-                         "Human (hsa)"       = "hsa",
-                         "Mouse (mmu)"       = "mmu",
-                         "Rat (rno)"         = "rno",
-                         "Fly (dme)"         = "dme",
-                         "Zebrafish (dre)"   = "dre",
-                         "Yeast (sce)"       = "sce",
-                         "Worm (cel)"        = "cel",
-                         "Pig (ssc)"         = "ssc",
-                         "Bovine (bta)"      = "bta",
-                         "Canine (cfa)"      = "cfa"
-                       ),
-                       selected = "hsa"
-                     ),
+                     # selectInput(
+                     #   ns("met_organism"),
+                     #   "Organism",
+                     #   choices = c(
+                     #     "Human (hsa)"       = "hsa",
+                     #     "crab-eating macaque (mcf)" = "mcf",
+                     #     "Mouse (mmu)"       = "mmu",
+                     #     "Rat (rno)"         = "rno",
+                     #     "Fly (dme)"         = "dme",
+                     #     "Zebrafish (dre)"   = "dre",
+                     #     "Yeast (sce)"       = "sce",
+                     #     "Worm (cel)"        = "cel",
+                     #     "Pig (ssc)"         = "ssc",
+                     #     "Bovine (bta)"      = "bta",
+                     #     "Canine (cfa)"      = "cfa"
+                     #   ),
+                     #   selected = "hsa"
+                     # ),
+                     selectizeInput(
+                       ns("met_organism"), 
+                       "Organism", 
+                       choices = NULL,  # Set choices to NULL for server-side processing
+                       options = list(
+                         placeholder = "Type to search organisms...",
+                         maxOptions = 100
+                        )),
                      helpText(
-                       "The KEGG organism code is a three or four letter abbreviation.",
-                       "Examples: 'hsa' (Human), 'mmu' (Mouse), 'rno' (Rat).",
-                       "For a complete list of organism codes, visit: ",
+                       "Select organism by KEGG organism code or name.",
+                       "For a complete list of organism codes and names, visit: ",
                        tags$a(
                          href = "https://www.genome.jp/kegg/catalog/org_list.html",
                          "KEGG Organism Codes",
@@ -235,7 +243,7 @@ upload_data_server <- function(id, processed_info, tab_switch) {
     id,
     function(input, output, session) {
       ns <- session$ns
-
+      
       # Initialize reactive values for storing data throughout the module
       data_values <- reactiveValues(
         raw_data = NULL,        # Original uploaded or example data
@@ -259,18 +267,50 @@ upload_data_server <- function(id, processed_info, tab_switch) {
       })
 
       # Update metabolite ID type when organism changes
+      updateSelectizeInput(session, 
+                           "met_organism", 
+                           choices = choices,
+                           server = TRUE)
+      
       observeEvent(input$met_organism, {
-        if (input$met_organism != "hsa") {
-          updateSelectInput(
-            session,
-            "met_id_type",
-            choices = list(
-              "KEGG ID" = "keggid"
-            ),
-            selected = "keggid"
-          )
+        if (!is.null(input$met_organism)) {
+          if (input$met_organism == "hsa") {
+            # For human (hsa), show both KEGG and HMDB options
+            updateSelectInput(
+              session,
+              "met_id_type",
+              choices = list(
+                "KEGG ID" = "keggid",
+                "HMDB ID" = "hmdbid"
+              ),
+              selected = "hmdbid"  # Default to HMDB for human
+            )
+          } else {
+            # For non-human organisms, only show KEGG
+            updateSelectInput(
+              session,
+              "met_id_type",
+              choices = list(
+                "KEGG ID" = "keggid"
+              ),
+              selected = "keggid"
+            )
+          }
         }
       })
+      
+      # observeEvent(input$met_organism, {
+      #   if (input$met_organism != "hsa") {
+      #     updateSelectInput(
+      #       session,
+      #       "met_id_type",
+      #       choices = list(
+      #         "KEGG ID" = "keggid"
+      #       ),
+      #       selected = "keggid"
+      #     )
+      #   }
+      # })
 
       # Load data from file upload or example selection
       # Observer for gene example data selection
@@ -470,7 +510,7 @@ upload_data_server <- function(id, processed_info, tab_switch) {
             result <- mapa::convert_id(
               data = data_values$raw_data,
               query_type = input$query_type,
-              from_id_type = input$id_type,
+              from_id_type = input$met_id_type,
               organism = input$met_organism
             )
             

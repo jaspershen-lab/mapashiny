@@ -137,3 +137,10 @@ org2react <- c(
 #                    style = "background-color: #d83428; color: white;")
 #   )
 # }
+
+# library(KEGGREST)
+# organisms <- keggList("organism")
+# organisms_df <- tibble::as_tibble(organisms)
+# choices <- setNames(organisms_df$organism, 
+#                     paste0(organisms_df$species, " (", organisms_df$organism, ")"))
+# save(choices, file = "inst/app/www/met_org_kegg_choices.rda")

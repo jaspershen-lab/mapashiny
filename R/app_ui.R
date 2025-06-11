@@ -2,9 +2,11 @@ intro_cleaned_content <- grep("<(/?(html|head|body))>",
                               readLines(app_sys("app/www/introduction.html")),
                               invert = TRUE, value = TRUE)
 
-tutorial_cleaned_content <- grep("<(/?(html|head|body))>", 
-                                 readLines(app_sys("app/www/tutorials.html")),
-                                 invert = TRUE, value = TRUE)
+load("inst/app/www/met_org_kegg_choices.rda")
+
+# tutorial_cleaned_content <- grep("<(/?(html|head|body))>", 
+#                                  readLines(app_sys("app/www/tutorials.html")),
+#                                  invert = TRUE, value = TRUE)
 
 #' The application User-Interface
 #'
@@ -29,15 +31,15 @@ app_ui <- function(request) {
         sidebarMenu(
           id = "tabs",
           menuItem(text = "Introduction", tabName = "introduction", icon = icon("info-circle")),
-          menuItem(text = "Tutorial", tabName = "tutorial", icon = icon("book")),
+          # menuItem(text = "Tutorial", tabName = "tutorial", icon = icon("book")),
           menuItem(text = "Upload Data", tabName = "upload_data", icon = icon("upload")),
           menuItem(text = "Enrich Pathways", tabName = "enrich_pathways", icon = icon("cogs")),
           menuItem(text = "Pathway Clustering", tabName = NULL, icon = icon("sitemap"),
-                   menuItem(text = HTML("Method1:<br>Overlap / semantic &rarr; Modules"), tabName = NULL,
+                   menuItem(text = HTML("Method1: SimCluster"), tabName = NULL,
                             menuSubItem(text = "Step1: Merge Pathways", tabName = "merge_pathways", icon = NULL),
                             menuSubItem(text = "Step2: Merge Modules", tabName = "merge_modules", icon = NULL)
                    ),
-                   menuItem(text = HTML("Method2:<br>Embed &rarr; Modules"), tabName = "embed_cluster_pathways")
+                   menuItem(text = HTML("Method2: EmbedCluster"), tabName = "embed_cluster_pathways")
           ),
           menuItem(text = "LLM Interpretation", tabName = "llm_interpretation", icon = icon("brain")),
           menuItem(text = "Data Visualization", tabName = "data_visualization", icon = icon("chart-line")),
@@ -71,16 +73,16 @@ app_ui <- function(request) {
                     )
                   )),
           
-          #### 2. Tutorial tab ====
-          tabItem(tabName = "tutorial",
-                  fluidPage(
-                    titlePanel("Tutorials of MAPA"),
-                    fluidRow(
-                      column(12,
-                             htmltools::HTML(tutorial_cleaned_content)
-                      )
-                    )
-                  )),
+          # #### 2. Tutorial tab ====
+          # tabItem(tabName = "tutorial",
+          #         fluidPage(
+          #           titlePanel("Tutorials of MAPA"),
+          #           fluidRow(
+          #             column(12,
+          #                    htmltools::HTML(tutorial_cleaned_content)
+          #             )
+          #           )
+          #         )),
           
           #### 3. Upload data tab ====
           upload_data_ui("upload_data_tab"),

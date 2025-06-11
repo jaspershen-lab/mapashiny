@@ -502,11 +502,15 @@ enrich_pathway_server <- function(id, processed_info, enriched_pathways, tab_swi
       })
 
       output$organism <- renderText({
-        req(processed_info)
-        if (processed_info$return_orgdb) {
-          BiocGenerics::species(processed_info$organism)
-        } else {
-          unname(org_kegg_2name[processed_info$organism])
+        req(processed_info$query_type)
+        if (processed_info$query_type == "gene") {
+          if (processed_info$return_orgdb) {
+            BiocGenerics::species(processed_info$organism)
+          } else {
+            unname(org_kegg_2name[processed_info$organism])
+          }
+        } else if (processed_info$query_type == "metabolite") {
+          names(choices[choices == processed_info$organism])
         }
       })
       outputOptions(output, "organism",
