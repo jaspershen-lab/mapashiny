@@ -78,7 +78,7 @@ upload_data_ui <- function(id) {
                        ),
                        selected = ""
                      ),
-                     helpText("Enter the name of an OrgDb package that is installed on your system.",
+                     helpText("Select the name of an OrgDb package that is installed on your system.",
                               "Common examples: org.Hs.eg.db (Human), org.Mm.eg.db (Mouse), org.Rn.eg.db (Rat)",
                               "For the current list of OrgDb packages, visit: ",
                               tags$a(
@@ -96,7 +96,7 @@ upload_data_ui <- function(id) {
                               tags$div(
                                 style = "display: flex; flex-direction: column;",
                                 tags$label("Return OrgDb", `for` = ns("return_orgdb")),
-                                checkboxInput(ns("return_orgdb"), "", TRUE)
+                                checkboxInput(ns("return_orgdb"), "", FALSE)
                               ))
                      ),
 

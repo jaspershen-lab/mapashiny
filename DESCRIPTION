@@ -14,6 +14,7 @@ BugReports: https://github.com/jaspershen-lab/mapashiny/issues
 Depends: 
     R (>= 4.1.0)
 Imports: 
+    BiocGenerics,
     BiocManager,
     clusterProfiler,
     config,
@@ -24,7 +25,6 @@ Imports:
     htmltools,
     mapa,
     markdown,
-    metpath,
     org.Hs.eg.db,
     patchwork,
     promises,
@@ -35,7 +35,8 @@ Imports:
     shinyFiles,
     shinyjs,
     shinyWidgets,
-    stringr
+    stringr,
+    utils
 Suggests: 
     spelling,
     testthat (>= 3.0.0)

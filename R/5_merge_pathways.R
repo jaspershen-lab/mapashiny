@@ -547,12 +547,7 @@ merge_pathways_ui <- function(id) {
                            br(),
                            shinyjs::useShinyjs(),
                            downloadButton(ns("download_enriched_modules_object"),
-                                          label = tags$span("Download",
-                                                            shinyBS::bsButton(ns("download_enriched_modules_object_info"),
-                                                                              label = "",
-                                                                              icon = icon("info"),
-                                                                              style = "info",
-                                                                              size = "extra_small")),
+                                          label = "Download",
                                           class = "btn-primary",
                                           style = "background-color: #d83428; color: white;"),
                            shinyBS::bsPopover(
