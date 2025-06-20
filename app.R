@@ -16,4 +16,4 @@ for (file in r_files) {
 options("golem.app.prod" = TRUE)
 
 # Run the app directly instead of using mapashiny::run_app()
-run_app() # add parameters here (if any)
+run_mapa_shiny() # add parameters here (if any)

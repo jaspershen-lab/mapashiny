@@ -32,15 +32,17 @@ app_ui <- function(request) {
           id = "tabs",
           menuItem(text = "Introduction", tabName = "introduction", icon = icon("info-circle")),
           # menuItem(text = "Tutorial", tabName = "tutorial", icon = icon("book")),
-          menuItem(text = "Upload Data", tabName = "upload_data", icon = icon("upload")),
-          menuItem(text = "Enrich Pathways", tabName = "enrich_pathways", icon = icon("cogs")),
-          menuItem(text = "Pathway Clustering", tabName = NULL, icon = icon("sitemap"),
-                   menuItem(text = HTML("Method1: SimCluster"), tabName = NULL,
-                            menuSubItem(text = "Step1: Merge Pathways", tabName = "merge_pathways", icon = NULL),
-                            menuSubItem(text = "Step2: Merge Modules", tabName = "merge_modules", icon = NULL)
-                   ),
-                   menuItem(text = HTML("Method2: EmbedCluster"), tabName = "embed_cluster_pathways")
-          ),
+          menuItem(text = "Data Upload", tabName = "upload_data", icon = icon("upload")),
+          menuItem(text = "Pathway Enrichment", tabName = "enrich_pathways", icon = icon("cogs")),
+          menuItem(text = "Pathway Similarity", tabName = "pathway_similarity", icon = icon("project-diagram")),
+          menuItem(text = "Pathway Clustering", tabName = "pathway_clustering", icon = icon("sitemap")),
+          # menuItem(text = "Pathway Clustering", tabName = NULL, icon = icon("sitemap"),
+          #          menuItem(text = HTML("Method1: SimCluster"), tabName = NULL,
+          #                   menuSubItem(text = "Step1: Merge Pathways", tabName = "merge_pathways", icon = NULL),
+          #                   menuSubItem(text = "Step2: Merge Modules", tabName = "merge_modules", icon = NULL)
+          #          ),
+          #          menuItem(text = HTML("Method2: EmbedCluster"), tabName = "embed_cluster_pathways")
+          # ),
           menuItem(text = "LLM Interpretation", tabName = "llm_interpretation", icon = icon("brain")),
           menuItem(text = "Data Visualization", tabName = "data_visualization", icon = icon("chart-line")),
           menuItem(text = "Results & Report", tabName = "results", icon = icon("clipboard-list"))
@@ -90,15 +92,21 @@ app_ui <- function(request) {
           #### 4. Enrich pathways tab ====
           enrich_pathway_ui("enrich_pathway_tab"),
           
-          #### 5-6. Pathway clustering tab ===
-          #### 5a. Merge pathways tab ====
-          merge_pathways_ui("merge_pathways_tab"),
+          # #### 5-6. Pathway clustering tab ===
+          # #### 5a. Merge pathways tab ====
+          # merge_pathways_ui("merge_pathways_tab"),
+          # 
+          # #### 6a. Merge modules tab ====
+          # merge_modules_ui("merge_modules_tab"),
+          # 
+          # #### 5-6b. Embed and cluster pathways tab =====
+          # embed_cluster_pathways_ui("embed_cluster_pathways_tab"),
+          # Replace the old clustering tabs with the new ones
+          #### 5. Pathway Similarity tab ====
+          pathway_similarity_ui("pathway_similarity_tab"),
           
-          #### 6a. Merge modules tab ====
-          merge_modules_ui("merge_modules_tab"),
-          
-          #### 5-6b. Embed and cluster pathways tab =====
-          embed_cluster_pathways_ui("embed_cluster_pathways_tab"),
+          #### 6. Pathway Clustering tab ====
+          pathway_clustering_ui("pathway_clustering_tab"),
           
           #### 7. Translation tab ====
           

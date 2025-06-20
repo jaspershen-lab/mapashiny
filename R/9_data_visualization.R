@@ -25,21 +25,16 @@ data_visualization_ui <- function(id) {
                          fluidRow(
                            column(8,
                                   fileInput(inputId = ns("upload_enriched_functional_module"),
-                                            label = tags$span("Upload functional module",
-                                                              shinyBS::bsButton(ns("upload_functional_module_info"),
-                                                                                label = "",
-                                                                                icon = icon("info"),
-                                                                                style = "info",
-                                                                                size = "extra-small")),
-                                            accept = ".rda"),
-                                  bsPopover(
-                                    id = ns("upload_functional_module_info"),
-                                    title = "",
-                                    content = "You can upload the functional module file here for data visualization only.",
-                                    placement = "right",
-                                    trigger = "hover",
-                                    options = list(container = "body")
-                                  )
+                                            label = "Upload functional module (.rda)",
+                                            accept = ".rda")
+                                  # bsPopover(
+                                  #   id = ns("upload_functional_module_info"),
+                                  #   title = "",
+                                  #   content = "You can upload the functional module file here for data visualization only.",
+                                  #   placement = "right",
+                                  #   trigger = "hover",
+                                  #   options = list(container = "body")
+                                  # )
                            )
                          ),
                          fluidRow(

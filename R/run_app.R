@@ -7,7 +7,7 @@
 #' @export
 #' @importFrom shiny shinyApp
 #' @importFrom golem with_golem_options
-run_app <- function(
+run_mapa_shiny <- function(
   onStart = NULL,
   options = list(),
   enableBookmarking = NULL,

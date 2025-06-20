@@ -30,42 +30,38 @@ llm_interpretation_ui <- function(id) {
                     column(12,
                            fileInput(
                              inputId = ns("upload_interpretation_result"),
-                             label   = tags$span(
-                               "Upload interpretation result (.rda)",
-                               shinyBS::bsButton(ns("upload_interpretation_result_info"),
-                                                 label = "", icon = icon("info"),
-                                                 style = "info", size = "extra-small")
-                             ),
+                             label   = "Upload interpretation result (.rda)",
                              accept = ".rda"
-                           ),
-                           bsPopover(
-                             id        = ns("upload_interpretation_result_info"),
-                             title     = "",
-                             content   = "Drop a previously saved result with LLM interpretation (.rda) here to inspect it without re-running the LLM.",
-                             placement = "right", trigger = "hover",
-                             options   = list(container = "body")
                            )
-                    ),
+                           # shinyBS::bsPopover(
+                           #   id        = ns("upload_interpretation_result_info"),
+                           #   title     = "",
+                           #   content   = "Drop a previously saved result with LLM interpretation (.rda) here to inspect it without re-running the LLM.",
+                           #   placement = "right", trigger = "hover",
+                           #   options   = list(container = "body")
+                           # )
+                    )
                   ),
                   tags$hr(style = "border-top: 1px solid #ddd; margin-top: 10px; margin-bottom: 10px;"),
                   fluidRow(
                     column(12,
                            fileInput(inputId = ns("upload_enriched_functional_module"),
-                                     label = tags$span("Upload functional module",
-                                                       shinyBS::bsButton(ns("upload_functional_module_info"),
-                                                                         label = "",
-                                                                         icon = icon("info"),
-                                                                         style = "info",
-                                                                         size = "extra-small")),
+                                     label = "Upload functional module (.rda)",
                                      accept = ".rda"),
-                           bsPopover(
-                             id = ns("upload_functional_module_info"),
-                             title = "",
-                             content = "You can upload the functional module result here.",
-                             placement = "right",
-                             trigger = "hover",
-                             options = list(container = "body")
-                           )
+                           # bslib::tooltip(
+                           #   bsicons::bs_icon("info-circle", class = "ms-1 text-info"),
+                           #   "You can upload the functional module result here.",
+                           #   placement = "right",
+                           #   id = ns("upload_functional_module_tooltip")
+                           # )
+                           # bsPopover(
+                           #   id = ns("upload_functional_module_info"),
+                           #   title = "",
+                           #   content = "You can upload the functional module result here.",
+                           #   placement = "right",
+                           #   trigger = "hover",
+                           #   options = list(container = "body")
+                           # )
                     )
                   ),
                   # br(),
@@ -261,7 +257,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
     id,
     function(input, output, session) {
       ns <- session$ns
-
+      
       ## Section1: Load enriched_functional_module.rda and navigate to specified directory ====
       observeEvent(
         input$upload_enriched_functional_module, {

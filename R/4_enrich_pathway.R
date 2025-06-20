@@ -300,7 +300,7 @@ enrich_pathway_ui <- function(id) {
                          class = "btn-primary",
                          style = "background-color: #d83428; color: white;"),
                        actionButton(
-                         ns("go2merge_pathways"),
+                         ns("go2pathway_similarity"),
                          "Next",
                          class = "btn-primary",
                          style = "background-color: #d83428; color: white;"),
@@ -613,9 +613,10 @@ enrich_pathway_server <- function(id, processed_info, enriched_pathways, tab_swi
                         stop(paste("Package", gene_params$go.orgdb, "is not installed. Please install it using BiocManager::install('", gene_params$go.orgdb, "')"))
                       }
                       # Load the package
-                      requireNamespace(gene_params$go.orgdb)
+                      # requireNamespace(gene_params$go.orgdb)
                       # Get the OrgDb object
-                      org_db_obj <- get(gene_params$go.orgdb)
+                      # org_db_obj <- getExportedValue(gene_params$go.orgdb, gene_params$go.orgdb)
+                      org_db_obj <- gene_params$go.orgdb
                     }
                     
                     common_params$go.orgdb <- org_db_obj
@@ -1212,7 +1213,7 @@ enrich_pathway_server <- function(id, processed_info, enriched_pathways, tab_swi
       # Go to merge pathways tab ====
       ###if there is not enriched_pathways,
       ###show a warning message
-      observeEvent(input$go2merge_pathways, {
+      observeEvent(input$go2pathway_similarity, {
         if (is.null(enriched_pathways$enriched_pathways_res) ||
             length(enriched_pathways$enriched_pathways_res) == 0) {
           shiny::showModal(
@@ -1224,13 +1225,8 @@ enrich_pathway_server <- function(id, processed_info, enriched_pathways, tab_swi
             )
           )
         } else {
-          # Navigate to the merge pathways tab
-          # tab_switch("merge_pathways")
-          if (skip_merge()) {
-            tab_switch("embed_cluster_pathways")   # jump over “merge pathways”
-          } else {
-            tab_switch("merge_pathways")           # normal route
-          }
+          # New, simpler navigation
+          tab_switch("pathway_similarity")
         }
       })
     }

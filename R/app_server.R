@@ -37,25 +37,43 @@ app_server <- function(input, output, session) {
                         enriched_pathways = enriched_pathways,
                         tab_switch)
   
-  ### Step 3a merge pathways ----
-  enriched_modules <- reactiveVal(NULL)
-  merge_pathways_server("merge_pathways_tab",
-                        enriched_pathways = enriched_pathways,
-                        enriched_modules = enriched_modules,
-                        tab_switch)
+  # ### Step 3a merge pathways ----
+  # enriched_modules <- reactiveVal(NULL)
+  # merge_pathways_server("merge_pathways_tab",
+  #                       enriched_pathways = enriched_pathways,
+  #                       enriched_modules = enriched_modules,
+  #                       tab_switch)
+  # 
+  # ### Step 4a merge modules ----
+  # enriched_functional_module <- reactiveVal(NULL)
+  # merge_modules_server("merge_modules_tab",
+  #                      enriched_modules = enriched_modules,
+  #                      enriched_functional_module = enriched_functional_module,
+  #                      tab_switch)
+  # 
+  # ### Step 3b-4b embed and cluster pathways
+  # embed_cluster_pathways_server("embed_cluster_pathways_tab",
+  #                               enriched_pathways = enriched_pathways,
+  #                               enriched_functional_module = enriched_functional_module,
+  #                               tab_switch)
   
-  ### Step 4a merge modules ----
+  ### Step 3: Pathway Similarity ----
+  # This reactive value will hold the output of the similarity step.
+  # It can be an S4 object (from SimCluster) or a list (from EmbedCluster).
+  similarity_result <- reactiveVal(NULL)
+  pathway_similarity_server("pathway_similarity_tab",
+                            enriched_pathways = enriched_pathways,
+                            similarity_result = similarity_result,
+                            tab_switch = tab_switch)
+  
+  ### Step 4: Pathway Clustering ----
+  # This reactive value holds the final functional module object.
   enriched_functional_module <- reactiveVal(NULL)
-  merge_modules_server("merge_modules_tab",
-                       enriched_modules = enriched_modules,
-                       enriched_functional_module = enriched_functional_module,
-                       tab_switch)
+  pathway_clustering_server("pathway_clustering_tab",
+                            similarity_result = similarity_result,
+                            enriched_functional_module = enriched_functional_module,
+                            tab_switch = tab_switch)
   
-  ### Step 3b-4b embed and cluster pathways
-  embed_cluster_pathways_server("embed_cluster_pathways_tab",
-                                enriched_pathways = enriched_pathways,
-                                enriched_functional_module = enriched_functional_module,
-                                tab_switch)
   ### Step 5 Translation ----
   
   ### Step 6 LLM interpretation ----
