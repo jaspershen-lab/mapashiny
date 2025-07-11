@@ -1,3 +1,7 @@
+# mapashiny 1.1.0
+
+* Allow clustering assessment and provide more clustering algorithms.
+
 # mapashiny 1.0.0
 
 * Changed the workflow and added clustering evaluation.

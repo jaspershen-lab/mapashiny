@@ -1,6 +1,6 @@
 Package: mapashiny
 Title: Functional Module Annotation for Pathway Analysis Results Using LLM
-Version: 1.0.0
+Version: 1.1.0
 Authors@R: c(
     person("Xiaotao", "Shen", , "shenxt1990@outlook.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-9608-9964")),
