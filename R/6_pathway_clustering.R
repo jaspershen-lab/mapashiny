@@ -16,7 +16,38 @@ pathway_clustering_ui <- function(id) {
                          "Upload Similarity Result (.rda)",
                          accept = ".rda"),
                h4("Step 1: Find Optimal Parameters"),
-               numericInput(ns("cutoff_increment"), "Cutoff Increment", value = 0.1, min = 0.01, max = 0.5, step = 0.01),
+               fluidRow(
+                 column(3,
+                        numericInput(ns("cutoff_min"), "Min cutoff", value = 0.2, min = 0, max = 1, step = 0.01)),
+                 column(3,
+                        numericInput(ns("cutoff_max"), "Max cutoff", value = 0.9, min = 0, max = 1, step = 0.01)),
+                 column(6,
+                        numericInput(ns("cutoff_increment"), "Increment", value = 0.05, min = 0.01, max = 0.5, step = 0.01))
+               ),
+               selectInput(
+                 ns("methods_evaluate"),
+                 "Select clustering methods to evaluate:",
+                 choices = c("Hierarchical_ward.D" = "h_ward.D",
+                             "Hierarchical_ward.D2" = "h_ward.D2", 
+                             "Hierarchical_single" = "h_single",
+                             "Hierarchical_complete" = "h_complete",
+                             "Hierarchical_average" = "h_average",
+                             "Hierarchical_mcquitty" = "h_mcquitty",
+                             "Hierarchical_median" = "h_median",
+                             "Hierarchical_centroid" = "h_centroid",
+                             "Binary cut" = "binary_cut",
+                             "Louvain" = "louvain", 
+                             "Walktrap" = "walktrap",
+                             "Infomap" = "infomap",
+                             "Edge betweenness" = "edge_betweenness",
+                             "Fast greedy" = "fast_greedy",
+                             "Label propagation" = "label_prop",
+                             "Leading eigenvector" = "leading_eigen",
+                             "Optimal" = "optimal"
+                            ),
+                 selected = c("h_ward.D2", "binary_cut", "louvain"),
+                 multiple = TRUE
+               ),
                actionButton(ns("find_optimal"), "Submit", class = "btn-primary", style = "background-color: #d83428; color: white;"),
                actionButton(ns("show_code_find_optimal"), "Code", class = "btn-primary", style = "background-color: #d83428; color: white;"),
                br(),br(),
@@ -24,20 +55,38 @@ pathway_clustering_ui <- function(id) {
                h4("Step 2: Perform Clustering"),
                numericInput(ns("sim_cutoff"), "Similarity Cutoff", value = 0.5, min = 0, max = 1, step = 0.05),
                selectInput(ns("cluster_method"), "Clustering Method", 
-                           choices = c("Binary cut" = "binary cut", "Girvan Newman" = "girvan newman", "Hierarchical" = "hierarchical"),
-                           selected = "binary cut"),
-               
-               # This is only for hierarchical clustering
-               shinyjs::hidden(
-                 div(id = ns("hclust_method_panel"),
-                     selectInput(ns("hclust.method"), "Hierarchical Linkage", 
-                                 choices = c("ward.D", "ward.D2", "single", "complete", "average"), 
-                                 selected = "complete"))
-               ),
+                           choices = c("Hierarchical_ward.D" = "h_ward.D",
+                                       "Hierarchical_ward.D2" = "h_ward.D2", 
+                                       "Hierarchical_single" = "h_single",
+                                       "Hierarchical_complete" = "h_complete",
+                                       "Hierarchical_average" = "h_average",
+                                       "Hierarchical_mcquitty" = "h_mcquitty",
+                                       "Hierarchical_median" = "h_median",
+                                       "Hierarchical_centroid" = "h_centroid",
+                                       "Binary cut" = "binary_cut",
+                                       "Louvain" = "louvain", 
+                                       "Walktrap" = "walktrap",
+                                       "Infomap" = "infomap",
+                                       "Edge betweenness" = "edge_betweenness",
+                                       "Fast greedy" = "fast_greedy",
+                                       "Label propagation" = "label_prop",
+                                       "Leading eigenvector" = "leading_eigen",
+                                       "Optimal" = "optimal"
+                                       ),
+                           selected = "louvain"),
                
                actionButton(ns("submit_clustering"), "Submit", class = "btn-primary", style = "background-color: #d83428; color: white;"),
-               actionButton(ns("go2llm_interpretation"), "Next", class = "btn-primary", style = "background-color: #d83428; color: white;"),
+               # actionButton(ns("go2llm_interpretation"), "Next", class = "btn-primary", style = "background-color: #d83428; color: white;"),
                actionButton(ns("show_code_clustering"), "Code", class = "btn-primary", style = "background-color: #d83428; color: white;"),
+               br(),br(),
+               # Step3: assess clustering quality ui =====
+               h4("Step 3: Assess Clustering Quality"),
+               fileInput(ns("upload_clustering_result"), 
+                         "Upload Clustering Result (.rda)",
+                         accept = ".rda"),
+               actionButton(ns("assess_clustering"), "Submit", class = "btn-primary", style = "background-color: #d83428; color: white;"),
+               actionButton(ns("show_assess_clustering_code"), "Code", class = "btn-primary", style = "background-color: #d83428; color: white;"),
+               actionButton(ns("go2llm_interpretation"), "Next", class = "btn-primary", style = "background-color: #d83428; color: white;"),
                
                style = "border-right: 1px solid #ddd; padding-right: 20px;"
         ),
@@ -104,6 +153,63 @@ pathway_clustering_ui <- function(id) {
                                                        style = "background-color: #d83428; color: white;")
                                       )
                                     )
+                           ),
+                           # Tab 3: For the clustering assessment results ====
+                           tabPanel("Clustering Quality Assessment",
+                                    tabsetPanel(
+                                      tabPanel(
+                                        title = "Module Size",
+                                        shiny::plotOutput(ns("assess_cluster_size_plot")),
+                                        br(),
+                                        fluidRow(
+                                          column(4,
+                                                 numericInput(ns("size_plot_width"),
+                                                              "Width",
+                                                              value = 8, min = 4, max = 30)
+                                          ),
+                                          column(4,
+                                                 numericInput(ns("size_plot_height"),
+                                                              "Height",
+                                                              value = 6, min = 4, max = 30)
+                                          )
+                                        ),
+                                        downloadButton(ns("download_size_plot"),
+                                                       "Download",
+                                                       class = "btn-primary",
+                                                       style = "background-color: #d83428; color: white;")
+                                      ),
+                                      tabPanel(
+                                        title = "Silhouette Scores",
+                                        shiny::plotOutput(ns("assess_cluster_evaluation_plot")),
+                                        br(),
+                                        fluidRow(
+                                          column(4,
+                                                 numericInput(ns("evaluation_plot_width"),
+                                                              "Width",
+                                                              value = 8, min = 4, max = 30)
+                                                 ),
+                                          column(4,
+                                                 numericInput(ns("evaluation_plot_height"),
+                                                              "Height",
+                                                              value = 6, min = 4, max = 30)
+                                                 )
+                                        ),
+                                        downloadButton(ns("download_evaluation_plot"),
+                                                       "Download",
+                                                       class = "btn-primary",
+                                                       style = "background-color: #d83428; color: white;")
+                                      ),
+                                      tabPanel(
+                                        title = "Quality Metrics Table",
+                                        shiny::dataTableOutput(ns("quality_metrics")),
+                                        br(),
+                                        shinyjs::useShinyjs(),
+                                        downloadButton(ns("download_quality_metrics"),
+                                                       "Download",
+                                                       class = "btn-primary",
+                                                       style = "background-color: #d83428; color: white;")
+                                      )
+                                    )
                            )
                )
         )
@@ -152,21 +258,23 @@ pathway_clustering_server <- function(id, similarity_result, enriched_functional
     
     optimal_results <- reactiveVal(NULL)
     
-    observeEvent(input$cluster_method, {
-      shinyjs::toggleElement("hclust_method_panel", condition = input$cluster_method == "hierarchical")
-    })
-    
     # --- Server Logic for "Find Optimal Parameters" ----
     eval_results_code <- reactiveVal()
+    cutoff_range <- reactive({
+      c(input$cutoff_min, input$cutoff_max)
+    })
     
     observeEvent(input$find_optimal, {
       req(similarity_result())
+      req(cutoff_range())
       
       withProgress(message = 'Determining optimal parameters...', {
         tryCatch({
           # Use the diagnostic function [cite: 11_determine_optimal_clutsers.R]
           eval_results <- mapa::determine_optimal_clusters(object = similarity_result(),
-                                                           cutoff_increment = input$cutoff_increment)
+                                                           cutoff_range = cutoff_range(),
+                                                           cutoff_increment = input$cutoff_increment,
+                                                           methods = input$methods_evaluate)
           
           # Store results in the reactive value
           optimal_results(eval_results)
@@ -181,11 +289,17 @@ pathway_clustering_server <- function(id, similarity_result, enriched_functional
         })
       })
       
-      eval_results_code_str <- sprintf('
-                                      eval_results <- mapa::determine_optimal_clusters(object = similarity_result,
-                                                                                       cutoff_increment = %s)
-                                       ',
-                                       input$cutoff_increment)
+      eval_results_code_str <- sprintf(
+      'eval_results <- mapa::determine_optimal_clusters(object = similarity_result,
+                                               cutoff_range = c(%s, %s),
+                                               cutoff_increment = %s,
+                                               methods = "%s")
+      ',
+      input$cutoff_min, 
+      input$cutoff_max,
+      input$cutoff_increment,
+      toString(input$methods_evaluate))
+      
       eval_results_code(eval_results_code_str)
     })
     
@@ -240,7 +354,6 @@ pathway_clustering_server <- function(id, similarity_result, enriched_functional
             object = similarity_result(),
             sim.cutoff = input$sim_cutoff,
             cluster_method = input$cluster_method,
-            hclust.method = if (input$cluster_method == "hierarchical") input$hclust.method else NULL,
             save_to_local = FALSE
           )
           enriched_functional_module(result)
@@ -255,23 +368,16 @@ pathway_clustering_server <- function(id, similarity_result, enriched_functional
         })
       })
       
-      hclust_param <- ""
-      if (input$cluster_method == "hierarchical") {
-        hclust_param <- sprintf(',
-                   hclust.method = "%s"', input$hclust.method)
-      }
-      
       clustering_code_str <- sprintf(
       'enriched_functional_module <- 
          mapa::get_functional_modules(
            object = similarity_result,
            sim.cutoff = %s,
-           cluster_method = "%s",%s
+           cluster_method = "%s"
          )
       ',
         input$sim_cutoff, 
-        input$cluster_method, 
-        hclust_param)
+        input$cluster_method)
       
       clustering_code(clustering_code_str)
     })
@@ -433,6 +539,185 @@ pathway_clustering_server <- function(id, similarity_result, enriched_functional
         ))
       })
     
+    # --- Server Logic for "Assess Clustering" ----
+    assess_clustering_code <- reactiveVal()
+    assess_clustering_result <- reactiveVal()
+    
+    observeEvent(input$upload_clustering_result, {
+      if (!is.null(input$upload_clustering_result$datapath)) {
+        message("Loading data")
+        tempEnv <- new.env()
+        load(input$upload_clustering_result$datapath,
+             envir = tempEnv)
+        
+        names <- ls(tempEnv)
+        
+        if (length(names) == 1) {
+          enriched_functional_module(get(names[1], envir = tempEnv))
+        } else {
+          message("The .rda file does not contain exactly one object.")
+          shiny::showModal(
+            modalDialog(
+              title = "Error",
+              "The uploaded file should contain exactly one object.",
+              easyClose = TRUE,
+              footer = modalButton("Close")
+            )
+          )
+        }
+      }
+    })
+    
+    observeEvent(input$assess_clustering, {
+      req(enriched_functional_module())
+      
+      withProgress(message = 'Assess clustering quality...', {
+        tryCatch({
+          # Use the generic function for final clustering [cite: 11_get_functional_modules.R]
+          assess_result <- mapa::assess_clustering_quality(
+            object = enriched_functional_module()
+          )
+          
+          assess_clustering_result(assess_result)
+          
+          # Switch the user's view to the results tab
+          updateTabsetPanel(session, "clustering_tabs", selected = "Clustering Quality Assessment")
+          
+          showNotification("Clustering quality assessment complete.", type = "message")
+          
+        }, error = function(e) {
+          showModal(modalDialog(title = "Error", paste("Clustering quality assessment failed:", e$message)))
+        })
+      })
+      
+      assess_clustering_code_str <- sprintf(
+        'assess_clustering_result <- 
+         mapa::assess_clustering_quality(
+           object = enriched_functional_module
+         )
+      ')
+      
+      assess_clustering_code(assess_clustering_code_str)
+    })
+    
+    # Show assessment result
+    output$assess_cluster_size_plot <-
+      renderPlot({
+        req(assess_clustering_result())
+        assess_clustering_result()$size_plot
+      })
+    
+    output$assess_cluster_evaluation_plot <-
+      renderPlot({
+        req(assess_clustering_result())
+        assess_clustering_result()$evaluation_plot
+      })
+    
+    output$quality_metrics <-
+      shiny::renderDataTable({
+        req(tryCatch(
+          assess_clustering_result()$quality_metrics,
+          error = function(e)
+            NULL
+        ))
+      },
+      options = list(pageLength = 10,
+                     scrollX = TRUE))
+    
+    # Show code
+    observeEvent(input$show_assess_clustering_code, {
+      if (is.null(assess_clustering_code()) ||
+          length(assess_clustering_code()) == 0) {
+        shiny::showModal(
+          modalDialog(
+            title = "Warning",
+            "No available code",
+            easyClose = TRUE,
+            footer = modalButton("Close")
+          )
+        )
+      } else{
+        code_content <-
+          assess_clustering_code()
+        code_content <-
+          paste(code_content, collapse = "\n")
+        shiny::showModal(modalDialog(
+          title = "Code",
+          tags$pre(code_content),
+          easyClose = TRUE,
+          footer = modalButton("Close")
+        ))
+      }
+    })
+    
+    # Download quality assessment
+    output$download_quality_metrics <-
+      shiny::downloadHandler(
+        filename = function() {
+          "assess_clustering_quality_metrics.csv"
+        },
+        content = function(file) {
+          write.csv(
+            assess_clustering_result()$quality_metrics,
+            file,
+            row.names = FALSE
+          )
+        }
+      )
+    
+    output$download_size_plot <-
+      downloadHandler(
+        filename = "assess_size_plot.pdf",
+        content = function(file) {
+          ggplot2::ggsave(
+            file,
+            plot = assess_clustering_result()$size_plot,
+            width = input$size_plot_width,
+            height = input$size_plot_height
+          )
+        }
+      )
+    
+    output$download_evaluation_plot <-
+      downloadHandler(
+        filename = "assess_evaluation_plot.pdf",
+        content = function(file) {
+          ggplot2::ggsave(
+            file,
+            plot = assess_clustering_result()$evaluation_plot,
+            width = input$evaluation_plot_width,
+            height = input$evaluation_plot_height
+          )
+        }
+      )
+    
+    observe({
+      tryCatch(
+        expr = {
+          if (is.null(assess_clustering_result()) ||
+              length(assess_clustering_result()) == 0) {
+            shinyjs::disable("download_quality_metrics")
+            shinyjs::disable("download_size_plot")
+            shinyjs::disable("download_evaluation_plot")
+          } else {
+            if (length(assess_clustering_result()$quality_metrics) == 0) {
+              shinyjs::disable("download_quality_metrics")
+              shinyjs::disable("download_size_plot")
+              shinyjs::disable("download_evaluation_plot")
+            } else {
+              shinyjs::enable("download_quality_metrics")
+              shinyjs::enable("download_size_plot")
+              shinyjs::enable("download_evaluation_plot")
+            }
+          }
+        },
+        error = function(e) {
+          shinyjs::disable("download_quality_metrics")
+          shinyjs::disable("download_size_plot")
+          shinyjs::disable("download_evaluation_plot")
+        }
+      )
+    })
     
     # --- Navigation to the next step ---
     observeEvent(input$go2llm_interpretation, {

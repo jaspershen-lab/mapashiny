@@ -38,7 +38,7 @@ pathway_similarity_ui <- function(id) {
                    shinyjs::hidden(
                      div(
                        id = ns("sim_cluster_parameter_panel_metabolite"),
-                       h4("HMDB Network"),
+                       h4("SMPDB Network"),
                        fluidRow(
                          column(6,
                                 numericInput(
@@ -320,7 +320,7 @@ pathway_similarity_ui <- function(id) {
                          ns("embed_cluster_module_database_metabolite"),
                          "Available Database",
                          choices = c(
-                           "HMDB" = "hmdb",
+                           "SMPDB" = "hmdb",
                            "KEGG" = "metkegg"
                          ),
                          selected = NULL
@@ -332,7 +332,7 @@ pathway_similarity_ui <- function(id) {
                      div(
                        id = ns("embed_metabolite_hmdb_panel"),
                        
-                       span(tags$b("HMDB")),
+                       span(tags$b("SMPDB")),
                        fluidRow(
                          column(6,
                                 numericInput(
@@ -599,7 +599,7 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
             selected = enriched_pathways$available_db
           )
         } else if (enriched_pathways$query_type == "metabolite" && input$similarity_method == "embedcluster") {
-          db_choices <- c("HMDB" = "hmdb", "KEGG" = "metkegg")
+          db_choices <- c("SMPDB" = "hmdb", "KEGG" = "metkegg")
           updateCheckboxGroupInput(
             session, "embed_cluster_module_database_metabolite",
             choices  = db_choices,
@@ -1090,7 +1090,7 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
                        id = ns("table_panel_metabolite"),
                        tabsetPanel(
                          tabPanel(
-                           title = "HMDB",
+                           title = "SMPDB",
                            shiny::dataTableOutput(ns("merged_pathway_hmdb")),
                            br(),
                            shinyjs::useShinyjs(),
@@ -1213,7 +1213,7 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
                 id = ns("plot_panel_metabolite"),
                 tabsetPanel(
                   tabPanel(
-                    title = "HMDB",
+                    title = "SMPDB",
                     shiny::plotOutput(ns("enirched_module_hmdb_plot")),
                     br(),
                     fluidRow(
