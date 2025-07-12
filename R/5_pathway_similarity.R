@@ -289,7 +289,8 @@ pathway_similarity_ui <- function(id) {
                               tags$span(
                                 class = "normal-label",
                                 "API provider"),
-                              choices = c("openai", "gemini"),
+                              choices = c("OpenAI" = "openai", 
+                                          "Google" = "gemini"),
                               selected = "openai")
                      ),
                      column(8,

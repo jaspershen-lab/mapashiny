@@ -32,7 +32,6 @@ Imports:
     shiny,
     shinyBS,
     shinydashboard,
-    shinyFiles,
     shinyjs,
     shinyWidgets,
     stringr,

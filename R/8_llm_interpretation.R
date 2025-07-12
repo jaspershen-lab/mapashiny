@@ -12,7 +12,6 @@
 #'
 #' @import shiny
 #' @importFrom shinyBS bsButton bsPopover
-#' @importFrom shinyFiles shinyDirButton
 #' @importFrom shinyjs useShinyjs
 #' @noRd
 
@@ -26,23 +25,7 @@ llm_interpretation_ui <- function(id) {
                 ## Input layout ====
                 column(
                   4,
-                  fluidRow(
-                    column(12,
-                           fileInput(
-                             inputId = ns("upload_interpretation_result"),
-                             label   = "Upload interpretation result (.rda)",
-                             accept = ".rda"
-                           )
-                           # shinyBS::bsPopover(
-                           #   id        = ns("upload_interpretation_result_info"),
-                           #   title     = "",
-                           #   content   = "Drop a previously saved result with LLM interpretation (.rda) here to inspect it without re-running the LLM.",
-                           #   placement = "right", trigger = "hover",
-                           #   options   = list(container = "body")
-                           # )
-                    )
-                  ),
-                  tags$hr(style = "border-top: 1px solid #ddd; margin-top: 10px; margin-bottom: 10px;"),
+                  h4("Step1: Perform LLM Interpretation"),
                   fluidRow(
                     column(12,
                            fileInput(inputId = ns("upload_enriched_functional_module"),
@@ -66,14 +49,17 @@ llm_interpretation_ui <- function(id) {
                   ),
                   # br(),
                   fluidRow(
-                    column(
-                      12,
-                      numericInput(ns("module_content_number_cutoff"),
-                                   "Cutoff for module content number",
-                                   value = 1,
-                                   min = 0,
-                                   max = 1000)     
-                    )
+                    column(4,
+                           selectInput(
+                             ns("llm_api_provider"),
+                             "API provider",
+                             choices = c("OpenAI" = "openai", 
+                                         "Google" = "gemini"),
+                             selected = "openai")),
+                    column(8,
+                           textInput(ns("api_key"),
+                                     "API key",
+                                     value = ""))
                   ),
                   fluidRow(
                     column(
@@ -90,7 +76,15 @@ llm_interpretation_ui <- function(id) {
                     )),
                   fluidRow(
                     column(
-                      5,
+                      3,
+                      numericInput(ns("module_content_number_cutoff"),
+                                   "Module size cutoff",
+                                   value = 1,
+                                   min = 0,
+                                   max = 1000)     
+                    ),
+                    column(
+                      3,
                       numericInput(ns("years"),
                                    "Years to search",
                                    value = 5,
@@ -98,70 +92,86 @@ llm_interpretation_ui <- function(id) {
                                    max = 1000)
                     ),
                     column(
-                      7,
+                      6,
                       textInput(
                         ns("phenotype"),
                         "Disease or phenotype",
                         value = "NULL",
                         width = "100%"
                       )
-                    )),
-                  fluidRow(
-                    column(
-                      12,
-                      textInput(ns("api_key"),
-                                "API key",
-                                value = "")
                     )
                   ),
-                  tags$p("(Optional) Select a local folder with PDFs as local corpus:"),
+                  # gene panel
+                  shinyjs::hidden(
+                    div(id = ns("gene_panel"),
+                        tags$h5("Organism gene annotation database"),
+                        selectInput(
+                          ns("model_orgdb"),
+                          "Model organism",
+                          choices = c(
+                            " " = "",
+                            "Human (org.Hs.eg.db)" = "org.Hs.eg.db",
+                            "Mouse (org.Mm.eg.db)" = "org.Mm.eg.db",
+                            "Rat (org.Rn.eg.db)" = "org.Rn.eg.db",
+                            "Fly (org.Dm.eg.db)" = "org.Dm.eg.db",
+                            "Zebrafish (org.Dr.eg.db)" = "org.Dr.eg.db",
+                            "Arabidopsis (org.At.tair.db)" = "org.At.tair.db",
+                            "Yeast (org.Sc.sgd.db)" = "org.Sc.sgd.db",
+                            "Worm (org.Ce.eg.db)" = "org.Ce.eg.db",
+                            "Pig (org.Ss.eg.db)" = "org.Ss.eg.db",
+                            "Bovine (org.Bt.eg.db)" = "org.Bt.eg.db",
+                            "Rhesus (org.Mmu.eg.db)" = "org.Mmu.eg.db",
+                            "Canine (org.Cf.eg.db)" = "org.Cf.eg.db",
+                            "E. coli strain K12(org.EcK12.eg.db)" = "org.EcK12.eg.db",
+                            "E coli strain Sakai" = "org.EcSakai.eg.db",
+                            "Chicken (org.Gg.eg.db)" = "org.Gg.eg.db",
+                            "Xenopus (org.Xl.eg.db)" = "org.Xl.eg.db",
+                            "Chimp (org.Pt.eg.db)" = "org.Pt.eg.db",
+                            "Anopheles (org.Ag.eg.db)" = "org.Ag.eg.db",
+                            "Malaria (org.Pf.plasmo.db)" = "org.Pf.plasmo.db",
+                            "Myxococcus xanthus DK 1622" = "org.Mxanthus.db"
+                          ),
+                          selected = ""
+                        ),
+                        helpText("Select the name of an OrgDb package that is installed on your system.",
+                                 "Common examples: org.Hs.eg.db (Human), org.Mm.eg.db (Mouse), org.Rn.eg.db (Rat)",
+                                 "For the current list of OrgDb packages, visit: ",
+                                 tags$a(
+                                   href = "https://bioconductor.org/packages/release/BiocViews.html#___OrgDb",
+                                   "Bioconductor OrgDb packages",
+                                   target = "_blank"
+                                 )),
+                        strong("Non-model organism"),
+                        textInput(ns("non_model_ah_id"),
+                                  "AnnotationHub ID",
+                                  value = "")
+                  )),
+                  
                   fluidRow(
-                    column(2,
-                           shinyFiles::shinyDirButton(
-                             ns("local_corpus_dir"),
-                             "Browse",
-                             title = "Please select the local corpus directory",
-                             class = "btn-primary",
-                             style = "background-color: #d83428; color: white; width: 75px;"
+                    column(12,
+                           wellPanel(
+                             strong("Your current working directory: "),
+                             verbatimTextOutput(ns("current_wd"), placeholder = TRUE),
+                             style = "background-color: #f8f9fa; padding: 10px; margin-bottom: 15px;"
                            )
-                    ),
-                    column(10,
-                           textInput(ns("corpus_path_display"), NULL, width = "100%", placeholder = "No local corpus directory selected", value = "")
-                           )
+                    )
                   ),
-                  br(),
-                  tags$p("Select a local folder to store generated embeddings:"),
+                  helpText("Tip: Current working directory is displayed above. You can use relative paths (e.g., 'output/embeddings') or absolute paths (e.g., '/home/user/project/embeddings')"),
+                  textInput(ns("embedding_output_dir_path"), 
+                            "(Required) Embeddings output directory",
+                            width = "100%", 
+                            placeholder = paste0("e.g., ", file.path(getwd(), "embeddings")),
+                            value = ""),
                   fluidRow(
-                    column(2,
-                           shinyFiles::shinyDirButton(
-                             ns("embedding_output_dir"),
-                             "Browse",
-                             title = "Please select a directory to save embeddings",
-                             class = "btn-primary",
-                             style = "background-color: #d83428; color: white; width: 75px;"
-                           )
-                           ),
-                    column(10,
-                           textInput(ns("embedding_path_display"), NULL, width = "100%", placeholder = "No embeddings output directory selected", value = "")
-                           )
+                    column(12,
+                           textInput(ns("local_corpus_dir_path"), 
+                                     "(Optional) Local corpus directory",
+                                     width = "100%", 
+                                     placeholder = "Enter path to directory containing PDF files (optional)",
+                                     value = "")
+                    )
                   ),
-                  br(),
-                  # fluidRow(
-                  #   # column(4,
-                  #   #        numericInput(ns("llm_interpretation_p_adjust_cutoff"),
-                  #   #                     "P-adjust cutoff",
-                  #   #                     value = 0.05,
-                  #   #                     min = 0,
-                  #   #                     max = 0.5),
-                  #   # ),
-                  #   # column(4,
-                  #   #        numericInput(ns("llm_interpretation_count_cutoff"),
-                  #   #                     "Count cutoff",
-                  #   #                     value = 5,
-                  #   #                     min = 1,
-                  #   #                     max = 1000)
-                  #   # )
-                  # ),
+                  
                   actionButton(
                     ns("submit_llm_interpretation"),
                     "Submit",
@@ -170,17 +180,36 @@ llm_interpretation_ui <- function(id) {
                   ),
 
                   actionButton(
-                    ns("go2data_visualization"),
-                    "Next",
-                    class = "btn-primary",
-                    style = "background-color: #d83428; color: white;"
-                  ),
-                  actionButton(
                     ns("show_llm_interpretation_code"),
                     "Code",
                     class = "btn-primary",
                     style = "background-color: #d83428; color: white;"
                   ),
+                  br(),br(),
+                  h4("Step2: Check Interpretation Result"),
+                  fluidRow(
+                    column(12,
+                           fileInput(
+                             inputId = ns("upload_interpretation_result"),
+                             label   = "Upload interpretation result (.rda)",
+                             accept = ".rda"
+                           )
+                           # shinyBS::bsPopover(
+                           #   id        = ns("upload_interpretation_result_info"),
+                           #   title     = "",
+                           #   content   = "Drop a previously saved result with LLM interpretation (.rda) here to inspect it without re-running the LLM.",
+                           #   placement = "right", trigger = "hover",
+                           #   options   = list(container = "body")
+                           # )
+                    )
+                  ),
+                  actionButton(
+                    ns("go2data_visualization"),
+                    "Next",
+                    class = "btn-primary",
+                    style = "background-color: #d83428; color: white;"
+                  ),
+                  
                   style = "border-right: 1px solid #ddd; padding-right: 20px;"
                 ),
                 ## Output layout ====
@@ -245,7 +274,6 @@ llm_interpretation_ui <- function(id) {
 #'
 #' @import shiny
 #' @importFrom shinyjs disable enable useShinyjs
-#' @importFrom shinyFiles shinyDirChoose parseDirPath getVolumes
 #' @importFrom future plan multisession
 #' @importFrom promises %...>% %...!% future_promise
 #' @importFrom markdown markdownToHTML
@@ -258,7 +286,11 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
     function(input, output, session) {
       ns <- session$ns
       
-      ## Section1: Load enriched_functional_module.rda and navigate to specified directory ====
+      output$current_wd <- renderText({
+        getwd()
+      })
+      
+      ## Load enriched_functional_module.rda and navigate to specified directory
       observeEvent(
         input$upload_enriched_functional_module, {
           if (!is.null(input$upload_enriched_functional_module$datapath)) {
@@ -325,102 +357,174 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
           ) 
         }
       )
-      ### Set up shinyFiles directory selection
-      # volumes <- shinyFiles::getVolumes()
-      volumes <- reactive({
-        c("Current Directory" = getwd(), 
-          "Home" = path.expand("~"))
+      
+      ## Get organism annotation database
+      query_type <- reactive({
+        req(enriched_functional_module())
+        enriched_functional_module()@process_info$merge_pathways@parameter$query_type
       })
-      ### Define reactive values to store the selected directories
-      selected_dirs <- reactiveValues(
-        local_corpus_dir = NULL,
-        embedding_output_dir = NULL
-      )
-      ### Set up the directory chooser for the local corpus directory
+      
       observe({
-        req(volumes())
-        shinyFiles::shinyDirChoose(
-          input,
-          "local_corpus_dir",
-          roots = volumes(),
-          session = session,
-          restrictions = system.file(package = "base")
+        shinyjs::toggleElement(
+          id = "gene_panel",
+          condition = query_type() == "gene"
         )
       })
       
-      ### Observer for the corpus directory selection
-      observeEvent(input$local_corpus_dir, {
-        if (!is.null(input$local_corpus_dir)) {
-          # Get the directory path
-          req(volumes())
-          local_corpus_path <- shinyFiles::parseDirPath(volumes(), input$local_corpus_dir)
-
-          # Update the reactive value
-          if (length(local_corpus_path) > 0) {
-            selected_dirs$local_corpus_dir <- local_corpus_path
-
-            # Optional: Display a confirmation message
-            showNotification(
-              paste("Selected local corpus directory:", local_corpus_path),
-              type = "message"
-            )
-          }
-        }
-      })
-      ### Set up the directory chooser for the embedding output directory
+      orgdb <- reactiveVal()
       observe({
-        req(volumes())
-        shinyFiles::shinyDirChoose(
-          input,
-          "embedding_output_dir",
-          roots = volumes(),
-          session = session,
-          restrictions = system.file(package = "base")
-        )
-      })
-      ### Observer for the embedding directory selection
-      observeEvent(input$embedding_output_dir, {
-        if (!is.null(input$embedding_output_dir)) {
-          # Get the directory path
-          req(volumes())
-          embedding_output_path <- shinyFiles::parseDirPath(volumes(), input$embedding_output_dir)
-
-          # Update the reactive value
-          if (length(embedding_output_path) > 0) {
-            selected_dirs$embedding_output_dir <- embedding_output_path
-
-            # Optional: Display a confirmation message
+        req(query_type())
+        if (query_type() == "gene") {
+          tryCatch({
+            if (grepl("^org\\.[A-Za-z]+\\..+\\.db$", input$model_orgdb)) {
+              # Show loading message
+              showNotification("Loading organism database...", type = "message", duration = 3)
+              
+              # Check if package is installed
+              if (!requireNamespace(input$model_orgdb, quietly = TRUE)) {
+                shiny::showModal(modalDialog(
+                  title = "Missing Package",
+                  paste0("Package ", input$model_orgdb, " is not installed. Please install it using:\n",
+                         "BiocManager::install('", input$model_orgdb, "')"),
+                  easyClose = TRUE,
+                  footer = modalButton("Close")
+                ))
+                return()
+              }
+              
+              # Load the package and get OrgDb object
+              requireNamespace(input$model_orgdb)
+              db <- get(input$model_orgdb)
+              orgdb(db)
+              
+              # Success message
+              showNotification(
+                paste0("Successfully loaded organism database: ", input$model_orgdb),
+                type = "message",
+                duration = 5
+              )
+              
+            } else if (grepl("^AH", input$non_model_ah_id)) {
+              ah_id <- input$non_model_ah_id
+              
+              # Show loading message
+              showNotification("Connecting to AnnotationHub...", type = "message", duration = 3)
+              
+              # Check and install AnnotationHub if needed
+              if (!requireNamespace("AnnotationHub", quietly = TRUE)) {
+                showNotification("Installing AnnotationHub package...", type = "message", duration = 5)
+                tryCatch({
+                  BiocManager::install("AnnotationHub")
+                }, error = function(e) {
+                  showNotification(
+                    paste0("Failed to install AnnotationHub: ", e$message),
+                    type = "error",
+                    duration = 10
+                  )
+                  return()
+                })
+              }
+              
+              # Retrieve from AnnotationHub
+              showNotification(
+                paste0("Retrieving organism database from AnnotationHub (ID: ", ah_id, ")..."),
+                type = "message",
+                duration = 5
+              )
+              
+              ah <- AnnotationHub::AnnotationHub()
+              orgdb(ah[[ah_id]])
+              
+              # Success message
+              showNotification(
+                paste0("Successfully loaded organism database from AnnotationHub (ID: ", ah_id, ")"),
+                type = "message",
+                duration = 5
+              )
+              
+            } 
+          }, error = function(e) {
+            # General error handling
             showNotification(
-              paste("Selected embeddings out directory:", embedding_output_path),
-              type = "message"
+              paste0("Error loading organism database: ", e$message),
+              type = "error",
+              duration = 10
             )
-          }
+            
+            # Optional: Show detailed error in modal for debugging
+            shiny::showModal(modalDialog(
+              title = "Database Loading Error",
+              div(
+                p("An error occurred while loading the organism database:"),
+                tags$code(e$message),
+                p("Please check your input and try again.")
+              ),
+              easyClose = TRUE,
+              footer = modalButton("Close")
+            ))
+            
+            return()
+            
+          }, warning = function(w) {
+            # Handle warnings
+            showNotification(
+              paste0("Warning: ", w$message),
+              type = "warning",
+              duration = 8
+            )
+          })
+        } else {
+          orgdb("NULL")
         }
       })
-
-      ### show pathway
-      observeEvent(selected_dirs$local_corpus_dir, {
-        if (!is.null(selected_dirs$local_corpus_dir) && length(selected_dirs$local_corpus_dir) > 0) {
-          updateTextInput(session, "corpus_path_display", value = selected_dirs$local_corpus_dir)
-        }
-      })
-
-      observeEvent(selected_dirs$embedding_output_dir, {
-        if (!is.null(selected_dirs$embedding_output_dir) && length(selected_dirs$embedding_output_dir) > 0) {
-          updateTextInput(session, "embedding_path_display", value = selected_dirs$embedding_output_dir)
-        }
-      })
-
+      
       ## Define annotation result as reactive values
       annotation_result <- reactiveVal()
       llm_interpretation_code <- reactiveVal()
       module_prompt <- reactiveVal()
 
       # Set up the future plan - this determines how parallel tasks will run
-      future::plan(future::multisession)
+      # future::plan(future::multisession)
+      future::plan(future::sequential)
 
-      observe({
-        req(input$submit_llm_interpretation, enriched_functional_module())
+      observeEvent(input$submit_llm_interpretation, {
+        req(enriched_functional_module())
+        
+        # validate dir before processing
+        embed_path <- trimws(input$embedding_output_dir_path)
+        corpus_path <- if(!is.null(input$local_corpus_dir_path) && input$local_corpus_dir_path != "") {
+          trimws(input$local_corpus_dir_path)
+        } else {
+          NULL
+        }
+        if (is.null(embed_path) || embed_path == "") {
+          shiny::showModal(modalDialog(
+            title = "Error",
+            "Please specify an embeddings output directory.",
+            easyClose = TRUE,
+            footer = modalButton("Close")
+          ))
+          return()
+        }
+        if (!dir.exists(embed_path)) {
+          shiny::showModal(modalDialog(
+            title = "Error", 
+            "The specified embeddings output directory does not exist. Please create it first or specify an existing directory.",
+            easyClose = TRUE,
+            footer = modalButton("Close")
+          ))
+          return()
+        }
+        if (!is.null(corpus_path) && !dir.exists(corpus_path)) {
+          shiny::showModal(modalDialog(
+            title = "Error",
+            "The specified local corpus directory does not exist. Please specify an existing directory or leave it empty.",
+            easyClose = TRUE, 
+            footer = modalButton("Close")
+          ))
+          return()
+        }
+        
         message("Interpreting functional modules in progress. This comprehensive analysis requires some time...")
 
         requireNamespace("future")
@@ -428,11 +532,16 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
         requireNamespace("mapa")
         
         object <- enriched_functional_module()
+        annotation_db <- orgdb()
+        module_content_number_cutoff <- input$module_content_number_cutoff
+        api_provider <- input$llm_api_provider
         llm_model <- input$llm_model
         embedding_model <- input$embedding_model
         api_key <- input$api_key
-        embedding_output_dir <- selected_dirs$embedding_output_dir
-        local_corpus_dir <- selected_dirs$local_corpus_dir
+        
+        embedding_output_dir <- normalizePath(embed_path)
+        local_corpus_dir <- if(!is.null(corpus_path)) normalizePath(corpus_path) else NULL
+        
         phenotype <- if(input$phenotype == "NULL") NULL else input$phenotype
         years <- input$years
 
@@ -455,59 +564,22 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
           ))
           return()
         }
-
-        # Run the interpretation asynchronously
-        # promises::future_promise({
-        #   requireNamespace("mapa")
-        #   # This code runs in a separate R process
-        #   result <-
-        #     mapa::llm_interpret_module(
-        #     object = object,
-        #     llm_model = llm_model,
-        #     embedding_model = embedding_model,
-        #     api_key = api_key,
-        #     embedding_output_dir = embedding_output_dir,
-        #     local_corpus_dir = local_corpus_dir,
-        #     phenotype = phenotype,
-        #     years = years
-        #   )
-        # },
-        # globals = TRUE, seed = TRUE) %...>%
-        #   # This runs when the future completes successfully
-        #   (function(result) {
-        #     # Store the results
-        #     enriched_functional_module(result)
-        #     annotation_result(result@llm_module_interpretation)
-        # 
-        #     # # Show success notification
-        #     showNotification("LLM interpretation completed successfully!", type = "message")
-        #   }) %...!%
-        #   # This runs if the future encounters an error
-        #   (function(error) {
-        #     # Close the modal
-        #     removeModal()
-        # 
-        #     # Show error message
-        #     shiny::showModal(modalDialog(
-        #       title = "Error",
-        #       HTML(paste("An error occurred during LLM interpretation:<br><pre>",
-        #                  error$message, "</pre>")),
-        #       easyClose = TRUE,
-        #       footer = modalButton("Close")
-        #     ))
-        #   })
+        
         promises::future_promise({
           requireNamespace("mapa", quietly = TRUE)
           # This code runs in a separate R process
           result <- mapa::llm_interpret_module(
             object = object,
+            module_content_number_cutoff = module_content_number_cutoff,
+            api_provider = api_provider,
             llm_model = llm_model,
             embedding_model = embedding_model,
             api_key = api_key,
             embedding_output_dir = embedding_output_dir,
             local_corpus_dir = local_corpus_dir,
             phenotype = phenotype,
-            years = years
+            years = years,
+            orgdb = annotation_db
           )
         }) |>
           promises::then(
@@ -577,27 +649,33 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
         interpretation_code <-
           functional_module_annotation_code <-
           sprintf(
-            "
+            '
             functional_module_annotation <-
               llm_interpret_module(
                 object = enriched_functional_module,
-                llm_model = %s,
-                embedding_model = %s,
-                api_key = %s,
-                embedding_output_dir = %s,
+                module_content_number_cutoff = %s,
+                api_provider = "%s",
+                llm_model = "%s",
+                embedding_model = "%s",
+                api_key = "%s",
+                embedding_output_dir = "%s",
                 local_corpus_dir = %s,
-                phenotype = %s,
-                years = %s
+                phenotype = "%s",
+                years = %s,
+                orgdb = %s
               )
-            ",
+            ',
             ## wrap character inputs in quotes:
-            paste0('"', input$llm_model, '"'),
-            paste0('"', input$embedding_model, '"'),
-            paste0('"', input$api_key, '"'),
-            paste0('"', selected_dirs$embedding_output_dir, '"'),
-            if (is.null(selected_dirs$local_corpus_dir)) NULL else (paste0('"', selected_dirs$local_corpus_dir, '"')),
-            paste0('"', input$phenotype, '"'),
-            input$years
+            input$module_content_number_cutoff,
+            input$llm_api_provider,
+            input$llm_model,
+            input$embedding_model,
+            input$api_key,
+            input$embedding_output_dir_path,
+            if (input$local_corpus_dir_path == "") NULL else (paste0('"', input$local_corpus_dir_path, '"')),
+            input$phenotype,
+            input$years,
+            input$orgdb
           )
         llm_interpretation_code(interpretation_code)
       })
