@@ -7,33 +7,46 @@ output:
       collapsed: false
       smooth_scroll: true
     number_sections: false
-date: "2023-12-25"
+date: "2025-08-23"
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Module Annotation for Pathway Analysis
+## ℹ️ About
 
-The R package "MAPA" represents a significant advancement in the field of bioinformatics, particularly in the analysis of RNA-seq and proteomics data. Developed by Dr. Xiaotao Shen, this tool is available on GitHub at [https://github.com/jaspershen/mapa](https://github.com/jaspershen/mapa).
+**MAPA** (Functional Module Identification and Annotation for Pathway Analysis Results Using LLM) is a streamlined workflow for pathway-enrichment analysis and enrichment result interpretation that turns large omics datasets into clear biological insight. It is developed by the [Shen Lab at Nanyang Technological University, Singapore](https://www.shen-lab.org/). It:
 
-MAPA is designed to perform pathway enrichment analysis, a crucial step in understanding the biological significance of large-scale experimental data. By analyzing RNA-seq and proteomics datasets, MAPA helps identify enriched biological pathways, providing insights into the molecular mechanisms underlying specific diseases or phenotypic expressions.
+1.  **Pathway analysis: Detects enriched pathways** from your data via over-representation analysis (ORA) or gene set enrichment analysis (GSEA).
 
-One of the standout features of MAPA is its ability to reduce redundancy in biological information. It achieves this by merging enriched pathways into coherent modules and functional modules This not only simplifies the interpretation of complex datasets but also provides a clearer understanding of the biological processes at play.
+2.  **Functional module identification: Clusters overlapping or functional-related pathways** into functional modules, so every informative pathway—not just the "top 5 or 10"—contributes to the story.
 
-Additionally, MAPA leverages the capabilities of large language models like ChatGPT to interpret and contextualize the biological results. This integration allows for a more nuanced and comprehensive analysis, aligning the computational findings with biological relevance to specific diseases or phenotypes.
+3.  **Functional module annotation: Summaries each module with large-language models (LLM)** (e.g., ChatGPT), linking the results to the latest findings in literature from PubMed.
 
-Overall, MAPA serves as an essential tool for researchers and scientists in the field of bioinformatics, offering a sophisticated yet user-friendly approach to pathway analysis and interpretation. Its ability to distill complex datasets into meaningful biological insights is invaluable for advancing our understanding of various biological processes and disease mechanisms.
+The outcome is a fast, reproducible, and user-friendly pipeline that reduces redundancy and delivers biologically meaningful interpretations for enrichment results.
 
-# Contacts
+📔 The MAPA tutorial is available at [https://www.shen-lab.org/mapa-tutorial/](https://www.shen-lab.org/mapa-tutorial/).
 
-If you have any questions about MAPA, please contact Dr. Xiaotao Shen.
+## 🗣️ Note
 
-<i class="fa fa-weixin"></i> [shenzutao1990](https://www.shenxt.info/files/wechat_QR.jpg)
+MAPA needs OpenAI API key to annotate functional modules with LLM. If you do not have an OpenAI API key, please contact us, and we will (1) provide you with a temporary key for testing purpose, or (2) run the annotation step for you and send you the results.
 
-<i class="fa fa-envelope"></i> shenxt@stanford.edu
+## 📥 Contact us
 
-<i class="fa fa-twitter"></i> [Twitter](https://twitter.com/JasperShen1990)
+-   📩 Email [xiaotao.shen\@outlook.com](xiaotao.shen@outlook.com)
 
-<i class="fa fa-map-marker-alt"></i> [M339, Alway building, Cooper Lane, Palo Alto, CA 94304](https://www.google.com/maps/place/Alway+Building/@37.4322345,-122.1770883,17z/data=!3m1!4b1!4m5!3m4!1s0x808fa4d335c3be37:0x9057931f3b312c29!8m2!3d37.4322345!4d-122.1748996)
+-   🏠 Shen Lab website [shen-lab.org](https://www.shen-lab.org/)
+
+-   💬 WeChat [jaspershen1990](https://jaspershen.github.io/image/wechat_QR.jpg)
+
+-   🐦 Twitter [xiaotaoshen1990](https://twitter.com/xiaotaoshen1990)
+
+## 🔗 More links
+
+-   📖 [Citation](https://www.shen-lab.org/mapa-website/)
+
+-   🏠 [MAPA project website](https://www.shen-lab.org/mapa-website/)
+
+-   📔 [MAPA tutorial](https://www.shen-lab.org/mapa-tutorial/)
+
