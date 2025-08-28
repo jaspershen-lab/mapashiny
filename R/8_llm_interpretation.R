@@ -54,7 +54,8 @@ llm_interpretation_ui <- function(id) {
                              ns("llm_api_provider"),
                              "API provider",
                              choices = c("OpenAI" = "openai", 
-                                         "Google" = "gemini"),
+                                         "Google" = "gemini",
+                                         "SiliconFlow" = "siliconflow"),
                              selected = "openai")),
                     column(8,
                            textInput(ns("api_key"),
@@ -156,7 +157,10 @@ llm_interpretation_ui <- function(id) {
                            )
                     )
                   ),
-                  helpText("Tip: Current working directory is displayed above. You can use relative paths (e.g., 'output/embeddings') or absolute paths (e.g., '/home/user/project/embeddings')"),
+                  helpText(
+                    "Tip: Current working directory is displayed above. You can use relative paths (e.g., 'output/embeddings') or absolute paths (e.g., '/home/user/project/embeddings')",
+                    HTML("<br><span style='color: red;'><strong>NOTE: This will clean the folder content at first! Please check the folder before selecting it.</strong></span>")
+                  ),
                   textInput(ns("embedding_output_dir_path"), 
                             "(Required) Embeddings output directory",
                             width = "100%", 
@@ -226,7 +230,7 @@ llm_interpretation_ui <- function(id) {
                                           style = "background-color: #d83428; color: white;")
                          ),
                          tabPanel(
-                           title = "Full Prompt",
+                           title = "Full prompt",
                            # h3("LLM Prompt Used"),
                            uiOutput(ns("prompt")),
                            br(),
@@ -643,8 +647,9 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
         ignoreInit = TRUE                    # skip the very first (empty) run
       )
 
-      observeEvent(annotation_result(), {
+      observeEvent(enriched_functional_module(), {
         req(annotation_result())
+        req(orgdb())
         ### Save code
         interpretation_code <-
           functional_module_annotation_code <-
@@ -675,7 +680,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
             if (input$local_corpus_dir_path == "") NULL else (paste0('"', input$local_corpus_dir_path, '"')),
             input$phenotype,
             input$years,
-            input$orgdb
+            as.character(substitute(orgdb))
           )
         llm_interpretation_code(interpretation_code)
       })

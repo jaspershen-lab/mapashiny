@@ -316,8 +316,26 @@ upload_data_server <- function(id, processed_info, tab_switch) {
       # Observer for gene example data selection
       observeEvent(input$example_choice, {
         if (input$query_type == "gene" && length(input$example_choice) > 0) {
+          # Select the organism directly
+          updateSelectInput(
+            session,
+            "organism",
+            choices = list(
+              "Human (org.Hs.eg.db)" = "org.Hs.eg.db"
+            ),
+            selected = "org.Hs.eg.db"
+          )
+          
+          selected_example <- input$example_choice[1]
+          
+          # updateSelectInput(
+          #   session,
+          #   "example_choice",
+          #   selected = selected_example
+          # )
+          
           # Example data selected - load from package data
-          example_data <- switch(input$example_choice,
+          example_data <- switch(selected_example,
                                  "example_enrich_pathway" = {
                                    # Load the package data object
                                    data("example_ora_data", envir = environment())
@@ -325,8 +343,8 @@ upload_data_server <- function(id, processed_info, tab_switch) {
                                  },
                                  "example_gsea" = {
                                    # Load the package data object
-                                   data("example_gsea", envir = environment())
-                                   example_gsea
+                                   data("example_gsea_data", envir = environment())
+                                   example_gsea_data
                                  },
                                  NULL)
           
@@ -346,6 +364,25 @@ upload_data_server <- function(id, processed_info, tab_switch) {
       # Observer for metabolite example data selection
       observeEvent(input$met_example_choice, {
         if (input$query_type == "metabolite" && length(input$met_example_choice) > 0) {
+          # Select the organism directly
+          updateSelectInput(
+            session,
+            "met_organism",
+            choices = list(
+              "Homo sapiens (human) (hsa)" = "hsa"
+            ),
+            selected = "hsa"
+          )
+          
+          updateSelectInput(
+            session,
+            "met_id_type",
+            choices = list(
+              "KEGG ID" = "keggid"
+            ),
+            selected = "keggid"
+          )
+          
           # Example data selected - load from package data
           example_data <- switch(input$met_example_choice,
                                  "example_enrich_pathway" = {
@@ -439,7 +476,7 @@ upload_data_server <- function(id, processed_info, tab_switch) {
             
             # Load the package and get OrgDb object
             requireNamespace(input$organism)
-            org_db_obj <- get(input$organism)
+            org_db_obj <- get(input$organism, envir = asNamespace(input$organism))
             ah_id <- NULL
             conversion_param <- sprintf(
               '
@@ -523,7 +560,7 @@ upload_data_server <- function(id, processed_info, tab_switch) {
               organism = "%s"
             )
             ',
-              input$id_type,
+              input$met_id_type,
               input$met_organism
             )
 

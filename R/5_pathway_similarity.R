@@ -18,7 +18,7 @@ pathway_similarity_ui <- function(id) {
                # hr(),
                radioButtons(
                  ns("similarity_method"),
-                 "Choose Similarity Method",
+                 "Choose similarity method",
                  choices = c(
                    "Traditional methods" = "simcluster",
                    "Biotext embedding" = "embedcluster"
@@ -121,7 +121,7 @@ pathway_similarity_ui <- function(id) {
                        
                        checkboxGroupInput(
                          ns("sim_cluster_cluster_module_database"),
-                         "Available Database",
+                         "Available database",
                          choices = c(
                            "GO" = "go",
                            "KEGG" = "kegg",
@@ -290,7 +290,8 @@ pathway_similarity_ui <- function(id) {
                                 class = "normal-label",
                                 "API provider"),
                               choices = c("OpenAI" = "openai", 
-                                          "Google" = "gemini"),
+                                          "Google" = "gemini",
+                                          "SiliconFlow" = "siliconflow"),
                               selected = "openai")
                      ),
                      column(8,
@@ -544,41 +545,41 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
       ## For gene + simcluster
       shinyjs::toggleElement(
         id = "sim_cluster_parameter_panel_gene",
-        condition = enriched_pathways$query_type == "gene" && input$similarity_method == "simcluster"
+        condition = (enriched_pathways$query_type == "gene" && input$similarity_method == "simcluster")
       )
       shinyjs::toggleElement(
         id = "table_panel_gene",
-        condition = enriched_pathways$query_type == "gene" && input$similarity_method == "simcluster"
+        condition = (enriched_pathways$query_type == "gene" && input$similarity_method == "simcluster")
       )
       shinyjs::toggleElement(
         id = "plot_panel_gene",
-        condition = enriched_pathways$query_type == "gene" && input$similarity_method == "simcluster"
+        condition = (enriched_pathways$query_type == "gene" && input$similarity_method == "simcluster")
       )
       
       ## For gene + embed
       shinyjs::toggleElement(
         id = "embed_parameter_panel_gene",
-        condition = enriched_pathways$query_type == "gene" && input$similarity_method == "embedcluster"
+        condition = (enriched_pathways$query_type == "gene" && input$similarity_method == "embedcluster")
       )
       
       ## For metabolite + simcluster
       shinyjs::toggleElement(
         id = "sim_cluster_parameter_panel_metabolite",
-        condition = enriched_pathways$query_type == "metabolite" && input$similarity_method == "simcluster"
+        condition = (enriched_pathways$query_type == "metabolite" && input$similarity_method == "simcluster")
       )
       shinyjs::toggleElement(
         id = "table_panel_metabolite",
-        condition = enriched_pathways$query_type == "metabolite" && input$similarity_method == "simcluster"
+        condition = (enriched_pathways$query_type == "metabolite" && input$similarity_method == "simcluster")
       )
       shinyjs::toggleElement(
         id = "plot_panel_metabolite",
-        condition = enriched_pathways$query_type == "metabolite" && input$similarity_method == "simcluster"
+        condition = (enriched_pathways$query_type == "metabolite" && input$similarity_method == "simcluster")
       )
       
       ## For metabolite + embed
       shinyjs::toggleElement(
         id = "embed_parameter_panel_metabolite",
-        condition = enriched_pathways$query_type == "metabolite" && input$similarity_method == "embedcluster"
+        condition = (enriched_pathways$query_type == "metabolite" && input$similarity_method == "embedcluster")
       )
     })
     
@@ -1041,7 +1042,6 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
       
       # UI FOR SIMCLUSTER METHOD =====
       if (input$similarity_method == 'simcluster') {
-        # This UI is taken directly from the old 5_merge_pathways_ui.R [cite: 5_merge_pathways.R]
         tabsetPanel(
           id = ns("simcluster_tabs"),
           ## Table ====
@@ -1756,6 +1756,7 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
         
         if (!is.null(similarity_result()) && 
             length(similarity_result()) > 0) {
+          # cat("similarity_result is generated!")
           shinyjs::enable("download_simcluster_object")
         } else {
           shinyjs::disable("download_simcluster_object")

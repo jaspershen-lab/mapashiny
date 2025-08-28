@@ -282,7 +282,7 @@ data_visualization_ui <- function(id) {
 
               ## tab2: Module Similarity Network panel ----
               tabPanel(
-                title = "Module Similarity Network",
+                title = "Module similarity network",
                 fluidRow(
                   column(4,
                          br(),
@@ -854,13 +854,13 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
         updateSelectInput(
           session,
           "module_similarity_network_database",
-          choices = levels(factor(enriched_functional_module()@merged_module$result_with_module$database))
+          choices = db_choices[db_choices %in% tolower(levels(factor(enriched_functional_module()@merged_module$result_with_module$database)))]
         )
         # Module information
         updateSelectInput(
           session,
           "module_information_database",
-          choices = levels(factor(enriched_functional_module()@merged_module$result_with_module$database))
+          choices = db_choices[db_choices %in% tolower(levels(factor(enriched_functional_module()@merged_module$result_with_module$database)))]
         )
       })
 
@@ -916,16 +916,28 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
         )
       })
 
-      observeEvent(enriched_functional_module(), {
-
+      observe({
+        
+        req(enriched_functional_module())
+        
         if (query_type() == "gene") {
           if (length(c(enriched_functional_module()@merged_pathway_go,
                        enriched_functional_module()@merged_pathway_kegg,
                        enriched_functional_module()@merged_pathway_reactome)) == 0) {
+            
+            current_selection <- input$barplot_level
+            valid_choices <- c("functional_module", "pathway")
+            selected_value <- if (!is.null(current_selection) && current_selection %in% valid_choices) {
+              current_selection
+            } else {
+              "functional_module"
+            }
+            
             updateSelectInput(session, "barplot_level",
                               choices = c("FM" = "functional_module",
                                           "Pathway" = "pathway"),
-                              selected = "pathway")
+                              selected = selected_value)
+            
             updateSelectInput(session, "module_similarity_network_level",
                               choices = c("FM" = "functional_module"),
                               selected = "functional_module")
@@ -943,10 +955,20 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
         } else if (query_type() == "metabolite") {
           if (length(c(enriched_functional_module()@merged_pathway_hmdb,
                        enriched_functional_module()@merged_pathway_metkegg)) == 0) {
+            
+            current_selection <- input$barplot_level
+            valid_choices <- c("functional_module", "pathway")
+            selected_value <- if (!is.null(current_selection) && current_selection %in% valid_choices) {
+              current_selection
+            } else {
+              "functional_module"
+            }
+            
             updateSelectInput(session, "barplot_level",
                               choices = c("FM" = "functional_module",
                                           "Pathway" = "pathway"),
-                              selected = "pathway")
+                              selected = selected_value)
+            
             updateSelectInput(session, "module_similarity_network_level",
                               choices = c("FM" = "functional_module"),
                               selected = "functional_module")
@@ -962,21 +984,37 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
             disable("relationship_network_module_arrange_position")
           }
         }
-
-        if (length(enriched_functional_module()@llm_module_interpretation) == 0) {
+        
+        if (length(enriched_functional_module()@llm_module_interpretation) == 0 | input$barplot_level == "module") {
           updateCheckboxInput(session, "barplot_llm_text", value = FALSE)
           disable("barplot_llm_text")
+        } else {
+          enable("barplot_llm_text")
+        }
+        
+        if (length(enriched_functional_module()@llm_module_interpretation) == 0 | input$module_similarity_network_level == "module") {
           updateCheckboxInput(session, "module_similarity_network_llm_text", value = FALSE)
           disable("module_similarity_network_llm_text")
+        } else {
+          enable("module_similarity_network_llm_text")
+        }
+        
+        if (length(enriched_functional_module()@llm_module_interpretation) == 0 | input$module_information_level == "module") {
           updateCheckboxInput(session, "module_information_llm_text", value = FALSE)
           disable("module_information_llm_text")
+        } else {
+          enable("module_information_llm_text")
+        }
+        
+        if (length(enriched_functional_module()@llm_module_interpretation) == 0 | input$relationship_network_level == "module") {
           updateCheckboxInput(session, "relationship_network_llm_text", value = FALSE)
           disable("relationship_network_llm_text")
+        } else {
+          enable("relationship_network_llm_text")
         }
-
+        
         if (input$module_information_level == "functional_module") {
-          updateSelectInput(session, "module_information_database", selected = NULL)
-          disable("module_information_database")
+          updateSelectInput(session, "module_information_database", choices = NULL)
         }
       })
 
@@ -1005,7 +1043,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
             tryCatch({
               if (query_type() == "gene") {
                 plot <-
-                  plot_pathway_bar(
+                  mapa::plot_pathway_bar(
                     object = enriched_functional_module(),
                     top_n = input$barplot_top_n,
                     x_axis_name = input$x_axis_name,
@@ -1025,7 +1063,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
                   )
               } else {
                 plot <-
-                  plot_pathway_bar(
+                  mapa::plot_pathway_bar(
                     object = enriched_functional_module(),
                     top_n = input$barplot_top_n,
                     x_axis_name = input$x_axis_name,
@@ -1328,12 +1366,17 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
             )
           },
           content = function(file) {
-            ggplot2::ggsave(
-              file,
-              plot = module_similarity_network(),
-              width = input$module_similarity_network_width,
-              height = input$module_similarity_network_height
-            )
+            Cairo::CairoPDF(file = file, 
+                            width = input$module_similarity_network_width, 
+                            height = input$module_similarity_network_height)
+            print(module_similarity_network())
+            dev.off()
+            # ggplot2::ggsave(
+            #   file,
+            #   plot = module_similarity_network(),
+            #   width = input$module_similarity_network_width,
+            #   height = input$module_similarity_network_height
+            # )
           }
         )
 
@@ -1608,12 +1651,17 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
             )
           },
           content = function(file) {
-            ggplot2::ggsave(
-              file,
-              plot = module_information(),
-              width = input$module_information_width,
-              height = input$module_information_height
-            )
+            Cairo::CairoPDF(file = file, 
+                            width = input$module_information_width, 
+                            height = input$module_information_height)
+            print(module_information())
+            dev.off()
+            # ggplot2::ggsave(
+            #   file,
+            #   plot = module_information(),
+            #   width = input$module_information_width,
+            #   height = input$module_information_height
+            # )
           }
         )
 
@@ -1727,13 +1775,13 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
             )
           )
         } else {
-          ####if filtered by functiobal module and modules
+          ####if filtered by functional module and modules
           object <-
             enriched_functional_module()
           if (!is.null(input$relationship_network_module_id)) {
             tryCatch({
               object <-
-                filter_functional_module(
+                mapa::filter_functional_module(
                   object,
                   level = input$relationship_network_level,
                   remain_id = input$relationship_network_module_id
@@ -1988,12 +2036,17 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
             )
           },
           content = function(file) {
-            ggplot2::ggsave(
-              file,
-              plot = relationship_network(),
-              width = input$relationship_network_width,
-              height = input$relationship_network_height
-            )
+            Cairo::CairoPDF(file = file, 
+                            width = input$relationship_network_width, 
+                            height = input$relationship_network_height)
+            print(relationship_network())
+            dev.off()
+            # ggplot2::ggsave(
+            #   file,
+            #   plot = relationship_network(),
+            #   width = input$relationship_network_width,
+            #   height = input$relationship_network_height
+            # )
           }
         )
 

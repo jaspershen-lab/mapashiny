@@ -53,8 +53,8 @@ pathway_clustering_ui <- function(id) {
                # br(),br(),
                
                h4("Step 1: Perform Clustering"),
-               numericInput(ns("sim_cutoff"), "Similarity Cutoff", value = 0.5, min = 0, max = 1, step = 0.05),
-               selectInput(ns("cluster_method"), "Clustering Method", 
+               numericInput(ns("sim_cutoff"), "Similarity cutoff", value = 0.5, min = 0, max = 1, step = 0.05),
+               selectInput(ns("cluster_method"), "Clustering method", 
                            choices = c("Hierarchical_ward.D" = "h_ward.D",
                                        "Hierarchical_ward.D2" = "h_ward.D2", 
                                        "Hierarchical_single" = "h_single",
@@ -82,7 +82,7 @@ pathway_clustering_ui <- function(id) {
                # Step3: assess clustering quality ui =====
                h4("Step 2: Assess Clustering Quality"),
                fileInput(ns("upload_clustering_result"), 
-                         "Upload Clustering Result (.rda)",
+                         "Upload clustering result (.rda)",
                          accept = ".rda"),
                actionButton(ns("assess_clustering"), "Submit", class = "btn-primary", style = "background-color: #d83428; color: white;"),
                actionButton(ns("show_assess_clustering_code"), "Code", class = "btn-primary", style = "background-color: #d83428; color: white;"),
@@ -103,7 +103,7 @@ pathway_clustering_ui <- function(id) {
                            #          dataTableOutput(ns("optimal_table"))
                            # ),
                            # Tab 2: For the final clustering results
-                           tabPanel("Final Clustering Result",
+                           tabPanel("Final clustering result",
                                     tabsetPanel(
                                       tabPanel(
                                         title = "Table",
@@ -155,7 +155,7 @@ pathway_clustering_ui <- function(id) {
                                     )
                            ),
                            # Tab 3: For the clustering assessment results ====
-                           tabPanel("Clustering Quality Assessment",
+                           tabPanel("Clustering quality assessment",
                                     tabsetPanel(
                                       tabPanel(
                                         title = "Module Size",

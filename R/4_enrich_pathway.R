@@ -52,7 +52,7 @@ enrich_pathway_ui <- function(id) {
                              ),
                              checkboxGroupInput(
                                ns("pathway_database"),
-                               "Available Database",
+                               "Available database",
                                choices = c(
                                  "GO" = "go",
                                  "KEGG" = "kegg",
@@ -106,7 +106,7 @@ enrich_pathway_ui <- function(id) {
                                    # ),
                                    selectInput(
                                      ns("go_keytype"),
-                                     "GO Keytype",
+                                     "GO keytype",
                                      choices = c(
                                        "Entrez Gene ID"  = "ENTREZID",
                                        "Gene Symbol"     = "SYMBOL",
@@ -118,7 +118,7 @@ enrich_pathway_ui <- function(id) {
 
                                    selectInput(
                                      ns("go_ont"),
-                                     "GO Ontology",
+                                     "GO ontology",
                                      choices = c(
                                        "All" = "ALL",
                                        "Biological Process" = "BP",
@@ -172,7 +172,7 @@ enrich_pathway_ui <- function(id) {
                                    # ),
                                    selectInput(
                                      ns("kegg_keytype"),
-                                     "KEGG Keytype",
+                                     "KEGG keytype",
                                      choices = c(
                                        "Entrez" = "kegg",
                                        "NCBI Gene ID" = "ncbi-geneid",
@@ -782,7 +782,7 @@ enrich_pathway_server <- function(id, processed_info, enriched_pathways, tab_swi
                 kegg_params <- ""
                 if ("kegg" %in% input$pathway_database) {
                   kegg_params <- sprintf(
-                    ' kegg.organism = "%s",
+                    'kegg.organism = "%s",
                       kegg.keytype = "%s",
                       kegg.universe = NULL,
                       ',
@@ -793,7 +793,7 @@ enrich_pathway_server <- function(id, processed_info, enriched_pathways, tab_swi
                 reactome_params <- ""
                 if ("reactome" %in% input$pathway_database) {
                   reactome_params <- sprintf(
-                    ' reactome.organism = "%s",
+                    'reactome.organism = "%s",
                       reactome.universe = NULL,',
                     gene_params$reactome.organism
                   )}

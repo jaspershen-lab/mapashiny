@@ -14,8 +14,10 @@ BugReports: https://github.com/jaspershen-lab/mapashiny/issues
 Depends: 
     R (>= 4.1.0)
 Imports: 
+    AnnotationHub,
     BiocGenerics,
     BiocManager,
+    Cairo,
     clusterProfiler,
     config,
     dplyr,
