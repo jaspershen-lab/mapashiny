@@ -54,6 +54,9 @@ demo_data/
 files/
 files/
 
+users
+users/
+
 deprec-*
 .Rproj.user
 

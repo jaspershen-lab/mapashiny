@@ -148,31 +148,36 @@ llm_interpretation_ui <- function(id) {
                                   value = "")
                   )),
                   
+                  # fluidRow(
+                  #   column(12,
+                  #          wellPanel(
+                  #            strong("Your current working directory: "),
+                  #            verbatimTextOutput(ns("current_wd"), placeholder = TRUE),
+                  #            style = "background-color: #f8f9fa; padding: 10px; margin-bottom: 15px;"
+                  #          )
+                  #   )
+                  # ),
+                  # helpText(
+                  #   "Tip: Current working directory is displayed above. You can use relative paths (e.g., 'output/embeddings') or absolute paths (e.g., '/home/user/project/embeddings')",
+                  #   HTML("<br><span style='color: red;'><strong>NOTE: This will clean the folder content at first! Please check the folder before selecting it.</strong></span>")
+                  # ),
+                  # textInput(ns("embedding_output_dir_path"), 
+                  #           "(Required) Embeddings output directory",
+                  #           width = "100%", 
+                  #           placeholder = paste0("e.g., ", file.path(getwd(), "embeddings")),
+                  #           value = ""),
                   fluidRow(
                     column(12,
-                           wellPanel(
-                             strong("Your current working directory: "),
-                             verbatimTextOutput(ns("current_wd"), placeholder = TRUE),
-                             style = "background-color: #f8f9fa; padding: 10px; margin-bottom: 15px;"
+                           # textInput(ns("local_corpus_dir_path"), 
+                           #           "(Optional) Local corpus directory",
+                           #           width = "100%", 
+                           #           placeholder = "Enter path to directory containing PDF files (optional)",
+                           #           value = ""),
+                           fileInput(
+                             ns("local_corpus_file"),
+                             "Choose local corpus PDF Files",
+                             accept = c(".pdf", "application/pdf")
                            )
-                    )
-                  ),
-                  helpText(
-                    "Tip: Current working directory is displayed above. You can use relative paths (e.g., 'output/embeddings') or absolute paths (e.g., '/home/user/project/embeddings')",
-                    HTML("<br><span style='color: red;'><strong>NOTE: This will clean the folder content at first! Please check the folder before selecting it.</strong></span>")
-                  ),
-                  textInput(ns("embedding_output_dir_path"), 
-                            "(Required) Embeddings output directory",
-                            width = "100%", 
-                            placeholder = paste0("e.g., ", file.path(getwd(), "embeddings")),
-                            value = ""),
-                  fluidRow(
-                    column(12,
-                           textInput(ns("local_corpus_dir_path"), 
-                                     "(Optional) Local corpus directory",
-                                     width = "100%", 
-                                     placeholder = "Enter path to directory containing PDF files (optional)",
-                                     value = "")
                     )
                   ),
                   
@@ -482,10 +487,77 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
         }
       })
       
+      ## Upload local corpus ====
+      user_temp_corpus_path <- reactiveVal(NULL)
+      
+      observeEvent(input$local_corpus_file, {
+        req(input$local_corpus_file)
+        
+        local_corpus_valid_files <- input$local_corpus_file[grepl("\\.pdf$", input$local_corpus_file$name, ignore.case = TRUE), ]
+        
+        if (nrow(local_corpus_valid_files) == 0) {
+          showNotification("Please upload only PDF files.", type = "error")
+          return()
+        }
+        
+        local_corpus_file_info <- data.frame(
+          Name = local_corpus_valid_files$name,
+          Size = paste(round(local_corpus_valid_files$size / 1024 / 1024, 2), "MB"),
+          Path = local_corpus_valid_files$datapath,
+          stringsAsFactors = FALSE
+        )
+        
+        showNotification(
+          paste("Successfully uploaded", nrow(local_corpus_valid_files), "PDF file(s)"),
+          type = "message"
+        )
+        
+        ## Create a specified folder for users' uploaded files
+        uploaded_corpus_path <- "users/uploaded_local_corpus"
+        if (length(grep("user", dir(uploaded_corpus_path))) > 0) {
+          idx <-
+            max(
+              as.numeric(stringr::str_extract(
+                grep(pattern = "user", dir(uploaded_corpus_path), value = TRUE),
+                "[0-9]{1,10}"
+              )), na.rm = TRUE
+            )
+          
+          if(is.na(idx)) idx <- 0
+          
+          if (!is.finite(idx)) idx <- 0
+          
+          user_temp_path <- file.path(uploaded_corpus_path, paste('user', idx + 1, sep = "_"))
+        } else{
+          user_temp_path <- file.path(uploaded_corpus_path, "user_1")
+        }
+        
+        user_temp_corpus_path(user_temp_path)
+        
+        ### copy uploaded files to the specified folder above
+        dir.create(user_temp_corpus_path(), recursive = TRUE)
+        
+        saved_files <- c()
+        
+        for (i in 1:nrow(local_corpus_file_info)) {
+          temp_path <- local_corpus_file_info$Path[i]
+          original_name <- local_corpus_file_info$Name[i]
+          
+          permanent_path <- file.path(user_temp_corpus_path(), original_name)
+          
+          if (file.copy(temp_path, permanent_path, overwrite = TRUE)) {
+            saved_files <- c(saved_files, permanent_path)
+          }
+        }
+        
+      })
+      
+      
       ## Define annotation result as reactive values
       annotation_result <- reactiveVal()
       llm_interpretation_code <- reactiveVal()
       module_prompt <- reactiveVal()
+      user_embedding_output_dir <- reactiveVal(NULL)
 
       # Set up the future plan - this determines how parallel tasks will run
       # future::plan(future::multisession)
@@ -494,13 +566,36 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
       observeEvent(input$submit_llm_interpretation, {
         req(enriched_functional_module())
         
+        ## Create embedding output dir ====
+        embedding_output_path <- "users/embedding_output"
+        if (length(grep("user", dir(embedding_output_path))) > 0) {
+          idx <-
+            max(
+              as.numeric(stringr::str_extract(
+                grep(pattern = "user", dir(embedding_output_path), value = TRUE),
+                "[0-9]{1,10}"
+              )), na.rm = TRUE
+            )
+          
+          if(is.na(idx)) idx <- 0
+          
+          if (!is.finite(idx)) idx <- 0
+          
+          user_temp_path <- file.path(embedding_output_path, paste('user', idx + 1, sep = "_"))
+        } else{
+          user_temp_path <- file.path(embedding_output_path, "user_1")
+        }
+        user_embedding_output_dir(user_temp_path)
+        dir.create(user_embedding_output_dir(), recursive = TRUE)
+        
         # validate dir before processing
-        embed_path <- trimws(input$embedding_output_dir_path)
-        corpus_path <- if(!is.null(input$local_corpus_dir_path) && input$local_corpus_dir_path != "") {
-          trimws(input$local_corpus_dir_path)
+        embed_path <- user_embedding_output_dir()
+        corpus_path <- if(!is.null(user_temp_corpus_path()) && user_temp_corpus_path() != "") {
+          user_temp_corpus_path()
         } else {
           NULL
         }
+        
         if (is.null(embed_path) || embed_path == "") {
           shiny::showModal(modalDialog(
             title = "Error",
@@ -519,6 +614,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
           ))
           return()
         }
+        
         if (!is.null(corpus_path) && !dir.exists(corpus_path)) {
           shiny::showModal(modalDialog(
             title = "Error",
@@ -605,6 +701,16 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
               ))
             }
           )
+        
+        # Delete the user temp folders
+        user_temp_local_corpus_dir <- user_temp_corpus_path()
+        if (dir.exists(user_temp_local_corpus_dir)) {
+          unlink(user_temp_local_corpus_dir, recursive = TRUE)
+        }
+        user_temp_embedding_output_dir <- user_embedding_output_dir()
+        if (dir.exists(user_temp_embedding_output_dir)) {
+          unlink(user_temp_embedding_output_dir, recursive = TRUE)
+        }
       })
 
       output$module_details <- renderUI({
@@ -676,8 +782,8 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
             input$llm_model,
             input$embedding_model,
             input$api_key,
-            input$embedding_output_dir_path,
-            if (input$local_corpus_dir_path == "") NULL else (paste0('"', input$local_corpus_dir_path, '"')),
+            user_embedding_output_dir(),
+            if (user_temp_corpus_path() == "") NULL else (paste0('"user_temp_local_corpus_upload_dir"')),
             input$phenotype,
             input$years,
             as.character(substitute(orgdb))
