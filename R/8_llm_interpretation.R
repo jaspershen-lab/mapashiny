@@ -271,6 +271,7 @@ llm_interpretation_ui <- function(id) {
 #' @param id Character string. The module's namespace ID.
 #' @param enriched_functional_module Reactive value containing the enriched
 #'   functional module data object to be interpreted.
+#' @param temp_dir Reactive value containing the temporary directory path. 
 #' @param tab_switch Function to switch between application tabs.
 #'
 #' @return Server function that manages:
@@ -289,7 +290,7 @@ llm_interpretation_ui <- function(id) {
 #' @importFrom mapa llm_interpret_module
 #' @noRd
 
-llm_interpretation_server <- function(id, enriched_functional_module, tab_switch) {
+llm_interpretation_server <- function(id, enriched_functional_module, temp_dir, tab_switch) {
   moduleServer(
     id,
     function(input, output, session) {
@@ -512,29 +513,9 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
           type = "message"
         )
         
-        ## Create a specified folder for users' uploaded files
-        uploaded_corpus_path <- "users/uploaded_local_corpus"
-        if (length(grep("user", dir(uploaded_corpus_path))) > 0) {
-          idx <-
-            max(
-              as.numeric(stringr::str_extract(
-                grep(pattern = "user", dir(uploaded_corpus_path), value = TRUE),
-                "[0-9]{1,10}"
-              )), na.rm = TRUE
-            )
-          
-          if(is.na(idx)) idx <- 0
-          
-          if (!is.finite(idx)) idx <- 0
-          
-          user_temp_path <- file.path(uploaded_corpus_path, paste('user', idx + 1, sep = "_"))
-        } else{
-          user_temp_path <- file.path(uploaded_corpus_path, "user_1")
-        }
-        
-        user_temp_corpus_path(user_temp_path)
-        
-        ### copy uploaded files to the specified folder above
+        ## Create a folder for users' uploaded files under user's temporary directory
+        uploaded_corpus_path <- file.path(temp_dir(), "uploaded_local_corpus")
+        user_temp_corpus_path(uploaded_corpus_path)
         dir.create(user_temp_corpus_path(), recursive = TRUE)
         
         saved_files <- c()
@@ -552,12 +533,13 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
         
       })
       
+      ## Create embedding output directory ====
+      user_embedding_output_dir <- reactiveVal(NULL)
       
       ## Define annotation result as reactive values
       annotation_result <- reactiveVal()
       llm_interpretation_code <- reactiveVal()
       module_prompt <- reactiveVal()
-      user_embedding_output_dir <- reactiveVal(NULL)
 
       # Set up the future plan - this determines how parallel tasks will run
       # future::plan(future::multisession)
@@ -566,29 +548,10 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
       observeEvent(input$submit_llm_interpretation, {
         req(enriched_functional_module())
         
-        ## Create embedding output dir ====
-        embedding_output_path <- "users/embedding_output"
-        if (length(grep("user", dir(embedding_output_path))) > 0) {
-          idx <-
-            max(
-              as.numeric(stringr::str_extract(
-                grep(pattern = "user", dir(embedding_output_path), value = TRUE),
-                "[0-9]{1,10}"
-              )), na.rm = TRUE
-            )
-          
-          if(is.na(idx)) idx <- 0
-          
-          if (!is.finite(idx)) idx <- 0
-          
-          user_temp_path <- file.path(embedding_output_path, paste('user', idx + 1, sep = "_"))
-        } else{
-          user_temp_path <- file.path(embedding_output_path, "user_1")
-        }
-        user_embedding_output_dir(user_temp_path)
+        embedding_output_path <- file.path(temp_dir(), "embedding_output")
+        user_embedding_output_dir(embedding_output_path)
         dir.create(user_embedding_output_dir(), recursive = TRUE)
         
-        # validate dir before processing
         embed_path <- user_embedding_output_dir()
         corpus_path <- if(!is.null(user_temp_corpus_path()) && user_temp_corpus_path() != "") {
           user_temp_corpus_path()
@@ -646,13 +609,16 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
         years <- input$years
 
         # Show a modal with a spinner to indicate work is happening
-        shiny::showModal(modalDialog(
-          title = "Analysis in Progress",
-          "The LLM interpretation is running in the background. Results will appear when ready.",
-          footer = modalButton("Close"),
-          easyClose = FALSE,
-          size = "m"
-        ))
+        # shiny::showModal(modalDialog(
+        #   title = "Analysis in Progress",
+        #   "The LLM interpretation is running in the background. Results will appear when ready.",
+        #   duration = 5,
+        #   size = "m"
+        # ))
+        
+        showNotification("The LLM interpretation is running in the background. Results will appear when ready.", 
+                         type = "message", 
+                         duration = 5)
 
         if (is.null(enriched_functional_module())) {
           removeModal()
@@ -701,16 +667,6 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
               ))
             }
           )
-        
-        # Delete the user temp folders
-        user_temp_local_corpus_dir <- user_temp_corpus_path()
-        if (dir.exists(user_temp_local_corpus_dir)) {
-          unlink(user_temp_local_corpus_dir, recursive = TRUE)
-        }
-        user_temp_embedding_output_dir <- user_embedding_output_dir()
-        if (dir.exists(user_temp_embedding_output_dir)) {
-          unlink(user_temp_embedding_output_dir, recursive = TRUE)
-        }
       })
 
       output$module_details <- renderUI({
@@ -782,8 +738,8 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
             input$llm_model,
             input$embedding_model,
             input$api_key,
-            user_embedding_output_dir(),
-            if (user_temp_corpus_path() == "") NULL else (paste0('"user_temp_local_corpus_upload_dir"')),
+            "user_temp_embedding_ouput_dir",
+            if (user_temp_corpus_path() == "") NULL else ("user_temp_local_corpus_dir"),
             input$phenotype,
             input$years,
             as.character(substitute(orgdb))

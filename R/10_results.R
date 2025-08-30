@@ -56,6 +56,7 @@ results_ui <- function(id) {
 #' @param input,output,session Internal parameters for {shiny}. DO NOT REMOVE.
 #' @param id Module id.
 #' @param enriched_functional_module Reactive value containing enriched functional module data.
+#' @param temp_dir Reactive value containing the temporary directory path.
 #' @param tab_switch Function to switch tabs.
 #'
 #' @import shiny
@@ -64,18 +65,17 @@ results_ui <- function(id) {
 #' 
 #' @noRd
 
-results_server <- function(id, enriched_functional_module, tab_switch) {
+results_server <- function(id, enriched_functional_module, temp_dir, tab_switch) {
   moduleServer(
     id,
     function(input, output, session) {
       ns <- session$ns
 
       report_code <- reactiveVal()
-      report_path <- reactiveVal()
-
+      report_path <- reactiveVal(NULL)
+      
       observeEvent(input$generate_report, {
-        # Check if enriched_functional_module and llm_interpretation_result are
-        #  available
+        # Check if enriched_functional_module and llm_interpretation_result are available
         if (is.null(enriched_functional_module()) ||
             length(enriched_functional_module()) == 0) {
           shiny::showModal(
@@ -88,19 +88,14 @@ results_server <- function(id, enriched_functional_module, tab_switch) {
           )
         } else {
           # shinyjs::show("loading")
-
           withProgress(message = 'Analysis in progress...', {
             tryCatch({
-              report_path <-
-                file.path("files",
-                          paste(sample(
-                            c(letters, LETTERS, 0:9),
-                            30, replace = TRUE
-                          ), collapse = ""))
-
+              temp_report_dir <- file.path(temp_dir(), "result_report")
+              report_path(temp_report_dir)
+              
               mapa::report_functional_module(
                 object = enriched_functional_module(),
-                path = report_path,
+                path = report_path(),
                 type = "html"
               )
             },
@@ -116,8 +111,6 @@ results_server <- function(id, enriched_functional_module, tab_switch) {
             })
           })
 
-          report_path(report_path)
-
           # shinyjs::hide("loading")
 
           ##save code
@@ -129,7 +122,7 @@ results_server <- function(id, enriched_functional_module, tab_switch) {
               path = %s,
               type = "html")
             ',
-              paste0('"', report_path(), '"')
+              "result_report_dir"
             )
           report_code(report_code)
         }
@@ -173,26 +166,26 @@ results_server <- function(id, enriched_functional_module, tab_switch) {
         }
       })
 
-      ###To delete the zip file and folder when the user closes the app
-      session$onSessionEnded(function() {
-        all_files_folders <-
-          list.files("files", full.names = TRUE)
-
-        folders <-
-          Filter(function(x) {
-            file.info(x)$isdir
-          }, all_files_folders)
-
-        regex_pattern <- "^[A-Za-z0-9]{30}$"
-
-        report_dirs <-
-          Filter(function(folder) {
-            folder_name <- basename(folder)
-            grepl(regex_pattern, folder_name)
-          }, folders)
-
-        unlink(report_dirs, recursive = TRUE)
-      })
+      # ###To delete the zip file and folder when the user closes the app
+      # session$onSessionEnded(function() {
+      #   all_files_folders <-
+      #     list.files("files", full.names = TRUE)
+      # 
+      #   folders <-
+      #     Filter(function(x) {
+      #       file.info(x)$isdir
+      #     }, all_files_folders)
+      # 
+      #   regex_pattern <- "^[A-Za-z0-9]{30}$"
+      # 
+      #   report_dirs <-
+      #     Filter(function(folder) {
+      #       folder_name <- basename(folder)
+      #       grepl(regex_pattern, folder_name)
+      #     }, folders)
+      # 
+      #   unlink(report_dirs, recursive = TRUE)
+      # })
 
       ####show code
       observeEvent(input$show_report_code, {

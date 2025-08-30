@@ -13,6 +13,45 @@ app_server <- function(input, output, session) {
     updateTabItems(session, "tabs", selected = tab_switch())
   })
   
+  # Create temp file for intermediate data for each user
+  user_temp_dir <- reactiveVal(NULL)
+  observe({
+    if (length(grep("user", dir("users"))) > 0) {
+      idx <-
+        max(
+          as.numeric(stringr::str_extract(
+            grep(pattern = "user", dir("users"), value = TRUE),
+            "[0-9]{1,10}"
+          )), na.rm = TRUE
+        )
+      
+      if(is.na(idx)) idx <- 0
+      
+      if (!is.finite(idx)) idx <- 0
+      
+      user_temp_path <- file.path("users", paste('user', idx + 1, sep = "_"))
+    } else{
+      user_temp_path <- file.path("users", "user_1")
+    }
+    
+    user_temp_dir(user_temp_path)
+    
+    dir.create(user_temp_dir(), recursive = TRUE)
+  })
+  
+  # Register cleanup function to delete user's temp directory when session ends
+  session$onSessionEnded(function() {
+    temp_path <- isolate(user_temp_dir())
+    if (!is.null(temp_path) && dir.exists(temp_path)) {
+      tryCatch({
+        unlink(temp_path, recursive = TRUE, force = TRUE)
+        cat("Cleaned up user's temp directory:", temp_path, "\n")
+      }, error = function(e) {
+        warning("Failed to clean up user's temp directory: ", temp_path, " - ", e$message)
+      })
+    }
+  })
+  
   ### Step 1: Upload data ----
   #upload_data_result <- reactive(upload_data_server("upload_data_tab"))
   processed_info <- reactiveValues(
@@ -59,6 +98,7 @@ app_server <- function(input, output, session) {
   ### Step 6 LLM interpretation ----
   llm_interpretation_server("llm_interpretation_tab",
                             enriched_functional_module = enriched_functional_module,
+                            temp_dir = user_temp_dir,
                             tab_switch)
   
   ### Step 7 Data visualization ----
@@ -69,5 +109,6 @@ app_server <- function(input, output, session) {
   ### Step 8 Result and report ----
   results_server("results_tab",
                  enriched_functional_module = enriched_functional_module,
+                 temp_dir = user_temp_dir,
                  tab_switch)
 }
