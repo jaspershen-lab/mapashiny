@@ -550,13 +550,17 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
         years <- input$years
 
         # Show a modal with a spinner to indicate work is happening
-        shiny::showModal(modalDialog(
-          title = "Analysis in Progress",
-          "The LLM interpretation is running in the background. Results will appear when ready.",
-          footer = modalButton("Close"),
-          easyClose = FALSE,
-          size = "m"
-        ))
+        # shiny::showModal(modalDialog(
+        #   title = "Analysis in Progress",
+        #   "The LLM interpretation is running in the background. Results will appear when ready.",
+        #   footer = modalButton("Close"),
+        #   easyClose = FALSE,
+        #   size = "m"
+        # ))
+        
+        showNotification("The LLM interpretation is running in the background. Results will appear when ready.", 
+                         type = "message", 
+                         duration = 5)
 
         if (is.null(enriched_functional_module())) {
           removeModal()
