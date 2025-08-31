@@ -220,7 +220,7 @@ llm_interpretation_ui <- function(id) {
                 column(8,
                        tabsetPanel(
                          tabPanel(
-                           title = "Interpretation results",
+                             title = "Module annotation results",
                            uiOutput(ns("module_details")),
                            br(),
                            shinyjs::useShinyjs(),
