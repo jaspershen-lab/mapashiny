@@ -11,7 +11,7 @@ enrich_pathway_ui <- function(id) {
   ns <- NS(id)
   tabItem(tabName = "enrich_pathways",
           fluidPage(
-            titlePanel("Enrich Pathways"),
+            titlePanel("Pathway Enrichment"),
             fluidPage(
               fluidRow(
                 column(4,

@@ -34,8 +34,8 @@ app_ui <- function(request) {
           # menuItem(text = "Tutorial", tabName = "tutorial", icon = icon("book")),
           menuItem(text = "Data Upload", tabName = "upload_data", icon = icon("upload")),
           menuItem(text = "Pathway Enrichment", tabName = "enrich_pathways", icon = icon("cogs")),
-          menuItem(text = "Pathway Similarity", tabName = "pathway_similarity", icon = icon("project-diagram")),
-          menuItem(text = "Pathway Clustering", tabName = "pathway_clustering", icon = icon("sitemap")),
+          menuItem(text = "Pathway Similarity Calculation", tabName = "pathway_similarity", icon = icon("project-diagram")),
+          menuItem(text = "Module Identification", tabName = "pathway_clustering", icon = icon("sitemap")),
           # menuItem(text = "Pathway Clustering", tabName = NULL, icon = icon("sitemap"),
           #          menuItem(text = HTML("Method1: SimCluster"), tabName = NULL,
           #                   menuSubItem(text = "Step1: Merge Pathways", tabName = "merge_pathways", icon = NULL),
@@ -43,7 +43,7 @@ app_ui <- function(request) {
           #          ),
           #          menuItem(text = HTML("Method2: EmbedCluster"), tabName = "embed_cluster_pathways")
           # ),
-          menuItem(text = "LLM Interpretation", tabName = "llm_interpretation", icon = icon("brain")),
+          menuItem(text = "Module Annotation", tabName = "llm_interpretation", icon = icon("brain")),
           menuItem(text = "Data Visualization", tabName = "data_visualization", icon = icon("chart-line")),
           menuItem(text = "Results & Report", tabName = "results", icon = icon("clipboard-list"))
         )

@@ -19,13 +19,13 @@ llm_interpretation_ui <- function(id) {
   ns <- NS(id)
   tabItem(
     tabName = "llm_interpretation",
-    fluidPage(titlePanel("LLM Interpretation"),
+    fluidPage(titlePanel("Module Annotation"),
               fluidPage(
                 fluidRow(
                 ## Input layout ====
                 column(
                   4,
-                  h4("Step1: Perform LLM Interpretation"),
+                  h4("Step1: Perform Module Annotation"),
                   fluidRow(
                     column(12,
                            fileInput(inputId = ns("upload_enriched_functional_module"),
@@ -195,12 +195,12 @@ llm_interpretation_ui <- function(id) {
                     style = "background-color: #d83428; color: white;"
                   ),
                   br(),br(),
-                  h4("Step2: Check Interpretation Result"),
+                  h4("Step2: Check Module Annotation Result"),
                   fluidRow(
                     column(12,
                            fileInput(
                              inputId = ns("upload_interpretation_result"),
-                             label   = "Upload interpretation result (.rda)",
+                             label   = "Upload module annotation result (.rda)",
                              accept = ".rda"
                            )
                            # shinyBS::bsPopover(
@@ -225,7 +225,7 @@ llm_interpretation_ui <- function(id) {
                 column(8,
                        tabsetPanel(
                          tabPanel(
-                           title = "Interpretation results",
+                           title = "Annotation results",
                            uiOutput(ns("module_details")),
                            br(),
                            shinyjs::useShinyjs(),
@@ -340,7 +340,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, temp_dir, 
           annotation_result(interpreted_functional_module@llm_module_interpretation)
           enriched_functional_module(interpreted_functional_module)
 
-          showNotification("Interpretation result loaded successfully!",
+          showNotification("Module annotation result loaded successfully!",
                            type = "message")
         } else {
           shiny::showModal(modalDialog(
@@ -588,7 +588,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, temp_dir, 
           return()
         }
         
-        message("Interpreting functional modules in progress. This comprehensive analysis requires some time...")
+        message("Module annotation in progress. This comprehensive analysis requires some time...")
 
         requireNamespace("future")
         requireNamespace("promises")
@@ -616,7 +616,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, temp_dir, 
         #   size = "m"
         # ))
         
-        showNotification("The LLM interpretation is running in the background. Results will appear when ready.", 
+        showNotification("Module annotation is running in the background. Results will appear when ready.", 
                          type = "message", 
                          duration = 5)
 
@@ -653,14 +653,14 @@ llm_interpretation_server <- function(id, enriched_functional_module, temp_dir, 
             function(result) {
               enriched_functional_module(result)
               annotation_result(result@llm_module_interpretation)
-              showNotification("LLM interpretation completed successfully!", type = "message")
+              showNotification("Module annotation completed successfully!", type = "message")
             },
             # Error handler
             function(error) {
               removeModal()
               shiny::showModal(modalDialog(
                 title = "Error",
-                HTML(paste("An error occurred during LLM interpretation:<br><pre>",
+                HTML(paste("An error occurred during module annotation:<br><pre>",
                            error$message, "</pre>")),
                 easyClose = TRUE,
                 footer = modalButton("Close")
@@ -924,7 +924,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, temp_dir, 
       # Download handler for the prompt
       output$download_llm_interpretation_prompt <- downloadHandler(
         filename = function() {
-          "llm_interpretation_prompt.txt"
+          "module_annotation_prompt.txt"
         },
         content = function(file) {
           req(module_prompt())
