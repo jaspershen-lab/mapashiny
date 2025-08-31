@@ -40,7 +40,7 @@ remotes::install_github(
 You can launch the application by running:
 
 ```{r, eval = FALSE}
-mapashiny::run_app()
+mapashiny::run_mapa_shiny()
 ```
 
 ## About
