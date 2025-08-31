@@ -1,13 +1,13 @@
-#' LLM Interpretation Module UI
+#' Module Annotation Module UI
 #'
-#' Creates the user interface for LLM interpretation of functional modules,
+#' Creates the user interface for annotation of functional modules,
 #' including file upload controls, parameter inputs, and result display tabs.
 #'
 #' @param id Character string. The module's namespace ID.
 #'
-#' @return A Shiny UI element containing the LLM interpretation interface
+#' @return A Shiny UI element containing the module annotation interface
 #'   with input controls on the left (file uploads, model parameters, API key,
-#'   directory selection) and tabbed output panels on the right (interpretation
+#'   directory selection) and tabbed output panels on the right (annotation
 #'   results, full prompt, R object).
 #'
 #' @import shiny
@@ -19,13 +19,13 @@ llm_interpretation_ui <- function(id) {
   ns <- NS(id)
   tabItem(
     tabName = "llm_interpretation",
-    fluidPage(titlePanel("LLM Interpretation"),
+    fluidPage(titlePanel("Module Annotation"),
               fluidPage(
                 fluidRow(
                 ## Input layout ====
                 column(
                   4,
-                  h4("Step1: Perform LLM Interpretation"),
+                  h4("Step1: Perform Module Annotation"),
                   fluidRow(
                     column(12,
                            fileInput(inputId = ns("upload_enriched_functional_module"),
@@ -190,12 +190,12 @@ llm_interpretation_ui <- function(id) {
                     style = "background-color: #d83428; color: white;"
                   ),
                   br(),br(),
-                  h4("Step2: Check Interpretation Result"),
+                  h4("Step2: Check Module Annotation Result"),
                   fluidRow(
                     column(12,
                            fileInput(
                              inputId = ns("upload_interpretation_result"),
-                             label   = "Upload interpretation result (.rda)",
+                             label   = "Upload module annotation result (.rda)",
                              accept = ".rda"
                            )
                            # shinyBS::bsPopover(
@@ -334,7 +334,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
           annotation_result(interpreted_functional_module@llm_module_interpretation)
           enriched_functional_module(interpreted_functional_module)
 
-          showNotification("Interpretation result loaded successfully!",
+          showNotification("Module annotation result loaded successfully!",
                            type = "message")
         } else {
           shiny::showModal(modalDialog(
@@ -529,7 +529,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
           return()
         }
         
-        message("Interpreting functional modules in progress. This comprehensive analysis requires some time...")
+        message("Annotating functional modules in progress. This comprehensive analysis requires some time...")
 
         requireNamespace("future")
         requireNamespace("promises")
@@ -558,7 +558,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
         #   size = "m"
         # ))
         
-        showNotification("The LLM interpretation is running in the background. Results will appear when ready.", 
+        showNotification("Module annotation is running in the background. Results will appear when ready.", 
                          type = "message", 
                          duration = 5)
 
@@ -595,14 +595,14 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
             function(result) {
               enriched_functional_module(result)
               annotation_result(result@llm_module_interpretation)
-              showNotification("LLM interpretation completed successfully!", type = "message")
+              showNotification("Module annotation completed successfully!", type = "message")
             },
             # Error handler
             function(error) {
               removeModal()
               shiny::showModal(modalDialog(
                 title = "Error",
-                HTML(paste("An error occurred during LLM interpretation:<br><pre>",
+                HTML(paste("An error occurred during module annotation:<br><pre>",
                            error$message, "</pre>")),
                 easyClose = TRUE,
                 footer = modalButton("Close")
@@ -866,7 +866,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
       # Download handler for the prompt
       output$download_llm_interpretation_prompt <- downloadHandler(
         filename = function() {
-          "llm_interpretation_prompt.txt"
+          "module_annotation_prompt.txt"
         },
         content = function(file) {
           req(module_prompt())

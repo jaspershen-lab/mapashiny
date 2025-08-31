@@ -12,7 +12,7 @@ upload_data_ui <- function(id) {
   tabItem(
     tabName = "upload_data",
     fluidPage(
-      titlePanel("Upload Data"),
+      titlePanel("Data Upload"),
       fluidRow(
         column(4,
                fileInput(

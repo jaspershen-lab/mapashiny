@@ -30,7 +30,7 @@ The outcome is a fast, reproducible, and user-friendly pipeline that reduces red
 
 ## 🗣️ Note
 
-MAPA needs OpenAI API key to annotate functional modules with LLM. If you do not have an OpenAI API key, please contact us, and we will (1) provide you with a temporary key for testing purpose, or (2) run the annotation step for you and send you the results.
+MAPA needs OpenAI, Gemini or SiliconFlow API key to annotate functional modules with LLM. If you do not have an API key, please contact us, and we will (1) provide you with a temporary key for testing purpose, or (2) run the annotation step for you and send you the results.
 
 ## 📥 Contact us
 

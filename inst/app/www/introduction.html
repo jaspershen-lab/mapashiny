@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2023-12-25" />
+<meta name="date" content="2025-08-23" />
 
 <title>introduction.knit</title>
 
@@ -353,44 +353,57 @@ display: none;
 </div>
 
 
-<div id="module-annotation-for-pathway-analysis" class="section level1">
-<h1>Module Annotation for Pathway Analysis</h1>
-<p>The R package “MAPA” represents a significant advancement in the
-field of bioinformatics, particularly in the analysis of RNA-seq and
-proteomics data. Developed by Dr. Xiaotao Shen, this tool is available
-on GitHub at <a href="https://github.com/jaspershen/mapa">https://github.com/jaspershen/mapa</a>.</p>
-<p>MAPA is designed to perform pathway enrichment analysis, a crucial
-step in understanding the biological significance of large-scale
-experimental data. By analyzing RNA-seq and proteomics datasets, MAPA
-helps identify enriched biological pathways, providing insights into the
-molecular mechanisms underlying specific diseases or phenotypic
-expressions.</p>
-<p>One of the standout features of MAPA is its ability to reduce
-redundancy in biological information. It achieves this by merging
-enriched pathways into coherent modules and functional modules This not
-only simplifies the interpretation of complex datasets but also provides
-a clearer understanding of the biological processes at play.</p>
-<p>Additionally, MAPA leverages the capabilities of large language
-models like ChatGPT to interpret and contextualize the biological
-results. This integration allows for a more nuanced and comprehensive
-analysis, aligning the computational findings with biological relevance
-to specific diseases or phenotypes.</p>
-<p>Overall, MAPA serves as an essential tool for researchers and
-scientists in the field of bioinformatics, offering a sophisticated yet
-user-friendly approach to pathway analysis and interpretation. Its
-ability to distill complex datasets into meaningful biological insights
-is invaluable for advancing our understanding of various biological
-processes and disease mechanisms.</p>
+<div id="ℹ-about" class="section level2">
+<h2>ℹ️ About</h2>
+<p><strong>MAPA</strong> (Functional Module Identification and
+Annotation for Pathway Analysis Results Using LLM) is a streamlined
+workflow for pathway-enrichment analysis and enrichment result
+interpretation that turns large omics datasets into clear biological
+insight. It is developed by the <a href="https://www.shen-lab.org/">Shen
+Lab at Nanyang Technological University, Singapore</a>. It:</p>
+<ol style="list-style-type: decimal">
+<li><p><strong>Pathway analysis: Detects enriched pathways</strong> from
+your data via over-representation analysis (ORA) or gene set enrichment
+analysis (GSEA).</p></li>
+<li><p><strong>Functional module identification: Clusters overlapping or
+functional-related pathways</strong> into functional modules, so every
+informative pathway—not just the “top 5 or 10”—contributes to the
+story.</p></li>
+<li><p><strong>Functional module annotation: Summaries each module with
+large-language models (LLM)</strong> (e.g., ChatGPT), linking the
+results to the latest findings in literature from PubMed.</p></li>
+</ol>
+<p>The outcome is a fast, reproducible, and user-friendly pipeline that
+reduces redundancy and delivers biologically meaningful interpretations
+for enrichment results.</p>
+<p>📔 The MAPA tutorial is available at <a href="https://www.shen-lab.org/mapa-tutorial/">https://www.shen-lab.org/mapa-tutorial/</a>.</p>
 </div>
-<div id="contacts" class="section level1">
-<h1>Contacts</h1>
-<p>If you have any questions about MAPA, please contact Dr. Xiaotao
-Shen.</p>
-<p><i class="fa fa-weixin"></i> <a href="https://www.shenxt.info/files/wechat_QR.jpg">shenzutao1990</a></p>
-<p><i class="fa fa-envelope"></i> <a href="mailto:shenxt@stanford.edu" class="email">shenxt@stanford.edu</a></p>
-<p><i class="fa fa-twitter"></i> <a href="https://twitter.com/JasperShen1990">Twitter</a></p>
-<p><i class="fa fa-map-marker-alt"></i> <a href="https://www.google.com/maps/place/Alway+Building/@37.4322345,-122.1770883,17z/data=!3m1!4b1!4m5!3m4!1s0x808fa4d335c3be37:0x9057931f3b312c29!8m2!3d37.4322345!4d-122.1748996">M339,
-Alway building, Cooper Lane, Palo Alto, CA 94304</a></p>
+<div id="note" class="section level2">
+<h2>🗣️ Note</h2>
+<p>MAPA needs OpenAI, Gemini or SiliconFlow API key to annotate
+functional modules with LLM. If you do not have an API key, please
+contact us, and we will (1) provide you with a temporary key for testing
+purpose, or (2) run the annotation step for you and send you the
+results.</p>
+</div>
+<div id="contact-us" class="section level2">
+<h2>📥 Contact us</h2>
+<ul>
+<li><p>📩 Email <a href="xiaotao.shen@outlook.com">xiaotao.shen@outlook.com</a></p></li>
+<li><p>🏠 Shen Lab website <a href="https://www.shen-lab.org/">shen-lab.org</a></p></li>
+<li><p>💬 WeChat <a href="https://jaspershen.github.io/image/wechat_QR.jpg">jaspershen1990</a></p></li>
+<li><p>🐦 Twitter <a href="https://twitter.com/xiaotaoshen1990">xiaotaoshen1990</a></p></li>
+</ul>
+</div>
+<div id="more-links" class="section level2">
+<h2>🔗 More links</h2>
+<ul>
+<li><p>📖 <a href="https://www.shen-lab.org/mapa-website/">Citation</a></p></li>
+<li><p>🏠 <a href="https://www.shen-lab.org/mapa-website/">MAPA project
+website</a></p></li>
+<li><p>📔 <a href="https://www.shen-lab.org/mapa-tutorial/">MAPA
+tutorial</a></p></li>
+</ul>
 </div>
 
 
