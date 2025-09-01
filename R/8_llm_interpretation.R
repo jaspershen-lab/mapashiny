@@ -53,31 +53,118 @@ llm_interpretation_ui <- function(id) {
                            selectInput(
                              ns("llm_api_provider"),
                              "API provider",
-                             choices = c("OpenAI" = "openai", 
-                                         "Google" = "gemini",
-                                         "SiliconFlow" = "siliconflow"),
-                             selected = "openai")),
+                             choices = c(
+                               "SiliconFlow" = "siliconflow",
+                               "OpenAI" = "openai", 
+                               "Google" = "gemini"),
+                             selected = "siliconflow")),
                     column(8,
                            textInput(ns("api_key"),
                                      "API key",
                                      value = ""))
                   ),
+                  # fluidRow(
+                  #   column(
+                  #     12,
+                  #     textInput(ns("embedding_model"),
+                  #               "Embedding model",
+                  #               value = "text-embedding-3-small")
+                  #   )
+                  # ),
+                  # fluidRow(
+                  #   column(
+                  #     12,
+                  #     textInput(ns("llm_model"),
+                  #               "LLM model",
+                  #               value = "gpt-4o-mini-2024-07-18")
+                  #   )
+                  # ),
+                  fluidRow(
+                    column(
+                      12,
+                      selectizeInput(ns("embedding_model"),
+                                     "Embedding model",
+                                     choices = list(
+                                       "SiliconFlow" = list(
+                                         "Qwen/Qwen3-Embedding-0.6B" = "Qwen/Qwen3-Embedding-0.6B",
+                                         "Qwen/Qwen3-Embedding-4B" = "Qwen/Qwen3-Embedding-4B",
+                                         "Qwen/Qwen3-Embedding-8B" = "Qwen/Qwen3-Embedding-8B"
+                                       ),
+                                       "OpenAI" = list(
+                                         "text-embedding-3-small" = "text-embedding-3-small",
+                                         "text-embedding-3-large" = "text-embedding-3-large",
+                                         "text-embedding-ada-002" = "text-embedding-ada-002"
+                                       ),
+                                       "Google Gemini" = list(
+                                         "models/text-embedding-004" = "models/text-embedding-004",
+                                         "models/gemini-embedding-001" = "models/gemini-embedding-001"
+                                       )
+                                     ),
+                                     selected = "Qwen/Qwen3-Embedding-0.6B",
+                                     options = list(
+                                       create = TRUE,
+                                       placeholder = "Select or type a model name"
+                                     ))
+                    )
+                  ),
+                  fluidRow(
+                    column(
+                      12,
+                      selectizeInput(ns("llm_model"),
+                                     "LLM model",
+                                     choices = list(
+                                       "SiliconFlow" = list(
+                                         "Qwen/Qwen3-8B" = "Qwen/Qwen3-8B",
+                                         "Qwen/Qwen3-14B" = "Qwen/Qwen3-14B",
+                                         "Qwen/Qwen3-30B-A3B-Thinking-2507" = "Qwen/Qwen3-30B-A3B-Thinking-2507",
+                                         "Qwen/Qwen3-32B" = "Qwen/Qwen3-32B"
+                                       ),
+                                       "OpenAI GPT" = list(
+                                         "gpt-4o-mini-2024-07-18" = "gpt-4o-mini-2024-07-18"
+                                       ),
+                                       "Google Gemini" = list(
+                                         "models/gemini-1.5-flash" = "models/gemini-1.5-flash",
+                                         "models/gemini-2.5-flash" = "models/gemini-2.5-flash"
+                                       )
+                                     ),
+                                     selected = "Qwen/Qwen3-8B",
+                                     options = list(
+                                       create = TRUE,
+                                       placeholder = "Select or type a model name"
+                                     ))
+                    )
+                  ),
+                  fluidRow(
+                    column(
+                      12,
+                      helpText(
+                        tags$div(
+                          style = "color: #28a745; font-weight: 500; margin-bottom: 8px;",
+                          "✓ Models shown in the selection have been tested and work stably"
+                        ),
+                        tags$strong("Find more models at:"),
+                        tags$br(),
+                        "• SiliconFlow (Intl): ", tags$a("cloud.siliconflow.com/models", 
+                                                         href = "https://cloud.siliconflow.com/models", 
+                                                         target = "_blank"),
+                        tags$br(),
+                        "• SiliconFlow (CN): ", tags$a("cloud.siliconflow.cn/me/models", 
+                                                       href = "https://cloud.siliconflow.cn/me/models", 
+                                                       target = "_blank"),
+                        tags$br(),
+                        "• OpenAI: ", tags$a("platform.openai.com/docs/models", 
+                                             href = "https://platform.openai.com/docs/models", 
+                                             target = "_blank"),
+                        tags$br(),
+                        "• Google Gemini: ", tags$a("ai.google.dev/gemini-api/docs/models", 
+                                                    href = "https://ai.google.dev/gemini-api/docs/models", 
+                                                    target = "_blank")
+                      )
+                    )
+                  ),
                   fluidRow(
                     column(
                       6,
-                      textInput(ns("llm_model"),
-                                "LLM model",
-                                value = "gpt-4o-mini-2024-07-18")
-                    ),
-                    column(
-                      6,
-                      textInput(ns("embedding_model"),
-                                "Embedding model",
-                                value = "text-embedding-3-small")
-                    )),
-                  fluidRow(
-                    column(
-                      3,
                       numericInput(ns("module_content_number_cutoff"),
                                    "Module size cutoff",
                                    value = 1,
@@ -85,15 +172,17 @@ llm_interpretation_ui <- function(id) {
                                    max = 1000)     
                     ),
                     column(
-                      3,
+                      6,
                       numericInput(ns("years"),
                                    "Years to search",
                                    value = 5,
                                    min = 1,
                                    max = 1000)
-                    ),
+                    )
+                  ),
+                  fluidRow(
                     column(
-                      6,
+                      12,
                       textInput(
                         ns("phenotype"),
                         "Disease or phenotype",
@@ -175,7 +264,7 @@ llm_interpretation_ui <- function(id) {
                            #           value = ""),
                            fileInput(
                              ns("local_corpus_file"),
-                             "Choose local corpus PDF Files",
+                             "(Optional) Choose local corpus PDF Files",
                              accept = c(".pdf", "application/pdf")
                            )
                     )
@@ -360,7 +449,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, temp_dir, 
           updateNumericInput(
             session,
             inputId = "module_content_number_cutoff",  # No need for ns() here
-            label = "Cutoff for module content number",
+            label = "Module size cutoff",
             value = 1,
             min = 0,
             max = max_module_content_number - 1
