@@ -33,6 +33,7 @@ golem::add_dockerfile_with_renv_shinyproxy()
 
 ## Posit ----
 ## If you want to deploy on Posit related platforms
+### create platform-specific configuration files:
 golem::add_positconnect_file()
 golem::add_shinyappsio_file()
 golem::add_shinyserver_file()
@@ -55,7 +56,8 @@ rsconnect::deployApp(
     "man/",
     "NAMESPACE",
     "DESCRIPTION",
-    "app.R"
+    "app.R",
+    "users"
   ),
   appId = rsconnect::deployments(".")$appID,
   lint = FALSE,
@@ -64,3 +66,7 @@ rsconnect::deployApp(
 
 # check the dependency source
 # deps <- rsconnect::appDependencies(".")
+
+# Clear existing deployments
+rsconnect::forgetDeployment()
+rsconnect::removeAccount("yifei-ge")

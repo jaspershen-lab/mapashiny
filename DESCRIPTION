@@ -29,6 +29,7 @@ Imports:
     markdown,
     org.Hs.eg.db,
     patchwork,
+    pkgload,
     promises,
     readxl,
     shiny,

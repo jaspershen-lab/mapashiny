@@ -633,6 +633,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, temp_dir, 
         
         promises::future_promise({
           requireNamespace("mapa", quietly = TRUE)
+          
           # This code runs in a separate R process
           result <- mapa::llm_interpret_module(
             object = object,
