@@ -389,6 +389,74 @@ llm_interpretation_server <- function(id, enriched_functional_module, temp_dir, 
         getwd()
       })
       
+      # Server logic to update model choices based on API provider selection
+      observeEvent(input$llm_api_provider, {
+        
+        # Define embedding model choices for each API provider
+        embedding_choices <- switch(input$llm_api_provider,
+                                    "siliconflow" = list(
+                                      "Qwen/Qwen3-Embedding-0.6B" = "Qwen/Qwen3-Embedding-0.6B",
+                                      "Qwen/Qwen3-Embedding-4B" = "Qwen/Qwen3-Embedding-4B",
+                                      "Qwen/Qwen3-Embedding-8B" = "Qwen/Qwen3-Embedding-8B"
+                                    ),
+                                    "openai" = list(
+                                      "text-embedding-3-small" = "text-embedding-3-small",
+                                      "text-embedding-3-large" = "text-embedding-3-large",
+                                      "text-embedding-ada-002" = "text-embedding-ada-002"
+                                    ),
+                                    "gemini" = list(
+                                      "models/text-embedding-004" = "models/text-embedding-004",
+                                      "models/gemini-embedding-001" = "models/gemini-embedding-001"
+                                    )
+        )
+        
+        # Define LLM model choices for each API provider
+        llm_choices <- switch(input$llm_api_provider,
+                              "siliconflow" = list(
+                                "Qwen/Qwen3-8B" = "Qwen/Qwen3-8B",
+                                "Qwen/Qwen3-14B" = "Qwen/Qwen3-14B",
+                                "Qwen/Qwen3-30B-A3B-Thinking-2507" = "Qwen/Qwen3-30B-A3B-Thinking-2507",
+                                "Qwen/Qwen3-32B" = "Qwen/Qwen3-32B"
+                              ),
+                              "openai" = list(
+                                "gpt-4o-mini-2024-07-18" = "gpt-4o-mini-2024-07-18"
+                              ),
+                              "gemini" = list(
+                                "models/gemini-1.5-flash" = "models/gemini-1.5-flash",
+                                "models/gemini-2.5-flash" = "models/gemini-2.5-flash"
+                              )
+        )
+        
+        # Set default selections based on API provider
+        default_embedding <- switch(input$llm_api_provider,
+                                    "siliconflow" = "Qwen/Qwen3-Embedding-0.6B",
+                                    "openai" = "text-embedding-3-small",
+                                    "gemini" = "models/text-embedding-004"
+        )
+        
+        default_llm <- switch(input$llm_api_provider,
+                              "siliconflow" = "Qwen/Qwen3-8B",
+                              "openai" = "gpt-4o-mini-2024-07-18",
+                              "gemini" = "models/gemini-1.5-flash"
+        )
+        
+        # Update the embedding model selectizeInput
+        updateSelectizeInput(
+          session,
+          "embedding_model",
+          choices = embedding_choices,
+          selected = default_embedding
+        )
+        
+        # Update the LLM model selectizeInput
+        updateSelectizeInput(
+          session,
+          "llm_model",
+          choices = llm_choices,
+          selected = default_llm
+        )
+      })
+      
       ## Load enriched_functional_module.rda and navigate to specified directory
       observeEvent(
         input$upload_enriched_functional_module, {
