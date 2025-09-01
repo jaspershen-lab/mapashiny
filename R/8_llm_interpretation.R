@@ -870,6 +870,19 @@ llm_interpretation_server <- function(id, enriched_functional_module, temp_dir, 
       observeEvent(enriched_functional_module(), {
         req(annotation_result())
         req(orgdb())
+        
+        local_corpus_dir <- user_temp_corpus_path()
+        
+        print(input$module_content_number_cutoff)
+        print(input$llm_api_provider)
+        print(input$llm_model)
+        print(input$embedding_model)
+        print(input$api_key)
+        print(local_corpus_dir)
+        print(input$phenotype)
+        print(input$years)
+        print(as.character(substitute(orgdb())))
+        
         ### Save code
         interpretation_code <-
           functional_module_annotation_code <-
@@ -884,7 +897,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, temp_dir, 
                 embedding_model = "%s",
                 api_key = "%s",
                 embedding_output_dir = "%s",
-                local_corpus_dir = %s,
+                local_corpus_dir = "%s",
                 phenotype = "%s",
                 years = %s,
                 orgdb = %s
@@ -897,7 +910,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, temp_dir, 
             input$embedding_model,
             input$api_key,
             "user_temp_embedding_ouput_dir",
-            if (user_temp_corpus_path() == "") NULL else ("user_temp_local_corpus_dir"),
+            if (is.null(local_corpus_dir)) local_corpus_dir else ("user_temp_local_corpus_dir"),
             input$phenotype,
             input$years,
             as.character(substitute(orgdb))
