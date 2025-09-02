@@ -136,7 +136,7 @@ pathway_clustering_ui <- function(id) {
                                                  numericInput(
                                                    ns("enirched_functional_module_plot_degree_cutoff"),
                                                    "Degree cutoff",
-                                                   value = 0,
+                                                   value = 1,
                                                    min = 0,
                                                    max = 1000)
                                           )

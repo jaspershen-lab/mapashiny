@@ -292,15 +292,32 @@ pathway_similarity_ui <- function(id) {
                               choices = c("OpenAI" = "openai", 
                                           "Google" = "gemini",
                                           "SiliconFlow" = "siliconflow"),
-                              selected = "openai")
+                              selected = "siliconflow")
                      ),
                      column(8,
-                            textInput(
-                              ns("embedding_model"),
-                              tags$span(
-                                class = "normal-label",
-                                "Embedding model"),
-                              value = "text-embedding-3-small")
+                            selectizeInput(ns("embedding_model"),
+                                           "Embedding model",
+                                           choices = list(
+                                             "SiliconFlow" = list(
+                                               "Qwen/Qwen3-Embedding-0.6B" = "Qwen/Qwen3-Embedding-0.6B",
+                                               "Qwen/Qwen3-Embedding-4B" = "Qwen/Qwen3-Embedding-4B",
+                                               "Qwen/Qwen3-Embedding-8B" = "Qwen/Qwen3-Embedding-8B"
+                                             ),
+                                             "OpenAI" = list(
+                                               "text-embedding-3-small" = "text-embedding-3-small",
+                                               "text-embedding-3-large" = "text-embedding-3-large",
+                                               "text-embedding-ada-002" = "text-embedding-ada-002"
+                                             ),
+                                             "Google Gemini" = list(
+                                               "models/text-embedding-004" = "models/text-embedding-004",
+                                               "models/gemini-embedding-001" = "models/gemini-embedding-001"
+                                             )
+                                           ),
+                                           selected = "Qwen/Qwen3-Embedding-0.6B",
+                                           options = list(
+                                             create = TRUE,
+                                             placeholder = "Select or type a model name"
+                                           ))
                      )),
                    fluidRow(
                      column(
@@ -531,6 +548,43 @@ pathway_similarity_ui <- function(id) {
 pathway_similarity_server <- function(id, enriched_pathways, similarity_result, tab_switch) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
+    
+    # Server logic to update model choices based on API provider selection
+    observeEvent(input$api_provider, {
+      
+      # Define embedding model choices for each API provider
+      embedding_choices <- switch(input$api_provider,
+                                  "siliconflow" = list(
+                                    "Qwen/Qwen3-Embedding-0.6B" = "Qwen/Qwen3-Embedding-0.6B",
+                                    "Qwen/Qwen3-Embedding-4B" = "Qwen/Qwen3-Embedding-4B",
+                                    "Qwen/Qwen3-Embedding-8B" = "Qwen/Qwen3-Embedding-8B"
+                                  ),
+                                  "openai" = list(
+                                    "text-embedding-3-small" = "text-embedding-3-small",
+                                    "text-embedding-3-large" = "text-embedding-3-large",
+                                    "text-embedding-ada-002" = "text-embedding-ada-002"
+                                  ),
+                                  "gemini" = list(
+                                    "models/text-embedding-004" = "models/text-embedding-004",
+                                    "models/gemini-embedding-001" = "models/gemini-embedding-001"
+                                  )
+      )
+      
+      # Set default selections based on API provider
+      default_embedding <- switch(input$api_provider,
+                                  "siliconflow" = "Qwen/Qwen3-Embedding-0.6B",
+                                  "openai" = "text-embedding-3-small",
+                                  "gemini" = "models/text-embedding-004"
+      )
+      
+      # Update the embedding model selectizeInput
+      updateSelectizeInput(
+        session,
+        "embedding_model",
+        choices = embedding_choices,
+        selected = default_embedding
+      )
+    })
     
     # Toggle parameter panels based on method selection
     observeEvent(input$similarity_method, {
@@ -1145,7 +1199,7 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
                              numericInput(
                                ns("enirched_module_plot_degree_cutoff_go"),
                                "Degree cutoff",
-                               value = 0,
+                               value = 1,
                                min = 0,
                                max = 1000)
                       )
@@ -1172,7 +1226,7 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
                              numericInput(
                                ns("enirched_module_plot_degree_cutoff_kegg"),
                                "Degree cutoff",
-                               value = 0,
+                               value = 1,
                                min = 0,
                                max = 1000
                              )
@@ -1200,7 +1254,7 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
                              numericInput(
                                ns("enirched_module_plot_degree_cutoff_reactome"),
                                "Degree cutoff",
-                               value = 0,
+                               value = 1,
                                min = 0,
                                max = 1000)
                       )
@@ -1234,7 +1288,7 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
                              numericInput(
                                ns("enirched_module_plot_degree_cutoff_hmdb"),
                                "Degree cutoff",
-                               value = 0,
+                               value = 1,
                                min = 0,
                                max = 1000)
                       )
@@ -1261,7 +1315,7 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
                              numericInput(
                                ns("enirched_module_plot_degree_cutoff_metkegg"),
                                "Degree cutoff",
-                               value = 0,
+                               value = 1,
                                min = 0,
                                max = 1000
                              )

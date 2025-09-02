@@ -300,7 +300,7 @@ data_visualization_ui <- function(id) {
                                   numericInput(
                                     ns("module_similarity_network_degree_cutoff"),
                                     "Degree cutoff",
-                                    value = 0,
+                                    value = 1,
                                     min = 0,
                                     max = 1000)
                            )
