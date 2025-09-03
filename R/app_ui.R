@@ -185,6 +185,7 @@ golem_add_external_resources <- function() {
       path = app_sys("app/www"),
       app_title = "mapashiny"
     ),
+    
     # Add external CSS file
     tags$link(rel = "stylesheet", type = "text/css", href = "www/app.css"),
     # Add external JS file

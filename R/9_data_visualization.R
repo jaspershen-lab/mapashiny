@@ -376,7 +376,11 @@ data_visualization_ui <- function(id) {
                   ),
                   column(8,
                          br(),
-                         shiny::plotOutput(ns("module_similarity_network"))
+                         # shiny::plotOutput(ns("module_similarity_network"))
+                         div(class = "scrollable-container",
+                             shiny::plotOutput(ns("module_similarity_network"), 
+                                        width = "100%", height = "700px")
+                         )
                   )
                 )
               ),
@@ -476,7 +480,11 @@ data_visualization_ui <- function(id) {
                   ),
                   column(8,
                          br(),
-                         shiny::plotOutput(ns("module_information1")),
+                         div(
+                           style = "width: 100%; height: 400px; overflow: auto; border: 1px solid #ccc;",
+                           shiny::plotOutput(ns("module_information1"),
+                                             width = "100%", height = "600px")
+                         ),
                          shiny::plotOutput(ns("module_information2")),
                          shiny::plotOutput(ns("module_information3"))
                   )
@@ -752,7 +760,11 @@ data_visualization_ui <- function(id) {
                   ),
                   column(8,
                          br(),
-                         shiny::plotOutput(ns("relationship_network"))
+                         div(
+                           class = "scrollable-container",
+                           shiny::plotOutput(ns("relationship_network"),
+                                             height = "800px")
+                         )
                   )
                 )
               )
@@ -874,8 +886,19 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
           names <- ls(tempEnv)
 
           if (length(names) == 1) {
-            # If enriched_functional_module is another reactiveVal, uncomment the next line
-            enriched_functional_module(get(names[1], envir = tempEnv))
+            object <- get(names[1], envir = tempEnv)
+            if (!("merge_modules" %in% names(object@process_info))) {
+              shiny::showModal(
+                modalDialog(
+                  title = "Error",
+                  "Please perform module identification before visualization.",
+                  easyClose = TRUE,
+                  footer = modalButton("Close")
+                )
+              )
+            } else {
+              enriched_functional_module(get(names[1], envir = tempEnv)) 
+            }
           } else {
             message("The .rda file does not contain exactly one object.")
             shiny::showModal(
@@ -888,7 +911,7 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
             )
           }
         }
-
+        
         if ((query_type() == "gene") & ("enrich_pathway" %in% names(enriched_functional_module()@process_info))) {
           all_choices <- c("qscore", "RichFactor", "FoldEnrichment")
         } else if ((query_type() == "gene") & ("do_gsea" %in% names(enriched_functional_module()@process_info))) {
@@ -917,7 +940,6 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
       })
 
       observe({
-        
         req(enriched_functional_module())
         
         if (query_type() == "gene") {
@@ -1237,13 +1259,16 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
 
       ## Module similarity network ----
       # Observe generate module_similarity_network button click
-      module_similarity_network <-
-        reactiveVal()
-
-      module_similarity_network_code <-
-        reactiveVal()
-
-      observeEvent(input$generate_module_similarity_network, {
+      module_similarity_network <- reactiveVal()
+      module_similarity_network_code <- reactiveVal()
+      
+      module_similarity_network_without_legend <- reactiveVal(NULL)
+      show_module_color_legend <- reactiveVal(TRUE)
+      
+      observe({
+        req(input$generate_module_similarity_network)
+        req(input$module_similarity_network_degree_cutoff)
+        
         if (is.null(enriched_functional_module())) {
           # No enriched functional module available
           shiny::showModal(
@@ -1256,7 +1281,21 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
           )
         } else {
           # shinyjs::show("loading")
-
+          
+          if (sum(enriched_functional_module()@merged_module$functional_module_result$module_content_number > input$module_similarity_network_degree_cutoff) > 34) {
+            show_module_color_legend(FALSE)
+          } else {
+            show_module_color_legend(TRUE)
+          }
+          
+          if (!show_module_color_legend()) {
+            showNotification(
+              "Note: With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
+              type = "message",
+              duration = NULL
+            )
+          }
+          
           withProgress(message = 'Analysis in progress...', {
             tryCatch(
               {
@@ -1270,8 +1309,16 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
                     llm_text = input$module_similarity_network_llm_text,
                     text_all = input$module_similarity_network_text_all
                     # translation = input$module_similarity_network_translation
-                  )
+                  ) + 
+                  ggplot2::theme(aspect.ratio = 1)
                 
+                if (!show_module_color_legend()) {
+                  plot_without_module_legend <- 
+                    plot +
+                    ggplot2::guides(fill = "none")
+                  
+                  module_similarity_network_without_legend(plot_without_module_legend)
+                }
                 module_similarity_network(plot)
               },
               error = function(e) {
@@ -1300,7 +1347,8 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
             degree_cutoff = %s,
             text = %s,
             llm_text = %s,
-            text_all = %s)
+            text_all = %s) + 
+            ggplot2::theme(aspect.ratio = 1)
             ',
               paste0('"', input$module_similarity_network_level, '"'),
               paste0('"', input$module_similarity_network_database, '"'),
@@ -1318,8 +1366,21 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
       output$module_similarity_network <-
         renderPlot({
           req(module_similarity_network())
-          module_similarity_network()
+          
+          if (show_module_color_legend()) {
+            module_similarity_network()
+          } else {
+            module_similarity_network_without_legend()
+          }
         },
+        # width = function() {
+        #   req(input$module_similarity_network_width)
+        #   input$module_similarity_network_width * 100
+        # },
+        # height = function() {
+        #   req(input$module_similarity_network_height) 
+        #   input$module_similarity_network_height * 100
+        # },
         res = 96)
 
 
@@ -1388,9 +1449,6 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
           shinyjs::enable("download_module_similarity_network")
         }
       })
-
-
-
 
       ## Module information plot ----
       # Update the module ID
