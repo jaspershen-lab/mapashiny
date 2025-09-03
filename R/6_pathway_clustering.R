@@ -117,7 +117,10 @@ pathway_clustering_ui <- function(id) {
                                       ),
                                       tabPanel(
                                         title = "Data visualization",
-                                        shiny::plotOutput(ns("enirched_functional_module_plot")),
+                                        div(class = "scrollable-container",
+                                            shiny::plotOutput(ns("enirched_functional_module_plot"), 
+                                                              width = "100%", height = "700px")
+                                        ),
                                         br(),
                                         fluidRow(
                                           column(3,
@@ -136,7 +139,7 @@ pathway_clustering_ui <- function(id) {
                                                  numericInput(
                                                    ns("enirched_functional_module_plot_degree_cutoff"),
                                                    "Degree cutoff",
-                                                   value = 0,
+                                                   value = 1,
                                                    min = 0,
                                                    max = 1000)
                                           )
@@ -159,7 +162,11 @@ pathway_clustering_ui <- function(id) {
                                     tabsetPanel(
                                       tabPanel(
                                         title = "Module Size",
-                                        shiny::plotOutput(ns("assess_cluster_size_plot")),
+                                        div(
+                                          class = "scrollable-container",
+                                          shiny::plotOutput(ns("assess_cluster_size_plot"),
+                                                            height = "800px")
+                                        ),
                                         br(),
                                         fluidRow(
                                           column(4,
@@ -180,7 +187,11 @@ pathway_clustering_ui <- function(id) {
                                       ),
                                       tabPanel(
                                         title = "Silhouette Scores",
-                                        shiny::plotOutput(ns("assess_cluster_evaluation_plot")),
+                                        div(
+                                          class = "scrollable-container",
+                                          shiny::plotOutput(ns("assess_cluster_evaluation_plot"),
+                                                            height = "600px")
+                                        ),
                                         br(),
                                         fluidRow(
                                           column(4,
@@ -307,7 +318,8 @@ pathway_clustering_server <- function(id, similarity_result, enriched_functional
     output$optimal_plot <- renderPlot({
       req(optimal_results())
       optimal_results()$evaluation_plot
-    })
+    },
+    res = 96)
     
     # Render the table for optimal parameter analysis
     output$optimal_table <- renderDataTable({
@@ -488,7 +500,13 @@ pathway_clustering_server <- function(id, similarity_result, enriched_functional
     # Data visualization ====
     ###define enirched_functional_module_plot
     enirched_functional_module_plot <- reactiveVal()
-    observeEvent(input$generate_enirched_functional_module, {
+    enirched_functional_module_plot_without_module_legend <- reactiveVal()
+    show_fm_module_color_legend <- reactiveVal(TRUE)
+    
+    observe({
+      req(input$generate_enirched_functional_module)
+      req(input$enirched_functional_module_plot_degree_cutoff)
+      
       # Check if enriched_functional_module is available
       if (is.null(enriched_functional_module()) ||
           length(enriched_functional_module()) == 0) {
@@ -504,6 +522,18 @@ pathway_clustering_server <- function(id, similarity_result, enriched_functional
         withProgress(message = 'Analysis in progress...', {
           tryCatch(
             {
+              if (sum(enriched_functional_module()@merged_module$functional_module_result$module_content_number > input$enirched_functional_module_plot_degree_cutoff) > 34) {
+                show_fm_module_color_legend(FALSE)
+                
+                showNotification(
+                  "Note: With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
+                  type = "message",
+                  duration = NULL
+                )
+              } else {
+                show_fm_module_color_legend(TRUE)
+              }
+              
               plot <-
                 mapa::plot_similarity_network(
                   object = enriched_functional_module(),
@@ -511,7 +541,15 @@ pathway_clustering_server <- function(id, similarity_result, enriched_functional
                   degree_cutoff = input$enirched_functional_module_plot_degree_cutoff,
                   text = input$enirched_functional_module_plot_text,
                   text_all = input$enirched_functional_module_plot_text_all
-                )
+                ) + ggplot2::theme(aspect.ratio = 1)
+              
+              if (!show_fm_module_color_legend()) {
+                plot_without_module_legend <- 
+                  plot +
+                  ggplot2::guides(fill = "none")
+                
+                enirched_functional_module_plot_without_module_legend(plot_without_module_legend)
+              }
               
               enirched_functional_module_plot(plot)
             },
@@ -533,11 +571,18 @@ pathway_clustering_server <- function(id, similarity_result, enriched_functional
     output$enirched_functional_module_plot <-
       shiny::renderPlot({
         req(tryCatch(
-          enirched_functional_module_plot(),
+          {
+            if (show_fm_module_color_legend()) {
+              enirched_functional_module_plot()
+            } else {
+              enirched_functional_module_plot_without_module_legend()
+            }
+          },
           error = function(e)
             NULL
         ))
-      })
+      },
+      res = 96)
     
     # --- Server Logic for "Assess Clustering" ----
     assess_clustering_code <- reactiveVal()
@@ -605,13 +650,15 @@ pathway_clustering_server <- function(id, similarity_result, enriched_functional
       renderPlot({
         req(assess_clustering_result())
         assess_clustering_result()$size_plot
-      })
+      },
+      res = 96)
     
     output$assess_cluster_evaluation_plot <-
       renderPlot({
         req(assess_clustering_result())
         assess_clustering_result()$evaluation_plot
-      })
+      },
+      res = 96)
     
     output$quality_metrics <-
       shiny::renderDataTable({

@@ -289,11 +289,9 @@ pathway_similarity_ui <- function(id) {
                               tags$span(
                                 class = "normal-label",
                                 "API provider"),
-                              choices = c(
-                                "SiliconFlow" = "siliconflow",
-                                "OpenAI" = "openai", 
-                                "Google" = "gemini"
-                                ),
+                              choices = c("OpenAI" = "openai", 
+                                          "Google" = "gemini",
+                                          "SiliconFlow" = "siliconflow"),
                               selected = "siliconflow")
                      ),
                      column(8,
@@ -1182,7 +1180,10 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
                 tabsetPanel(
                   tabPanel(
                     title = "GO",
-                    shiny::plotOutput(ns("enirched_module_go_plot")),
+                    div(class = "scrollable-container",
+                        shiny::plotOutput(ns("enirched_module_go_plot"), 
+                                          width = "100%", height = "700px")
+                    ),
                     br(),
                     fluidRow(
                       column(3,
@@ -1201,7 +1202,7 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
                              numericInput(
                                ns("enirched_module_plot_degree_cutoff_go"),
                                "Degree cutoff",
-                               value = 0,
+                               value = 1,
                                min = 0,
                                max = 1000)
                       )
@@ -1209,7 +1210,10 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
                   ),
                   tabPanel(
                     title = "KEGG",
-                    shiny::plotOutput(ns("enirched_module_kegg_plot")),
+                    div(class = "scrollable-container",
+                        shiny::plotOutput(ns("enirched_module_kegg_plot"), 
+                                          width = "100%", height = "700px")
+                    ),
                     br(),
                     fluidRow(
                       column(3,
@@ -1228,7 +1232,7 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
                              numericInput(
                                ns("enirched_module_plot_degree_cutoff_kegg"),
                                "Degree cutoff",
-                               value = 0,
+                               value = 1,
                                min = 0,
                                max = 1000
                              )
@@ -1237,7 +1241,10 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
                   ),
                   tabPanel(
                     title = "Reactome",
-                    shiny::plotOutput(ns("enirched_module_reactome_plot")),
+                    div(class = "scrollable-container",
+                        shiny::plotOutput(ns("enirched_module_reactome_plot"), 
+                                          width = "100%", height = "700px")
+                    ),
                     br(),
                     fluidRow(
                       column(3,
@@ -1256,7 +1263,7 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
                              numericInput(
                                ns("enirched_module_plot_degree_cutoff_reactome"),
                                "Degree cutoff",
-                               value = 0,
+                               value = 1,
                                min = 0,
                                max = 1000)
                       )
@@ -1271,7 +1278,10 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
                 tabsetPanel(
                   tabPanel(
                     title = "SMPDB",
-                    shiny::plotOutput(ns("enirched_module_hmdb_plot")),
+                    div(class = "scrollable-container",
+                        shiny::plotOutput(ns("enirched_module_hmdb_plot"), 
+                                          width = "100%", height = "700px")
+                    ),
                     br(),
                     fluidRow(
                       column(3,
@@ -1290,7 +1300,7 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
                              numericInput(
                                ns("enirched_module_plot_degree_cutoff_hmdb"),
                                "Degree cutoff",
-                               value = 0,
+                               value = 1,
                                min = 0,
                                max = 1000)
                       )
@@ -1298,7 +1308,10 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
                   ),
                   tabPanel(
                     title = "KEGG",
-                    shiny::plotOutput(ns("enirched_module_metkegg_plot")),
+                    div(class = "scrollable-container",
+                        shiny::plotOutput(ns("enirched_module_metkegg_plot"), 
+                                          width = "100%", height = "700px")
+                    ),
                     br(),
                     fluidRow(
                       column(3,
@@ -1317,7 +1330,7 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
                              numericInput(
                                ns("enirched_module_plot_degree_cutoff_metkegg"),
                                "Degree cutoff",
-                               value = 0,
+                               value = 1,
                                min = 0,
                                max = 1000
                              )
@@ -1452,10 +1465,15 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
   )
   
   ## Data visualization ====
-  # GO Plot generation logic
-  enirched_module_go_plot <-
-    reactiveVal()
-  observeEvent(input$generate_enirched_module_plot_go, {
+  ### GO Plot generation logic ====
+  enirched_module_go_plot <- reactiveVal()
+  enriched_module_go_plot_without_module_legend <- reactiveVal()
+  show_go_module_color_legend <- reactiveVal(TRUE)
+  
+  observe({
+    req(input$generate_enirched_module_plot_go)
+    req(input$enirched_module_plot_degree_cutoff_go)
+    
     # Check if enriched_modules is available
     if (is.null(similarity_result()) ||
         length(similarity_result()) == 0) {
@@ -1469,6 +1487,17 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
       )
     } else {
       # shinyjs::show("loading")
+      if (sum(similarity_result()@merged_pathway_go$module_result$module_content_number > input$enirched_module_plot_degree_cutoff_go) > 34) {
+        show_go_module_color_legend(FALSE)
+        
+        showNotification(
+          "Note: With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
+          type = "message",
+          duration = NULL
+        )
+      } else {
+        show_go_module_color_legend(TRUE)
+      }
       
       withProgress(message = 'Analysis in progress...', {
         tryCatch(
@@ -1481,7 +1510,14 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
                 degree_cutoff = input$enirched_module_plot_degree_cutoff_go,
                 text = input$enirched_module_plot_text_go,
                 text_all = input$enirched_module_plot_text_all_go
-              )
+              ) + 
+              ggplot2::theme(aspect.ratio = 1)
+            
+            if (!show_go_module_color_legend()) {
+              plot_without_legend <- plot +
+                ggplot2::guides(fill = "none")
+              enriched_module_go_plot_without_module_legend(plot_without_legend)
+            }
             
             enirched_module_go_plot(plot)
           },
@@ -1505,16 +1541,27 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
   output$enirched_module_go_plot <-
     shiny::renderPlot({
       req(tryCatch(
-        enirched_module_go_plot(),
+        {
+          if (show_go_module_color_legend()) {
+            enirched_module_go_plot()
+          } else {
+            enriched_module_go_plot_without_module_legend()
+          }
+        },
         error = function(e)
           NULL
       ))
     })
   
-  # kegg Plot generation logic
-  enirched_module_kegg_plot <-
-    reactiveVal()
-  observeEvent(input$generate_enirched_module_plot_kegg, {
+  ### KEGG Plot generation logic ====
+  enirched_module_kegg_plot <- reactiveVal()
+  enriched_module_kegg_plot_without_module_legend <- reactiveVal()
+  show_kegg_module_color_legend <- reactiveVal(TRUE)
+  
+  observe({
+    req(input$generate_enirched_module_plot_kegg)
+    req(input$enirched_module_plot_degree_cutoff_kegg)
+    
     # Check if similarity_result is available
     if (is.null(similarity_result()) ||
         length(similarity_result()) == 0) {
@@ -1528,6 +1575,17 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
       )
     } else {
       # shinyjs::show("loading")
+      if (sum(similarity_result()@merged_pathway_kegg$module_result$module_content_number > input$enirched_module_plot_degree_cutoff_kegg) > 34) {
+        show_kegg_module_color_legend(FALSE)
+        
+        showNotification(
+          "Note: With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
+          type = "message",
+          duration = NULL
+        )
+      } else {
+        show_kegg_module_color_legend(TRUE)
+      }
       
       withProgress(message = 'Analysis in progress...', {
         tryCatch(
@@ -1540,7 +1598,14 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
                 degree_cutoff = input$enirched_module_plot_degree_cutoff_kegg,
                 text = input$enirched_module_plot_text_kegg,
                 text_all = input$enirched_module_plot_text_all_kegg
-              )
+              ) + 
+              ggplot2::theme(aspect.ratio = 1)
+            
+            if (!show_kegg_module_color_legend()) {
+              plot_without_legend <- plot +
+                ggplot2::guides(fill = "none")
+              enriched_module_kegg_plot_without_module_legend(plot_without_legend)
+            }
             
             enirched_module_kegg_plot(plot)
           },
@@ -1564,16 +1629,27 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
   output$enirched_module_kegg_plot <-
     shiny::renderPlot({
       req(tryCatch(
-        enirched_module_kegg_plot(),
+        {
+          if (show_go_module_color_legend()) {
+            enirched_module_kegg_plot()
+          } else {
+            enriched_module_kegg_plot_without_module_legend()
+          }
+        },
         error = function(e)
           NULL
       ))
     })
   
-  # reactome Plot generation logic
-  enirched_module_reactome_plot <-
-    reactiveVal()
-  observeEvent(input$generate_enirched_module_plot_reactome, {
+  ### Reactome Plot generation logic ====
+  enirched_module_reactome_plot <- reactiveVal()
+  enriched_module_reactome_plot_without_module_legend <- reactiveVal()
+  show_reactome_module_color_legend <- reactiveVal(TRUE)
+  
+  observe({
+    req(input$generate_enirched_module_plot_reactome)
+    req(input$enirched_module_plot_degree_cutoff_reactome)
+    
     # Check if similarity_result is available
     if (is.null(similarity_result()) ||
         length(similarity_result()) == 0) {
@@ -1587,6 +1663,17 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
       )
     } else {
       # shinyjs::show("loading")
+      if (sum(similarity_result()@merged_pathway_reactome$module_result$module_content_number > input$enirched_module_plot_degree_cutoff_reactome) > 34) {
+        show_reactome_module_color_legend(FALSE)
+        
+        showNotification(
+          "Note: With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
+          type = "message",
+          duration = NULL
+        )
+      } else {
+        show_reactome_module_color_legend(TRUE)
+      }
       
       withProgress(message = 'Analysis in progress...', {
         tryCatch(
@@ -1599,7 +1686,14 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
                 degree_cutoff = input$enirched_module_plot_degree_cutoff_reactome,
                 text = input$enirched_module_plot_text_reactome,
                 text_all = input$enirched_module_plot_text_all_reactome
-              )
+              ) + 
+              ggplot2::theme(aspect.ratio = 1)
+            
+            if (!show_reactome_module_color_legend()) {
+              plot_without_legend <- plot +
+                ggplot2::guides(fill = "none")
+              enriched_module_reactome_plot_without_module_legend(plot_without_legend)
+            }
             
             enirched_module_reactome_plot(plot)
           },
@@ -1623,16 +1717,27 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
   output$enirched_module_reactome_plot <-
     shiny::renderPlot({
       req(tryCatch(
-        enirched_module_reactome_plot(),
+        {
+          if (show_reactome_module_color_legend()) {
+            enirched_module_reactome_plot()
+          } else {
+            enriched_module_reactome_plot_without_module_legend()
+          }
+        },
         error = function(e)
           NULL
       ))
     })
   
-  # hmdb Plot generation logic
-  enirched_module_hmdb_plot <-
-    reactiveVal()
-  observeEvent(input$generate_enirched_module_plot_hmdb, {
+  ### SMPDB Plot generation logic ====
+  enirched_module_hmdb_plot <- reactiveVal()
+  enriched_module_hmdb_plot_without_module_legend <- reactiveVal()
+  show_hmdb_module_color_legend <- reactiveVal(TRUE)
+  
+  observe({
+    req(input$generate_enirched_module_plot_hmdb)
+    req(input$enirched_module_plot_degree_cutoff_hmdb)
+    
     # Check if similarity_result is available
     if (is.null(similarity_result()) ||
         length(similarity_result()) == 0) {
@@ -1646,6 +1751,17 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
       )
     } else {
       # shinyjs::show("loading")
+      if (sum(similarity_result()@merged_pathway_hmdb$module_result$module_content_number > input$enirched_module_plot_degree_cutoff_hmdb) > 34) {
+        show_hmdb_module_color_legend(FALSE)
+        
+        showNotification(
+          "Note: With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
+          type = "message",
+          duration = NULL
+        )
+      } else {
+        show_hmdb_module_color_legend(TRUE)
+      }
       
       withProgress(message = 'Analysis in progress...', {
         tryCatch(
@@ -1658,7 +1774,13 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
                 degree_cutoff = input$enirched_module_plot_degree_cutoff_hmdb,
                 text = input$enirched_module_plot_text_hmdb,
                 text_all = input$enirched_module_plot_text_all_hmdb
-              )
+              ) + ggplot2::theme(aspect.ratio = 1)
+            
+            if (!show_hmdb_module_color_legend()) {
+              plot_without_legend <- plot +
+                ggplot2::guides(fill = "none")
+              enriched_module_hmdb_plot_without_module_legend(plot_without_legend)
+            }
             
             enirched_module_hmdb_plot(plot)
           },
@@ -1682,16 +1804,27 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
   output$enirched_module_hmdb_plot <-
     shiny::renderPlot({
       req(tryCatch(
-        enirched_module_hmdb_plot(),
+        {
+          if (show_hmdb_module_color_legend()) {
+            enirched_module_hmdb_plot()
+          } else {
+            enriched_module_hmdb_plot_without_module_legend()
+          }
+        },
         error = function(e)
           NULL
       ))
     })
   
-  # metabolite KEGG Plot generation logic
-  enirched_module_metkegg_plot <-
-    reactiveVal()
-  observeEvent(input$generate_enirched_module_plot_metkegg, {
+  ### metabolite KEGG Plot generation logic ====
+  enirched_module_metkegg_plot <- reactiveVal()
+  enriched_module_metkegg_plot_without_module_legend <- reactiveVal()
+  show_metkegg_module_color_legend <- reactiveVal(TRUE)
+  
+  observe({
+    req(input$generate_enirched_module_plot_metkegg)
+    req(input$enirched_module_plot_degree_cutoff_metkegg)
+    
     # Check if similarity_result is available
     if (is.null(similarity_result()) ||
         length(similarity_result()) == 0) {
@@ -1705,6 +1838,17 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
       )
     } else {
       # shinyjs::show("loading")
+      if (sum(similarity_result()@merged_pathway_metkegg$module_result$module_content_number > input$enirched_module_plot_degree_cutoff_metkegg) > 34) {
+        show_metkegg_module_color_legend(FALSE)
+        
+        showNotification(
+          "Note: With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
+          type = "message",
+          duration = NULL
+        )
+      } else {
+        show_metkegg_module_color_legend(TRUE)
+      }
       
       withProgress(message = 'Analysis in progress...', {
         tryCatch(
@@ -1717,7 +1861,13 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
                 degree_cutoff = input$enirched_module_plot_degree_cutoff_metkegg,
                 text = input$enirched_module_plot_text_metkegg,
                 text_all = input$enirched_module_plot_text_all_metkegg
-              )
+              ) + ggplot2::theme(aspect.ratio = 1)
+            
+            if (!show_metkegg_module_color_legend()) {
+              plot_without_legend <- plot +
+                ggplot2::guides(fill = "none")
+              enriched_module_metkegg_plot_without_module_legend(plot_without_legend)
+            }
             
             enirched_module_metkegg_plot(plot)
           },
@@ -1740,7 +1890,13 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
   output$enirched_module_metkegg_plot <-
     shiny::renderPlot({
       req(tryCatch(
-        enirched_module_metkegg_plot(),
+        {
+          if (show_metkegg_module_color_legend()) {
+            enirched_module_metkegg_plot()
+          } else {
+            enriched_module_metkegg_plot_without_module_legend()
+          }
+        },
         error = function(e)
           NULL
       ))
