@@ -570,12 +570,19 @@ enrich_pathway_server <- function(id, processed_info, enriched_pathways, tab_swi
       observeEvent(input$submit_enrich_pathways, {
         ### Check if variable_info is available
         if (is.null(variable_info()) || length(variable_info()) == 0) {
-          shiny::showModal(modalDialog(
-            title = "Warning",
-            "No data available. Please 'Upload data' first.",
-            easyClose = TRUE,
-            footer = modalButton("Close")
-          ))
+          # shiny::showModal(modalDialog(
+          #   title = "Warning",
+          #   "No data available. Please 'Upload data' first.",
+          #   easyClose = TRUE,
+          #   footer = modalButton("Close")
+          # ))
+          shinyalert::shinyalert(
+            title = "No data available",
+            text = "Do <strong>Data Upload</strong> before <strong>Pathway Enrichment</strong>.",
+            html = TRUE,
+            type = "warning",
+            confirmButtonCol = "#dd4b39"
+          )
         } else {
           withProgress(message = 'Analysis in progress...', {
             result <- tryCatch({
@@ -695,12 +702,19 @@ enrich_pathway_server <- function(id, processed_info, enriched_pathways, tab_swi
                 do.call(do_gsea, common_params)
               }
             }, error = function(e) {
-              shiny::showModal(modalDialog(
-                title = "Error",
-                paste("Details:", e$message),
-                easyClose = TRUE,
-                footer = modalButton("Close")
-              ))
+              # shiny::showModal(modalDialog(
+              #   title = "Error",
+              #   paste("Details:", e$message),
+              #   easyClose = TRUE,
+              #   footer = modalButton("Close")
+              # ))
+              shinyalert::shinyalert(
+                title = "Enrichment failed",
+                text = e$message,
+                html = TRUE,
+                type = "error",
+                confirmButtonCol = "#dd4b39"
+              )
               return(NULL)
             })
 
@@ -836,8 +850,7 @@ enrich_pathway_server <- function(id, processed_info, enriched_pathways, tab_swi
                   collapse = ", "), ")")
 
                 code <- sprintf(
-                  '
-                  enriched_pathways <-
+                  'enriched_pathways <-
                     enrich_pathway(
                       variable_info,
                       query_type = "%s",
@@ -1188,25 +1201,40 @@ enrich_pathway_server <- function(id, processed_info, enriched_pathways, tab_swi
       observeEvent(input$show_enrich_pathways_code, {
         if (is.null(enrich_pathways_code()) ||
             length(enrich_pathways_code()) == 0) {
-          shiny::showModal(
-            modalDialog(
-              title = "Warning",
-              "No available code",
-              easyClose = TRUE,
-              footer = modalButton("Close")
-            )
+          # shiny::showModal(
+          #   modalDialog(
+          #     title = "Warning",
+          #     "No available code",
+          #     easyClose = TRUE,
+          #     footer = modalButton("Close")
+          #   )
+          # )
+          shinyalert::shinyalert(
+            title = "No available code",
+            html = TRUE,
+            type = "warning",
+            confirmButtonCol = "#dd4b39"
           )
         } else{
           code_content <-
             enrich_pathways_code()
           code_content <-
             paste(code_content, collapse = "\n")
-          shiny::showModal(modalDialog(
-            title = "Code",
-            tags$pre(code_content),
-            easyClose = TRUE,
-            footer = modalButton("Close")
-          ))
+          # shiny::showModal(modalDialog(
+          #   title = "Code",
+          #   tags$pre(code_content),
+          #   easyClose = TRUE,
+          #   footer = modalButton("Close")
+          # ))
+          shinyalert::shinyalert(
+            text = paste0("<pre style='text-align: left; font-family: Consolas, Monaco, monospace; background-color: #f8f9fa; padding: 15px; border-radius: 5px; border: 1px solid #e9ecef; overflow-x: auto; white-space: pre-wrap; font-size: 13px; line-height: 1.4; margin: 0; max-height: 400px; overflow-y: auto;'>",
+                          htmltools::htmlEscape(code_content),
+                          "</pre>"),
+            html = TRUE,
+            type = "",
+            confirmButtonText = "Close",
+            confirmButtonCol = "#dd4b39"
+          )
         }
       })
 
@@ -1216,13 +1244,19 @@ enrich_pathway_server <- function(id, processed_info, enriched_pathways, tab_swi
       observeEvent(input$go2pathway_similarity, {
         if (is.null(enriched_pathways$enriched_pathways_res) ||
             length(enriched_pathways$enriched_pathways_res) == 0) {
-          shiny::showModal(
-            modalDialog(
-              title = "Warning",
-              "Please enrich pathways first",
-              easyClose = TRUE,
-              footer = modalButton("Close")
-            )
+          # shiny::showModal(
+          #   modalDialog(
+          #     title = "Warning",
+          #     "Please enrich pathways first",
+          #     easyClose = TRUE,
+          #     footer = modalButton("Close")
+          #   )
+          # )
+          shinyalert::shinyalert(
+            title = "Do Pathway Enrichment before Pathway Similarity Calculation.",
+            html = TRUE,
+            type = "warning",
+            confirmButtonCol = "#dd4b39"
           )
         } else {
           # New, simpler navigation

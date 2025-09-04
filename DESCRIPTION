@@ -32,6 +32,7 @@ Imports:
     promises,
     readxl,
     shiny,
+    shinyalert,
     shinyBS,
     shinydashboard,
     shinyjs,

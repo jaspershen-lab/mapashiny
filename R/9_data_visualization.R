@@ -888,26 +888,38 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
           if (length(names) == 1) {
             object <- get(names[1], envir = tempEnv)
             if (!("merge_modules" %in% names(object@process_info))) {
-              shiny::showModal(
-                modalDialog(
-                  title = "Error",
-                  "Please perform module identification before visualization.",
-                  easyClose = TRUE,
-                  footer = modalButton("Close")
-                )
+              # shiny::showModal(
+              #   modalDialog(
+              #     title = "Error",
+              #     "Please perform module identification before visualization.",
+              #     easyClose = TRUE,
+              #     footer = modalButton("Close")
+              #   )
+              # )
+              shinyalert::shinyalert(
+                text = "Do <strong>Module Identification</strong> before Data Visualization.",
+                html = TRUE,
+                type = "error",
+                confirmButtonCol = "#dd4b39"
               )
             } else {
               enriched_functional_module(get(names[1], envir = tempEnv)) 
             }
           } else {
             message("The .rda file does not contain exactly one object.")
-            shiny::showModal(
-              modalDialog(
-                title = "Error",
-                "The uploaded file should contain exactly one object.",
-                easyClose = TRUE,
-                footer = modalButton("Close")
-              )
+            # shiny::showModal(
+            #   modalDialog(
+            #     title = "Error",
+            #     "The uploaded file should contain exactly one object.",
+            #     easyClose = TRUE,
+            #     footer = modalButton("Close")
+            #   )
+            # )
+            shinyalert::shinyalert(
+              text = "The uploaded file should contain exactly one object.",
+              html = TRUE,
+              type = "error",
+              confirmButtonCol = "#dd4b39"
             )
           }
         }
@@ -1105,12 +1117,18 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
               }
               },
               error = function(e) {
-                shiny::showModal(modalDialog(
-                  title = "Error",
-                  paste("Details:", e$message),
-                  easyClose = TRUE,
-                  footer = modalButton("Close")
-                ))
+                # shiny::showModal(modalDialog(
+                #   title = "Error",
+                #   paste("Details:", e$message),
+                #   easyClose = TRUE,
+                #   footer = modalButton("Close")
+                # ))
+                shinyalert::shinyalert(
+                  text = paste("Details:", e$message),
+                  html = TRUE,
+                  type = "error",
+                  confirmButtonCol = "#dd4b39"
+                )
               }
             )
           })
@@ -1246,12 +1264,21 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
             barplot_code()
           code_content <-
             paste(code_content, collapse = "\n")
-          shiny::showModal(modalDialog(
-            title = "Code",
-            tags$pre(code_content),
-            easyClose = TRUE,
-            footer = modalButton("Close")
-          ))
+          # shiny::showModal(modalDialog(
+          #   title = "Code",
+          #   tags$pre(code_content),
+          #   easyClose = TRUE,
+          #   footer = modalButton("Close")
+          # ))
+          shinyalert::shinyalert(
+            text = paste0("<pre style='text-align: left; font-family: Consolas, Monaco, monospace; background-color: #f8f9fa; padding: 15px; border-radius: 5px; border: 1px solid #e9ecef; overflow-x: auto; white-space: pre-wrap; font-size: 13px; line-height: 1.4; margin: 0; max-height: 400px; overflow-y: auto;'>",
+                          htmltools::htmlEscape(code_content),
+                          "</pre>"),
+            html = TRUE,
+            type = "",
+            confirmButtonText = "Close",
+            confirmButtonCol = "#dd4b39"
+          )
         }
       })
 
@@ -1289,10 +1316,16 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
           }
           
           if (!show_module_color_legend()) {
-            showNotification(
-              "Note: With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
-              type = "message",
-              duration = NULL
+            # showNotification(
+            #   "Note: With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
+            #   type = "message",
+            #   duration = NULL
+            # )
+            shinyalert::shinyalert(
+              text = "With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
+              type = "info",
+              html = TRUE,
+              confirmButtonCol = "#dd4b39"
             )
           }
           
@@ -1322,13 +1355,19 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
                 module_similarity_network(plot)
               },
               error = function(e) {
-                shiny::showModal(
-                  modalDialog(
-                    title = "Error",
-                    paste("Details:", e$message),
-                    easyClose = TRUE,
-                    footer = modalButton("Close")
-                  )
+                # shiny::showModal(
+                #   modalDialog(
+                #     title = "Error",
+                #     paste("Details:", e$message),
+                #     easyClose = TRUE,
+                #     footer = modalButton("Close")
+                #   )
+                # )
+                shinyalert::shinyalert(
+                  text = paste("Details:", e$message),
+                  html = TRUE,
+                  type = "error",
+                  confirmButtonCol = "#dd4b39"
                 )
               }
             )
@@ -1402,12 +1441,21 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
             module_similarity_network_code()
           code_content <-
             paste(code_content, collapse = "\n")
-          shiny::showModal(modalDialog(
-            title = "Code",
-            tags$pre(code_content),
-            easyClose = TRUE,
-            footer = modalButton("Close")
-          ))
+          # shiny::showModal(modalDialog(
+          #   title = "Code",
+          #   tags$pre(code_content),
+          #   easyClose = TRUE,
+          #   footer = modalButton("Close")
+          # ))
+          shinyalert::shinyalert(
+            text = paste0("<pre style='text-align: left; font-family: Consolas, Monaco, monospace; background-color: #f8f9fa; padding: 15px; border-radius: 5px; border: 1px solid #e9ecef; overflow-x: auto; white-space: pre-wrap; font-size: 13px; line-height: 1.4; margin: 0; max-height: 400px; overflow-y: auto;'>",
+                          htmltools::htmlEscape(code_content),
+                          "</pre>"),
+            html = TRUE,
+            type = "",
+            confirmButtonText = "Close",
+            confirmButtonCol = "#dd4b39"
+          )
         }
       })
 
@@ -1588,13 +1636,19 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
                     # translation = input$module_information_translation
                   ),
                 error = function(e) {
-                  shiny::showModal(
-                    modalDialog(
-                      title = "Error",
-                      paste("Details:", e$message),
-                      easyClose = TRUE,
-                      footer = modalButton("Close")
-                    )
+                  # shiny::showModal(
+                  #   modalDialog(
+                  #     title = "Error",
+                  #     paste("Details:", e$message),
+                  #     easyClose = TRUE,
+                  #     footer = modalButton("Close")
+                  #   )
+                  # )
+                  shinyalert::shinyalert(
+                    text = paste("Details:", e$message),
+                    html = TRUE,
+                    type = "error",
+                    confirmButtonCol = "#dd4b39"
                   )
                 }
               )
@@ -1688,12 +1742,21 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
             module_information_code()
           code_content <-
             paste(code_content, collapse = "\n")
-          shiny::showModal(modalDialog(
-            title = "Code",
-            tags$pre(code_content),
-            easyClose = TRUE,
-            footer = modalButton("Close")
-          ))
+          # shiny::showModal(modalDialog(
+          #   title = "Code",
+          #   tags$pre(code_content),
+          #   easyClose = TRUE,
+          #   footer = modalButton("Close")
+          # ))
+          shinyalert::shinyalert(
+            text = paste0("<pre style='text-align: left; font-family: Consolas, Monaco, monospace; background-color: #f8f9fa; padding: 15px; border-radius: 5px; border: 1px solid #e9ecef; overflow-x: auto; white-space: pre-wrap; font-size: 13px; line-height: 1.4; margin: 0; max-height: 400px; overflow-y: auto;'>",
+                          htmltools::htmlEscape(code_content),
+                          "</pre>"),
+            html = TRUE,
+            type = "",
+            confirmButtonText = "Close",
+            confirmButtonCol = "#dd4b39"
+          )
         }
       })
 
@@ -1846,12 +1909,18 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
                 )
             },
             error = function(e) {
-              shiny::showModal(modalDialog(
-                title = "Error",
-                paste("Details:", e$message),
-                easyClose = TRUE,
-                footer = modalButton("Close")
-              ))
+              # shiny::showModal(modalDialog(
+              #   c,
+              #   paste("Details:", e$message),
+              #   easyClose = TRUE,
+              #   footer = modalButton("Close")
+              # ))
+              shinyalert::shinyalert(
+                text = paste("Details:", e$message),
+                html = TRUE,
+                type = "error",
+                confirmButtonCol = "#dd4b39"
+              )
             })
           }
 
@@ -1901,13 +1970,19 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
                   # translation = input$relationship_network_translation
                 ),
               error = function(e) {
-                shiny::showModal(
-                  modalDialog(
-                    title = "Error",
-                    paste("Details:", e$message),
-                    easyClose = TRUE,
-                    footer = modalButton("Close")
-                  )
+                # shiny::showModal(
+                #   modalDialog(
+                #     title = "Error",
+                #     paste("Details:", e$message),
+                #     easyClose = TRUE,
+                #     footer = modalButton("Close")
+                #   )
+                # )
+                shinyalert::shinyalert(
+                  text = paste("Details:", e$message),
+                  html = TRUE,
+                  type = "error",
+                  confirmButtonCol = "#dd4b39"
                 )
               }
             )
@@ -2073,12 +2148,21 @@ data_visualization_server <- function(id, enriched_functional_module, tab_switch
             relationship_network_code()
           code_content <-
             paste(code_content, collapse = "\n")
-          shiny::showModal(modalDialog(
-            title = "Code",
-            tags$pre(code_content),
-            easyClose = TRUE,
-            footer = modalButton("Close")
-          ))
+          # shiny::showModal(modalDialog(
+          #   title = "Code",
+          #   tags$pre(code_content),
+          #   easyClose = TRUE,
+          #   footer = modalButton("Close")
+          # ))
+          shinyalert::shinyalert(
+            text = paste0("<pre style='text-align: left; font-family: Consolas, Monaco, monospace; background-color: #f8f9fa; padding: 15px; border-radius: 5px; border: 1px solid #e9ecef; overflow-x: auto; white-space: pre-wrap; font-size: 13px; line-height: 1.4; margin: 0; max-height: 400px; overflow-y: auto;'>",
+                          htmltools::htmlEscape(code_content),
+                          "</pre>"),
+            html = TRUE,
+            type = "",
+            confirmButtonText = "Close",
+            confirmButtonCol = "#dd4b39"
+          )
         }
       })
 

@@ -743,13 +743,20 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
           }
           
           if (is.null(enriched_pathways$organism)) {
-            shiny::showModal(
-              modalDialog(
-                title = "Error",
-                "Organism information is not available. For gene-cnetric analysis, please provide organism in this way: `enriched_pathways@process_info$enrich_pathway@parameter$go.orgdb <- \"org.Hs.eg.db\"`. For metabolite-centric analysis, please provide organism in this way: `enriched_pathways@process_info$do_gsea@parameter$met_organism <- \"hsa\"`",
-                easyClose = TRUE,
-                footer = modalButton("Close")
-              )
+            # shiny::showModal(
+            #   modalDialog(
+            #     title = "Error",
+            #     "Organism information is not available. For gene-cnetric analysis, please provide organism in this way: `enriched_pathways@process_info$enrich_pathway@parameter$go.orgdb <- \"org.Hs.eg.db\"`. For metabolite-centric analysis, please provide organism in this way: `enriched_pathways@process_info$do_gsea@parameter$met_organism <- \"hsa\"`",
+            #     easyClose = TRUE,
+            #     footer = modalButton("Close")
+            #   )
+            # )
+            shinyalert::shinyalert(
+              title = "Organism information missing",
+              text = "For genes: set go.orgdb (e.g., 'org.Hs.eg.db'). For metabolites: set met_organism (e.g., 'hsa').",
+              html = TRUE,
+              type = "error",
+              confirmButtonCol = "#dd4b39"
             )
           }
         } else {
@@ -773,13 +780,20 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
       input$submit_similarity,
       {
         if (is.null(enriched_pathways$enriched_pathways_res) || length(enriched_pathways$enriched_pathways_res) == 0) {
-          shiny::showModal(
-            modalDialog(
-              title = "Warning",
-              "No enriched pathways data available. Please 'Enrich pathways' first.",
-              easyClose = TRUE,
-              footer = modalButton("Close")
-            )
+          # shiny::showModal(
+          #   modalDialog(
+          #     title = "Warning",
+          #     "No enriched pathways data available. Please 'Enrich pathways' first.",
+          #     easyClose = TRUE,
+          #     footer = modalButton("Close")
+          #   )
+          # )
+          shinyalert::shinyalert(
+            title = "No enriched pathways data",
+            text = "Please 'Enrich pathways' first.",
+            html = TRUE,
+            type = "warning",
+            confirmButtonCol = "#dd4b39"
           )
         } else {
           # shinyjs::show("loading")
@@ -837,12 +851,19 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
                 similarity_result(result)
               },
               error = function(e) {
-                shiny::showModal(modalDialog(
-                  title = "Error",
-                  paste("Details:", e$message),
-                  easyClose = TRUE,
-                  footer = modalButton("Close")
-                ))
+                # shiny::showModal(modalDialog(
+                #   title = "Error",
+                #   paste("Details:", e$message),
+                #   easyClose = TRUE,
+                #   footer = modalButton("Close")
+                # ))
+                shinyalert::shinyalert(
+                  title = "Similarity calculation failed",
+                  text = e$message,
+                  html = TRUE,
+                  type = "error",
+                  confirmButtonCol = "#dd4b39"
+                )
               })
             })
             ## Save code =====
@@ -973,12 +994,19 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
                 similarity_result(bioembed_sim_matrix)
               },
               error = function(e) {
-                shiny::showModal(modalDialog(
-                  title = "Error",
-                  paste("Details:", e$message),
-                  easyClose = TRUE,
-                  footer = modalButton("Close")
-                ))
+                # shiny::showModal(modalDialog(
+                #   title = "Error",
+                #   paste("Details:", e$message),
+                #   easyClose = TRUE,
+                #   footer = modalButton("Close")
+                # ))
+                shinyalert::shinyalert(
+                  title = "Embedding similarity failed",
+                  text = e$message,
+                  html = TRUE,
+                  type = "error",
+                  confirmButtonCol = "#dd4b39"
+                )
               })
             })
             
@@ -1477,23 +1505,37 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
     # Check if enriched_modules is available
     if (is.null(similarity_result()) ||
         length(similarity_result()) == 0) {
-      shiny::showModal(
-        modalDialog(
-          title = "Warning",
-          "No enriched modules data available. Please 'Merge pathways' first.",
-          easyClose = TRUE,
-          footer = modalButton("Close")
-        )
+      # shiny::showModal(
+      #   modalDialog(
+      #     title = "Warning",
+      #     "No enriched modules data available. Please 'Merge pathways' first.",
+      #     easyClose = TRUE,
+      #     footer = modalButton("Close")
+      #   )
+      # )
+      shinyalert::shinyalert(
+        title = "No modules data available",
+        text = "Do <strong>Pathway Similarity Calculation</strong> before <strong>Data Visualization</strong>.",
+        html = TRUE,
+        type = "warning",
+        confirmButtonCol = "#dd4b39"
       )
     } else {
       # shinyjs::show("loading")
       if (sum(similarity_result()@merged_pathway_go$module_result$module_content_number > input$enirched_module_plot_degree_cutoff_go) > 34) {
         show_go_module_color_legend(FALSE)
         
-        showNotification(
-          "Note: With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
-          type = "message",
-          duration = NULL
+        # showNotification(
+        #   "Note: With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
+        #   type = "message",
+        #   duration = NULL
+        # )
+        shinyalert::shinyalert(
+          title = "Module color legend hidden in display",
+          text = "It will be included when you download the figure.",
+          html = TRUE,
+          type = "info",
+          confirmButtonCol = "#dd4b39"
         )
       } else {
         show_go_module_color_legend(TRUE)
@@ -1522,13 +1564,20 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
             enirched_module_go_plot(plot)
           },
           error = function(e) {
-            shiny::showModal(
-              modalDialog(
-                title = "Error",
-                paste("Details:", e$message),
-                easyClose = TRUE,
-                footer = modalButton("Close")
-              )
+            # shiny::showModal(
+            #   modalDialog(
+            #     title = "Error",
+            #     paste("Details:", e$message),
+            #     easyClose = TRUE,
+            #     footer = modalButton("Close")
+            #   )
+            # )
+            shinyalert::shinyalert(
+              title = "Plot generation failed",
+              text = e$message,
+              html = TRUE,
+              type = "error",
+              confirmButtonCol = "#dd4b39"
             )
           }
         )
@@ -1578,10 +1627,16 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
       if (sum(similarity_result()@merged_pathway_kegg$module_result$module_content_number > input$enirched_module_plot_degree_cutoff_kegg) > 34) {
         show_kegg_module_color_legend(FALSE)
         
-        showNotification(
-          "Note: With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
-          type = "message",
-          duration = NULL
+        # showNotification(
+        #   "Note: With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
+        #   type = "message",
+        #   duration = NULL
+        # )
+        shinyalert::shinyalert(
+          text = "With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
+          type = "info",
+          html = TRUE,
+          confirmButtonCol = "#dd4b39"
         )
       } else {
         show_kegg_module_color_legend(TRUE)
@@ -1666,11 +1721,18 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
       if (sum(similarity_result()@merged_pathway_reactome$module_result$module_content_number > input$enirched_module_plot_degree_cutoff_reactome) > 34) {
         show_reactome_module_color_legend(FALSE)
         
-        showNotification(
-          "Note: With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
-          type = "message",
-          duration = NULL
+        # showNotification(
+        #   "Note: With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
+        #   type = "message",
+        #   duration = NULL
+        # )
+        shinyalert::shinyalert(
+          text = "With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
+          type = "info",
+          html = TRUE,
+          confirmButtonCol = "#dd4b39"
         )
+        
       } else {
         show_reactome_module_color_legend(TRUE)
       }
@@ -1754,11 +1816,18 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
       if (sum(similarity_result()@merged_pathway_hmdb$module_result$module_content_number > input$enirched_module_plot_degree_cutoff_hmdb) > 34) {
         show_hmdb_module_color_legend(FALSE)
         
-        showNotification(
-          "Note: With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
-          type = "message",
-          duration = NULL
+        # showNotification(
+        #   "Note: With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
+        #   type = "message",
+        #   duration = NULL
+        # )
+        shinyalert::shinyalert(
+          text = "With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
+          type = "info",
+          html = TRUE,
+          confirmButtonCol = "#dd4b39"
         )
+        
       } else {
         show_hmdb_module_color_legend(TRUE)
       }
@@ -1841,10 +1910,16 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
       if (sum(similarity_result()@merged_pathway_metkegg$module_result$module_content_number > input$enirched_module_plot_degree_cutoff_metkegg) > 34) {
         show_metkegg_module_color_legend(FALSE)
         
-        showNotification(
-          "Note: With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
-          type = "message",
-          duration = NULL
+        # showNotification(
+        #   "Note: With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
+        #   type = "message",
+        #   duration = NULL
+        # )
+        shinyalert::shinyalert(
+          text = "With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
+          type = "info",
+          html = TRUE,
+          confirmButtonCol = "#dd4b39"
         )
       } else {
         show_metkegg_module_color_legend(TRUE)
@@ -1992,32 +2067,53 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
   observeEvent(input$show_code, {
     if (is.null(similarity_code()) ||
         length(similarity_code()) == 0) {
-      shiny::showModal(
-        modalDialog(
-          title = "Warning",
-          "No available code",
-          easyClose = TRUE,
-          footer = modalButton("Close")
-        )
+      # shiny::showModal(
+      #   modalDialog(
+      #     title = "Warning",
+      #     "No available code",
+      #     easyClose = TRUE,
+      #     footer = modalButton("Close")
+      #   )
+      # )
+      shinyalert::shinyalert(
+        title = "No available code",
+        html = TRUE,
+        type = "warning",
+        confirmButtonCol = "#dd4b39"
       )
     } else{
       code_content <-
         similarity_code()
       code_content <-
         paste(code_content, collapse = "\n")
-      shiny::showModal(modalDialog(
-        title = "Code",
-        tags$pre(code_content),
-        easyClose = TRUE,
-        footer = modalButton("Close")
-      ))
+      # shiny::showModal(modalDialog(
+      #   title = "Code",
+      #   tags$pre(code_content),
+      #   easyClose = TRUE,
+      #   footer = modalButton("Close")
+      # ))
+      shinyalert::shinyalert(
+        text = paste0("<pre style='text-align: left; font-family: Consolas, Monaco, monospace; background-color: #f8f9fa; padding: 15px; border-radius: 5px; border: 1px solid #e9ecef; overflow-x: auto; white-space: pre-wrap; font-size: 13px; line-height: 1.4; margin: 0; max-height: 400px; overflow-y: auto;'>",
+                      htmltools::htmlEscape(code_content),
+                      "</pre>"),
+        html = TRUE,
+        type = "",
+        confirmButtonText = "Close",
+        confirmButtonCol = "#dd4b39"
+      )
     }
   })
   
   # Navigation to the next step =====
   observeEvent(input$go2pathway_clustering, {
     if (is.null(similarity_result())) {
-      showModal(modalDialog(title = "Warning", "Please calculate similarity first."))
+      # showModal(modalDialog(title = "Warning", "Please calculate similarity first."))
+      shinyalert::shinyalert(
+        title = "Do Pathway Similarity Calculation before Module Identification.",
+        html = TRUE,
+        type = "warning",
+        confirmButtonCol = "#dd4b39"
+      )
     } else {
       tab_switch("pathway_clustering")
     }

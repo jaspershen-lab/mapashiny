@@ -78,13 +78,19 @@ results_server <- function(id, enriched_functional_module, tab_switch) {
         #  available
         if (is.null(enriched_functional_module()) ||
             length(enriched_functional_module()) == 0) {
-          shiny::showModal(
-            modalDialog(
-              title = "Warning",
-              "No enriched functional modules data available.",
-              easyClose = TRUE,
-              footer = modalButton("Close")
-            )
+          # shiny::showModal(
+          #   modalDialog(
+          #     title = "Warning",
+          #     "No enriched functional modules data available.",
+          #     easyClose = TRUE,
+          #     footer = modalButton("Close")
+          #   )
+          # )
+          shinyalert::shinyalert(
+            title = "No enriched functional modules data",
+            html = TRUE,
+            type = "warning",
+            confirmButtonCol = "#dd4b39"
           )
         } else {
           # shinyjs::show("loading")
@@ -105,13 +111,20 @@ results_server <- function(id, enriched_functional_module, tab_switch) {
               )
             },
             error = function(e) {
-              shiny::showModal(
-                modalDialog(
-                  title = "Error",
-                  paste("Details:", e$message),
-                  easyClose = TRUE,
-                  footer = modalButton("Close")
-                )
+              # shiny::showModal(
+              #   modalDialog(
+              #     title = "Error",
+              #     paste("Details:", e$message),
+              #     easyClose = TRUE,
+              #     footer = modalButton("Close")
+              #   )
+              # )
+              shinyalert::shinyalert(
+                title = "Report generation failed",
+                text = e$message,
+                html = TRUE,
+                type = "error",
+                confirmButtonCol = "#dd4b39"
               )
             })
           })
@@ -198,25 +211,40 @@ results_server <- function(id, enriched_functional_module, tab_switch) {
       observeEvent(input$show_report_code, {
         if (is.null(report_code()) ||
             length(report_code()) == 0) {
-          shiny::showModal(
-            modalDialog(
-              title = "Warning",
-              "No available code",
-              easyClose = TRUE,
-              footer = modalButton("Close")
-            )
+          # shiny::showModal(
+          #   modalDialog(
+          #     title = "Warning",
+          #     "No available code",
+          #     easyClose = TRUE,
+          #     footer = modalButton("Close")
+          #   )
+          # )
+          shinyalert::shinyalert(
+            title = "No available code",
+            html = TRUE,
+            type = "warning",
+            confirmButtonCol = "#dd4b39"
           )
         } else{
           code_content <-
             report_code()
           code_content <-
             paste(code_content, collapse = "\n")
-          shiny::showModal(modalDialog(
-            title = "Code",
-            tags$pre(code_content),
-            easyClose = TRUE,
-            footer = modalButton("Close")
-          ))
+          # shiny::showModal(modalDialog(
+          #   title = "Code",
+          #   tags$pre(code_content),
+          #   easyClose = TRUE,
+          #   footer = modalButton("Close")
+          # ))
+          shinyalert::shinyalert(
+            text = paste0("<pre style='text-align: left; font-family: Consolas, Monaco, monospace; background-color: #f8f9fa; padding: 15px; border-radius: 5px; border: 1px solid #e9ecef; overflow-x: auto; white-space: pre-wrap; font-size: 13px; line-height: 1.4; margin: 0; max-height: 400px; overflow-y: auto;'>",
+                          htmltools::htmlEscape(code_content),
+                          "</pre>"),
+            html = TRUE,
+            type = "",
+            confirmButtonText = "Close",
+            confirmButtonCol = "#dd4b39"
+          )
         }
       })
     }

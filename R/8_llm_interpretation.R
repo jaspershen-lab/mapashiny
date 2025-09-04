@@ -56,7 +56,7 @@ llm_interpretation_ui <- function(id) {
                              choices = c("OpenAI" = "openai", 
                                          "Google" = "gemini",
                                          "SiliconFlow" = "siliconflow"),
-                             selected = "openai")),
+                             selected = "siliconflow")),
                     column(8,
                            textInput(ns("api_key"),
                                      "API key",
@@ -462,13 +462,20 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
               # uploaded_enriched_functional_module(get(names[1], envir = tempEnv))
             } else {
               message("The .rda file does not contain exactly one object.")
-              shiny::showModal(
-                modalDialog(
-                  title = "Error",
-                  "The uploaded file should contain exactly one object.",
-                  easyClose = TRUE,
-                  footer = modalButton("Close")
-                )
+              # shiny::showModal(
+              #   modalDialog(
+              #     title = "Error",
+              #     "The uploaded file should contain exactly one object.",
+              #     easyClose = TRUE,
+              #     footer = modalButton("Close")
+              #   )
+              # )
+              shinyalert::shinyalert(
+                title = "Invalid file content",
+                text = "The uploaded file should contain exactly one object.",
+                html = TRUE,
+                type = "error",
+                confirmButtonCol = "#dd4b39"
               )
             }
           }
@@ -486,16 +493,29 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
           annotation_result(interpreted_functional_module@llm_module_interpretation)
           enriched_functional_module(interpreted_functional_module)
 
-          showNotification("Module annotation result loaded successfully!",
-                           type = "message")
+          # showNotification("Module annotation result loaded successfully!",
+          #                  type = "message")
+          shinyalert::shinyalert(
+            title = "Module annotation result loaded",
+            html = TRUE,
+            type = "success",
+            confirmButtonCol = "#dd4b39"
+          )
         } else {
-          shiny::showModal(modalDialog(
-            title   = "Error",
-            "The uploaded .rda must contain exactly one object
-       (what `mapa::llm_interpret_module()` saves).",
-            easyClose = TRUE,
-            footer    = modalButton("Close")
-          ))
+          # shiny::showModal(modalDialog(
+          #   title   = "Error",
+          #   "The uploaded .rda must contain exactly one object
+          # (what `mapa::llm_interpret_module()` saves).",
+          #   easyClose = TRUE,
+          #   footer    = modalButton("Close")
+          # ))
+          shinyalert::shinyalert(
+            title = "Invalid file content",
+            text = "The uploaded .rda must contain exactly one object.",
+            html = TRUE,
+            type = "error",
+            confirmButtonCol = "#dd4b39"
+          )
         }
       })
 
@@ -538,13 +558,21 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
               
               # Check if package is installed
               if (!requireNamespace(input$model_orgdb, quietly = TRUE)) {
-                shiny::showModal(modalDialog(
+                # shiny::showModal(modalDialog(
+                #   title = "Missing Package",
+                #   paste0("Package ", input$model_orgdb, " is not installed. Please install it using:\n",
+                #          "BiocManager::install('\", input$model_orgdb, "\')"),
+                #   easyClose = TRUE,
+                #   footer = modalButton("Close")
+                # ))
+                shinyalert::shinyalert(
                   title = "Missing Package",
-                  paste0("Package ", input$model_orgdb, " is not installed. Please install it using:\n",
-                         "BiocManager::install('", input$model_orgdb, "')"),
-                  easyClose = TRUE,
-                  footer = modalButton("Close")
-                ))
+                  text = paste0("Package ", input$model_orgdb, " is not installed. Please install it using:\n",
+                                "<code>BiocManager::install('", input$model_orgdb, "')</code>"),
+                  html = TRUE,
+                  type = "error",
+                  confirmButtonCol = "#dd4b39"
+                )
                 return()
               }
               
@@ -572,10 +600,17 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
                 tryCatch({
                   BiocManager::install("AnnotationHub")
                 }, error = function(e) {
-                  showNotification(
-                    paste0("Failed to install AnnotationHub: ", e$message),
+                  # showNotification(
+                  #   paste0("Failed to install AnnotationHub: ", e$message),
+                  #   type = "error",
+                  #   duration = 10
+                  # )
+                  shinyalert::shinyalert(
+                    title = "Failed to install AnnotationHub",
+                    text = e$message,
+                    html = TRUE,
                     type = "error",
-                    duration = 10
+                    confirmButtonCol = "#dd4b39"
                   )
                   return()
                 })
@@ -592,41 +627,49 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
               orgdb(ah[[ah_id]])
               
               # Success message
-              showNotification(
-                paste0("Successfully loaded organism database from AnnotationHub (ID: ", ah_id, ")"),
-                type = "message",
-                duration = 5
+              # showNotification(
+              #   paste0("Successfully loaded organism database from AnnotationHub (ID: ", ah_id, ")"),
+              #   type = "message",
+              #   duration = 5
+              # )
+              shinyalert::shinyalert(
+                title = "Organism database loaded successfully",
+                text = paste0("AnnotationHub ID: ", ah_id),
+                html = TRUE,
+                type = "success",
+                confirmButtonCol = "#dd4b39"
               )
               
             } 
           }, error = function(e) {
-            # General error handling
-            showNotification(
-              paste0("Error loading organism database: ", e$message),
-              type = "error",
-              duration = 10
-            )
             
-            # Optional: Show detailed error in modal for debugging
-            shiny::showModal(modalDialog(
+            shinyalert::shinyalert(
               title = "Database Loading Error",
-              div(
+              text = div(
                 p("An error occurred while loading the organism database:"),
                 tags$code(e$message),
                 p("Please check your input and try again.")
               ),
-              easyClose = TRUE,
-              footer = modalButton("Close")
-            ))
+              html = TRUE,
+              type = "error",
+              confirmButtonCol = "#dd4b39"
+            )
             
             return()
             
           }, warning = function(w) {
             # Handle warnings
-            showNotification(
-              paste0("Warning: ", w$message),
+            # showNotification(
+            #   paste0("Warning: ", w$message),
+            #   type = "warning",
+            #   duration = 8
+            # )
+            shinyalert::shinyalert(
+              title = "Warning",
+              text = w$message,
+              html = TRUE,
               type = "warning",
-              duration = 8
+              confirmButtonCol = "#dd4b39"
             )
           })
         } else {
@@ -654,30 +697,51 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
           NULL
         }
         if (is.null(embed_path) || embed_path == "") {
-          shiny::showModal(modalDialog(
-            title = "Error",
-            "Please specify an embeddings output directory.",
-            easyClose = TRUE,
-            footer = modalButton("Close")
-          ))
+          # shiny::showModal(modalDialog(
+          #   title = "Error",
+          #   "Please specify an embeddings output directory.",
+          #   easyClose = TRUE,
+          #   footer = modalButton("Close")
+          # ))
+          shinyalert::shinyalert(
+            title = "Directory not provided",
+            text = "An embeddings output directory has not been specified",
+            html = TRUE,
+            type = "error",
+            confirmButtonCol = "#dd4b39"
+          )
           return()
         }
         if (!dir.exists(embed_path)) {
-          shiny::showModal(modalDialog(
-            title = "Error", 
-            "The specified embeddings output directory does not exist. Please create it first or specify an existing directory.",
-            easyClose = TRUE,
-            footer = modalButton("Close")
-          ))
+          # shiny::showModal(modalDialog(
+          #   title = "Error", 
+          #   "The specified embeddings output directory does not exist. Please create it first or specify an existing directory.",
+          #   easyClose = TRUE,
+          #   footer = modalButton("Close")
+          # ))
+          shinyalert::shinyalert(
+            title = "embeddings output directory does not exist",
+            text = "The specified embeddings output directory does not exist. Please create it first or specify an existing directory.",
+            html = TRUE,
+            type = "error",
+            confirmButtonCol = "#dd4b39"
+          )
           return()
         }
         if (!is.null(corpus_path) && !dir.exists(corpus_path)) {
-          shiny::showModal(modalDialog(
-            title = "Error",
-            "The specified local corpus directory does not exist. Please specify an existing directory or leave it empty.",
-            easyClose = TRUE, 
-            footer = modalButton("Close")
-          ))
+          # shiny::showModal(modalDialog(
+          #   title = "Error",
+          #   "The specified local corpus directory does not exist. Please specify an existing directory or leave it empty.",
+          #   easyClose = TRUE, 
+          #   footer = modalButton("Close")
+          # ))
+          shinyalert::shinyalert(
+            title = "local corpus directory does not exist",
+            text = "The specified local corpus directory does not exist. Please specify an existing directory or leave it empty.",
+            html = TRUE,
+            type = "error",
+            confirmButtonCol = "#dd4b39"
+          )
           return()
         }
         
@@ -710,18 +774,32 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
         #   size = "m"
         # ))
         
-        showNotification("Module annotation is running in the background. Results will appear when ready.", 
-                         type = "message", 
-                         duration = 5)
+        # showNotification("Module annotation is running in the background. Results will appear when ready.", 
+        #                  type = "message", 
+        #                  duration = 5)
+        shinyalert::shinyalert(  
+          title = "Module annotation started",
+          text = "Results will appear when ready.",
+          html = TRUE,
+          type = "info",
+          confirmButtonCol = "#dd4b39"
+        )
 
         if (is.null(enriched_functional_module())) {
           removeModal()
-          shiny::showModal(modalDialog(
-            title = "Warning",
-            "No enriched functional module data available. Please complete the previous steps or upload the data",
-            easyClose = TRUE,
-            footer = modalButton("Close")
-          ))
+          # shiny::showModal(modalDialog(
+          #   title = "Warning",
+          #   "No enriched functional module data available. Please complete the previous steps or upload the data",
+          #   easyClose = TRUE,
+          #   footer = modalButton("Close")
+          # ))
+          shinyalert::shinyalert(
+            title = "No enriched functional module data",
+            text = "Complete previous steps or upload data.",
+            html = TRUE,
+            type = "warning",
+            confirmButtonCol = "#dd4b39"
+          )
           return()
         }
         
@@ -747,18 +825,31 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
             function(result) {
               enriched_functional_module(result)
               annotation_result(result@llm_module_interpretation)
-              showNotification("Module annotation completed successfully!", type = "message")
+              # showNotification("Module annotation completed successfully!", type = "message")
+              shinyalert::shinyalert(
+                title = "Module annotation completed",
+                html = TRUE,
+                type = "success",
+                confirmButtonCol = "#dd4b39"
+              )
             },
             # Error handler
             function(error) {
               removeModal()
-              shiny::showModal(modalDialog(
-                title = "Error",
-                HTML(paste("An error occurred during module annotation:<br><pre>",
-                           error$message, "</pre>")),
-                easyClose = TRUE,
-                footer = modalButton("Close")
-              ))
+              # shiny::showModal(modalDialog(
+              #   title = "Error",
+              #   HTML(paste("An error occurred during module annotation:<br><pre>",
+              #              error$message, "</pre>")),
+              #   easyClose = TRUE,
+              #   footer = modalButton("Close")
+              # ))
+              shinyalert::shinyalert(
+                title = "Annotation failed",
+                text = error$message,
+                html = TRUE,
+                type = "error",
+                confirmButtonCol = "#dd4b39"
+              )
             }
           )
       })
@@ -898,25 +989,40 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
       observeEvent(input$show_llm_interpretation_code, {
         if (is.null(llm_interpretation_code()) ||
             length(llm_interpretation_code()) == 0) {
-          shiny::showModal(
-            modalDialog(
-              title = "Warning",
-              "No available code",
-              easyClose = TRUE,
-              footer = modalButton("Close")
-            )
+          # shiny::showModal(
+          #   modalDialog(
+          #     title = "Warning",
+          #     "No available code",
+          #     easyClose = TRUE,
+          #     footer = modalButton("Close")
+          #   )
+          # )
+          shinyalert::shinyalert(
+            title = "No available code",
+            html = TRUE,
+            type = "warning",
+            confirmButtonCol = "#dd4b39"
           )
         } else{
           code_content <-
             llm_interpretation_code()
           code_content <-
             paste(code_content, collapse = "\n")
-          shiny::showModal(modalDialog(
-            title = "Code",
-            tags$pre(code_content),
-            easyClose = TRUE,
-            footer = modalButton("Close")
-          ))
+          # shiny::showModal(modalDialog(
+          #   title = "Code",
+          #   tags$pre(code_content),
+          #   easyClose = TRUE,
+          #   footer = modalButton("Close")
+          # ))
+          shinyalert::shinyalert(
+            text = paste0("<pre style='text-align: left; font-family: Consolas, Monaco, monospace; background-color: #f8f9fa; padding: 15px; border-radius: 5px; border: 1px solid #e9ecef; overflow-x: auto; white-space: pre-wrap; font-size: 13px; line-height: 1.4; margin: 0; max-height: 400px; overflow-y: auto;'>",
+                          htmltools::htmlEscape(code_content),
+                          "</pre>"),
+            html = TRUE,
+            type = "",
+            confirmButtonText = "Close",
+            confirmButtonCol = "#dd4b39"
+          )
         }
       })
 
@@ -1179,13 +1285,19 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
         # Check if enriched_functional_module is available
         if ((is.null(enriched_functional_module()) ||
             length(enriched_functional_module()) == 0)) {
-          shiny::showModal(
-            modalDialog(
-              title = "Warning",
-              "No enriched functional modules data available.",
-              easyClose = TRUE,
-              footer = modalButton("Close")
-            )
+          # shiny::showModal(
+          #   modalDialog(
+          #     title = "Warning",
+          #     "No enriched functional modules data available.",
+          #     easyClose = TRUE,
+          #     footer = modalButton("Close")
+          #   )
+          # )
+          shinyalert::shinyalert(
+            title = "No enriched functional modules data",
+            html = TRUE,
+            type = "warning",
+            confirmButtonCol = "#dd4b39"
           )
         } else {
           # # User never pressed “Submit” in this tab

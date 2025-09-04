@@ -351,12 +351,32 @@ upload_data_server <- function(id, processed_info, tab_switch) {
           if (!is.null(example_data)) {
             tryCatch({
               data_values$raw_data <- example_data
-              showNotification("Example data loaded successfully!", type = "message")
+              # showNotification("Example data loaded successfully", type = "message")
+              shinyalert::shinyalert(
+                title = "Example data loaded successfully",
+                html = TRUE,
+                type = "success",
+                confirmButtonCol = "#dd4b39"
+              )
+              
             }, error = function(e) {
-              showNotification(paste("Failed to load example data:", e$message), type = "error")
+              # showNotification(paste("Failed to load example data:", e$message), type = "error")
+              shinyalert::shinyalert(
+                title = "Failed to load example data",
+                text = e$message,
+                html = TRUE,
+                type = "error",
+                confirmButtonCol = "#dd4b39"
+              )
             })
           } else {
-            showNotification("Selected example data not available", type = "warning")
+            # showNotification("Selected example data not available", type = "warning")
+            shinyalert::shinyalert(
+              title = "Selected example data not available",
+              html = TRUE,
+              type = "warning",
+              confirmButtonCol = "#dd4b39"
+            )
           }
         }
       }, ignoreNULL = FALSE)
@@ -395,12 +415,31 @@ upload_data_server <- function(id, processed_info, tab_switch) {
           if (!is.null(example_data)) {
             tryCatch({
               data_values$raw_data <- example_data
-              showNotification("Example data loaded successfully!", type = "message")
+              # showNotification("Example data loaded successfully!", type = "message")
+              shinyalert::shinyalert(
+                title = "Example data loaded successfully",
+                html = TRUE,
+                type = "success",
+                confirmButtonCol = "#dd4b39"
+              )
             }, error = function(e) {
-              showNotification(paste("Failed to load example data:", e$message), type = "error")
+              # showNotification(paste("Failed to load example data:", e$message), type = "error")
+              shinyalert::shinyalert(
+                title = "Failed to load example data",
+                text = e$message,
+                html = TRUE,
+                type = "error",
+                confirmButtonCol = "#dd4b39"
+              )
             })
           } else {
-            showNotification("Selected example data not available", type = "warning")
+            # showNotification("Selected example data not available", type = "warning")
+            shinyalert::shinyalert(
+              title = "Selected example data not available",
+              html = TRUE,
+              type = "warning",
+              confirmButtonCol = "#dd4b39"
+            )
           }
         }
       }, ignoreNULL = FALSE)
@@ -416,11 +455,31 @@ upload_data_server <- function(id, processed_info, tab_switch) {
             } else if (grepl("\\.(xlsx|xls)$", in_file$name)) {
               data_values$raw_data <- readxl::read_excel(in_file$datapath)
             } else {
-              showNotification("Unsupported file format. Please upload CSV or Excel file.", type = "error")
+              # showNotification("Unsupported file format. Please upload CSV or Excel file.", type = "error")
+              shinyalert::shinyalert(
+                title = "Unsupported file format",
+                text = "Only support <strong>CSV</strong> or <strong>Excel</strong> file",
+                html = TRUE,
+                type = "error",
+                confirmButtonCol = "#dd4b39"
+              )
             }
-            showNotification("File uploaded successfully!", type = "message")
+            # showNotification("File uploaded successfully!", type = "message")
+            shinyalert::shinyalert(
+              title = "File uploaded successfully",
+              html = TRUE,
+              type = "success",
+              confirmButtonCol = "#dd4b39"
+            )
           }, error = function(e) {
-            showNotification(paste("Error reading uploaded file:", e$message), type = "error")
+            # showNotification(paste("Error reading uploaded file:", e$message), type = "error")
+            shinyalert::shinyalert(
+              title = "Error reading uploaded file",
+              text = e$message,
+              html = TRUE,
+              type = "error",
+              confirmButtonCol = "#dd4b39"
+            )
           })
         }
       }, ignoreNULL = TRUE)
@@ -428,12 +487,19 @@ upload_data_server <- function(id, processed_info, tab_switch) {
       # Process data when Submit button is clicked
       observeEvent(input$map_id, {
         if (is.null(data_values$raw_data)) {
-          shiny::showModal(modalDialog(
-            title = "Warning",
-            "No data is available. Please upload a file or select an example dataset.",
-            easyClose = TRUE,
-            footer = modalButton("Close")
-          ))
+          # shiny::showModal(modalDialog(
+          #   title = "Warning",
+          #   "No data is available. Please upload a file or select an example dataset.",
+          #   easyClose = TRUE,
+          #   footer = modalButton("Close")
+          # ))
+          shinyalert::shinyalert(
+            title = "No data available",
+            text = "Upload a file or select an example dataset",
+            html = TRUE,
+            type = "warning",
+            confirmButtonCol = "#dd4b39"
+          )
           return()
         }
 
@@ -458,19 +524,34 @@ upload_data_server <- function(id, processed_info, tab_switch) {
           # Validate OrgDb format
           if (input$organism != "") {
             if (!grepl("^org\\.[A-Za-z]+\\..+\\.db$", input$organism)) {
-              showNotification("Invalid OrgDb package name. Expected format: org.XX.eg.db", type = "error")
+              # showNotification("Invalid OrgDb package name. Expected format: org.XX.eg.db", type = "error")
+              shinyalert::shinyalert(
+                title = "Invalid OrgDb package name",
+                text = "Expected format: <code>org.XX.eg.db</code>.",
+                html = TRUE,
+                type = "error",
+                confirmButtonCol = "#dd4b39"
+              )
               return()
             }
             
             # Check if package is installed
             if (!requireNamespace(input$organism, quietly = TRUE)) {
-              shiny::showModal(modalDialog(
+              # shiny::showModal(modalDialog(
+              #   title = "Missing Package",
+              #   paste0("Package ", input$organism, " is not installed. Please install it using:\n",
+              #          "BiocManager::install('", input$organism, "')"),
+              #   easyClose = TRUE,
+              #   footer = modalButton("Close")
+              # ))
+              shinyalert::shinyalert(
                 title = "Missing Package",
-                paste0("Package ", input$organism, " is not installed. Please install it using:\n",
-                       "BiocManager::install('", input$organism, "')"),
-                easyClose = TRUE,
-                footer = modalButton("Close")
-              ))
+                text = paste0("Package ", input$organism, " is not installed. Please install it using:\n",
+                              "BiocManager::install('", input$organism, "')"),
+                html = TRUE,
+                type = "error",
+                confirmButtonCol = "#dd4b39"
+              )
               return()
             }
             
@@ -531,14 +612,28 @@ upload_data_server <- function(id, processed_info, tab_switch) {
             processed_info$variable_info <- data_values$converted_data
             processed_info$query_type <- input$query_type
             # Show success message
-            showNotification("Data successfully processed", type = "message")
+            # showNotification("Data successfully processed", type = "message")
+            shinyalert::shinyalert(
+              title = "Gene marker list successfully processed",
+              text = "Switch to <strong>Pathway Enrichment</strong> by clicking <strong style='color: #dd4b39;'>Next</strong>",
+              html = TRUE,
+              type = "success",
+              confirmButtonCol = "#dd4b39"
+            )
           }, error = function(e) {
-            shiny::showModal(modalDialog(
-              title = "Error",
-              paste("Conversion failed:", e$message),
-              easyClose = TRUE,
-              footer = modalButton("Close")
-            ))
+            # shiny::showModal(modalDialog(
+            #   title = "Error",
+            #   paste("Conversion failed:", e$message),
+            #   easyClose = TRUE,
+            #   footer = modalButton("Close")
+            # ))
+            shinyalert::shinyalert(
+              title = "ID conversion failed",
+              text = e$message,
+              html = TRUE,
+              type = "error",
+              confirmButtonCol = "#dd4b39"
+            )
           })
         }
         else if (input$query_type == "metabolite") {
@@ -572,14 +667,28 @@ upload_data_server <- function(id, processed_info, tab_switch) {
             processed_info$organism <- input$met_organism
 
             # Show success message
-            showNotification("Data successfully processed", type = "message")
+            # showNotification("Data successfully processed", type = "message")
+            shinyalert::shinyalert(
+              title = "Metabolite marker list successfully processed",
+              text = "Switch to <strong>Pathway Enrichment</strong> by clicking <strong style='color: #dd4b39;'>Next</strong>.",
+              html = TRUE,
+              type = "success",
+              confirmButtonCol = "#dd4b39"
+            )
           }, error = function(e) {
-            shiny::showModal(modalDialog(
-              title = "Error",
-              paste("Conversion failed:", e$message),
-              easyClose = TRUE,
-              footer = modalButton("Close")
-            ))
+            # shiny::showModal(modalDialog(
+            #   title = "Error",
+            #   paste("Conversion failed:", e$message),
+            #   easyClose = TRUE,
+            #   footer = modalButton("Close")
+            # ))
+            shinyalert::shinyalert(
+              title = "ID conversion failed",
+              text = e$message,
+              html = TRUE,
+              type = "error",
+              confirmButtonCol = "#dd4b39"
+            )
           })
         }
       })
@@ -615,32 +724,54 @@ upload_data_server <- function(id, processed_info, tab_switch) {
       # Show conversion code when requested
       observeEvent(input$show_conversion_code, {
         if (is.null(data_values$conversion_code)) {
-          shiny::showModal(modalDialog(
-            title = "Warning",
-            "No conversion code available. Please process data first.",
-            easyClose = TRUE,
-            footer = modalButton("Close")
-          ))
+          # shiny::showModal(modalDialog(
+          #   title = "Warning",
+          #   "No conversion code available. Please process data first.",
+          #   easyClose = TRUE,
+          #   footer = modalButton("Close")
+          # ))
+          shinyalert::shinyalert(
+            title = "No conversion code available",
+            text = "Process data before checking code",
+            html = TRUE,
+            type = "warning",
+            confirmButtonCol = "#dd4b39"
+          )
         } else {
-          shiny::showModal(modalDialog(
-            title = "Conversion Code",
-            tags$pre(data_values$conversion_code),
-            easyClose = TRUE,
-            size = "l",
-            footer = modalButton("Close")
-          ))
+          # shiny::showModal(modalDialog(
+          #   title = "Conversion Code",
+          #   tags$pre(data_values$conversion_code),
+          #   easyClose = TRUE,
+          #   size = "l",
+          #   footer = modalButton("Close")
+          # ))
+          shinyalert::shinyalert(
+            text = paste0("<pre style='text-align: left; font-family: Consolas, Monaco, monospace; background-color: #f8f9fa; padding: 15px; border-radius: 5px; border: 1px solid #e9ecef; overflow-x: auto; white-space: pre-wrap; font-size: 13px; line-height: 1.4; margin: 0; max-height: 400px; overflow-y: auto;'>",
+                          htmltools::htmlEscape(data_values$conversion_code),
+                          "</pre>"),
+            html = TRUE,
+            type = "",
+            confirmButtonText = "Close",
+            confirmButtonCol = "#dd4b39"
+          )
         }
       })
 
       # Handle navigation to next tab
       observeEvent(input$go2enrich_pathways, {
         if (is.null(data_values$converted_data)) {
-          shiny::showModal(modalDialog(
-            title = "Warning",
-            "Please process data before proceeding to the next step.",
-            easyClose = TRUE,
-            footer = modalButton("Close")
-          ))
+          # shiny::showModal(modalDialog(
+          #   title = "Warning",
+          #   "Please process data before proceeding to the next step.",
+          #   easyClose = TRUE,
+          #   footer = modalButton("Close")
+          # ))
+          shinyalert::shinyalert(
+            title = "Process data before proceeding to the next step",
+            html = TRUE,
+            type = "warning",
+            confirmButtonCol = "#dd4b39"
+          )
         } else {
           tab_switch("enrich_pathways")
         }
