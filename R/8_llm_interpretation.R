@@ -191,33 +191,43 @@ llm_interpretation_ui <- function(id) {
                   shinyjs::hidden(
                     div(id = ns("gene_panel"),
                         tags$h5("Organism gene annotation database"),
-                        selectInput(
-                          ns("model_orgdb"),
-                          "Model organism",
-                          choices = c(
-                            " " = "",
-                            "Human (org.Hs.eg.db)" = "org.Hs.eg.db",
-                            "Mouse (org.Mm.eg.db)" = "org.Mm.eg.db",
-                            "Rat (org.Rn.eg.db)" = "org.Rn.eg.db",
-                            "Fly (org.Dm.eg.db)" = "org.Dm.eg.db",
-                            "Zebrafish (org.Dr.eg.db)" = "org.Dr.eg.db",
-                            "Arabidopsis (org.At.tair.db)" = "org.At.tair.db",
-                            "Yeast (org.Sc.sgd.db)" = "org.Sc.sgd.db",
-                            "Worm (org.Ce.eg.db)" = "org.Ce.eg.db",
-                            "Pig (org.Ss.eg.db)" = "org.Ss.eg.db",
-                            "Bovine (org.Bt.eg.db)" = "org.Bt.eg.db",
-                            "Rhesus (org.Mmu.eg.db)" = "org.Mmu.eg.db",
-                            "Canine (org.Cf.eg.db)" = "org.Cf.eg.db",
-                            "E. coli strain K12(org.EcK12.eg.db)" = "org.EcK12.eg.db",
-                            "E coli strain Sakai" = "org.EcSakai.eg.db",
-                            "Chicken (org.Gg.eg.db)" = "org.Gg.eg.db",
-                            "Xenopus (org.Xl.eg.db)" = "org.Xl.eg.db",
-                            "Chimp (org.Pt.eg.db)" = "org.Pt.eg.db",
-                            "Anopheles (org.Ag.eg.db)" = "org.Ag.eg.db",
-                            "Malaria (org.Pf.plasmo.db)" = "org.Pf.plasmo.db",
-                            "Myxococcus xanthus DK 1622" = "org.Mxanthus.db"
-                          ),
-                          selected = ""
+                        fluidRow(
+                          column(6, style = "padding-right: 0px;",
+                                 selectInput(
+                                   ns("model_orgdb"),
+                                   "Model organism",
+                                   choices = c(
+                                     " " = "",
+                                     "Human (org.Hs.eg.db)" = "org.Hs.eg.db",
+                                     "Mouse (org.Mm.eg.db)" = "org.Mm.eg.db",
+                                     "Rat (org.Rn.eg.db)" = "org.Rn.eg.db",
+                                     "Fly (org.Dm.eg.db)" = "org.Dm.eg.db",
+                                     "Zebrafish (org.Dr.eg.db)" = "org.Dr.eg.db",
+                                     "Arabidopsis (org.At.tair.db)" = "org.At.tair.db",
+                                     "Yeast (org.Sc.sgd.db)" = "org.Sc.sgd.db",
+                                     "Worm (org.Ce.eg.db)" = "org.Ce.eg.db",
+                                     "Pig (org.Ss.eg.db)" = "org.Ss.eg.db",
+                                     "Bovine (org.Bt.eg.db)" = "org.Bt.eg.db",
+                                     "Rhesus (org.Mmu.eg.db)" = "org.Mmu.eg.db",
+                                     "Canine (org.Cf.eg.db)" = "org.Cf.eg.db",
+                                     "E. coli strain K12(org.EcK12.eg.db)" = "org.EcK12.eg.db",
+                                     "E coli strain Sakai" = "org.EcSakai.eg.db",
+                                     "Chicken (org.Gg.eg.db)" = "org.Gg.eg.db",
+                                     "Xenopus (org.Xl.eg.db)" = "org.Xl.eg.db",
+                                     "Chimp (org.Pt.eg.db)" = "org.Pt.eg.db",
+                                     "Anopheles (org.Ag.eg.db)" = "org.Ag.eg.db",
+                                     "Malaria (org.Pf.plasmo.db)" = "org.Pf.plasmo.db",
+                                     "Myxococcus xanthus DK 1622" = "org.Mxanthus.db"
+                                   ),
+                                   selected = ""
+                                 )),
+                          column(4,
+                                 actionButton(
+                                   ns("load_orgdb"),
+                                   "Load orgDb",
+                                   class = "btn-primary",
+                                   style = "background-color: #d83428; color: white; margin-top: 25px;"
+                                 ))
                         ),
                         helpText("Select the name of an OrgDb package that is installed on your system.",
                                  "Common examples: org.Hs.eg.db (Human), org.Mm.eg.db (Mouse), org.Rn.eg.db (Rat)",
@@ -228,9 +238,19 @@ llm_interpretation_ui <- function(id) {
                                    target = "_blank"
                                  )),
                         strong("Non-model organism"),
-                        textInput(ns("non_model_ah_id"),
-                                  "AnnotationHub ID",
-                                  value = "")
+                        fluidRow(
+                          column(6, style = "padding-right: 0px;",
+                                 textInput(ns("non_model_ah_id"),
+                                           "AnnotationHub ID",
+                                           value = "")),
+                          column(4,
+                                 actionButton(
+                                   ns("retrieve_orgdb"),
+                                   "Retrieve orgDb",
+                                   class = "btn-primary",
+                                   style = "background-color: #d83428; color: white; margin-top: 25px;"
+                                 ))
+                        )
                   )),
                   
                   fluidRow(
@@ -547,59 +567,66 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
         )
       })
       
+      ## Get OrgDb Database
       orgdb <- reactiveVal()
+      orgdb_text <- reactiveVal()
+      
       observe({
         req(query_type())
-        if (query_type() == "gene") {
-          tryCatch({
-            if (grepl("^org\\.[A-Za-z]+\\..+\\.db$", input$model_orgdb)) {
-              # Show loading message
-              showNotification("Loading organism database...", type = "message", duration = 3)
-              
-              # Check if package is installed
-              if (!requireNamespace(input$model_orgdb, quietly = TRUE)) {
-                # shiny::showModal(modalDialog(
-                #   title = "Missing Package",
-                #   paste0("Package ", input$model_orgdb, " is not installed. Please install it using:\n",
-                #          "BiocManager::install('\", input$model_orgdb, "\')"),
-                #   easyClose = TRUE,
-                #   footer = modalButton("Close")
-                # ))
-                shinyalert::shinyalert(
-                  title = "Missing Package",
-                  text = paste0("Package ", input$model_orgdb, " is not installed. Please install it using:\n",
-                                "<code>BiocManager::install('", input$model_orgdb, "')</code>"),
-                  html = TRUE,
-                  type = "error",
-                  confirmButtonCol = "#dd4b39"
+        req(input$retrieve_orgdb)
+        
+        tryCatch(
+          expr = {
+            # Show loading message
+            db_load_alert_id <- shinyalert::shinyalert(
+              title = paste0("Retrieving organism database from AnnotationHub"),
+              text = tags$div(
+                style = "text-align: center;",
+                "This may take several minutes. Please be patient...",
+                tags$div(
+                  tags$img(src = "www/spinner.gif", width = "50px", height = "50px"),
+                  style = "margin-top: 20px;"
                 )
-                return()
-              }
+              ),
+              type = "",
+              showConfirmButton = FALSE,
+              showCancelButton = FALSE,
+              timer = 0,
+              closeOnEsc = FALSE,
+              closeOnClickOutside = FALSE,
+              html = TRUE
+            )
+            
+            if (query_type() == "gene" & grepl("^AH", input$non_model_ah_id)) {
               
-              # Load the package and get OrgDb object
-              requireNamespace(input$model_orgdb)
-              db <- get(input$model_orgdb)
-              orgdb(db)
-              
-              # Success message
-              showNotification(
-                paste0("Successfully loaded organism database: ", input$model_orgdb),
-                type = "message",
-                duration = 5
-              )
-              
-            } else if (grepl("^AH", input$non_model_ah_id)) {
               ah_id <- input$non_model_ah_id
-              
-              # Show loading message
-              showNotification("Connecting to AnnotationHub...", type = "message", duration = 3)
               
               # Check and install AnnotationHub if needed
               if (!requireNamespace("AnnotationHub", quietly = TRUE)) {
-                showNotification("Installing AnnotationHub package...", type = "message", duration = 5)
+                
+                install_annotationhub_alert_id <- shinyalert::shinyalert(
+                  title = "Installing AnnotationHub package",
+                  text = tags$div(
+                    style = "text-align: center;",
+                    "This may take several minutes. Please be patient...",
+                    tags$div(
+                      tags$img(src = "www/spinner.gif", width = "50px", height = "50px"),
+                      style = "margin-top: 20px;"
+                    )
+                  ),
+                  type = "",
+                  showConfirmButton = FALSE,
+                  showCancelButton = FALSE,
+                  timer = 0,
+                  closeOnEsc = FALSE,
+                  closeOnClickOutside = FALSE,
+                  html = TRUE
+                )
                 tryCatch({
                   BiocManager::install("AnnotationHub")
+                  shinyalert::closeAlert(id = install_annotationhub_alert_id)
                 }, error = function(e) {
+                  shinyalert::closeAlert(id = install_annotationhub_alert_id)
                   # showNotification(
                   #   paste0("Failed to install AnnotationHub: ", e$message),
                   #   type = "error",
@@ -617,32 +644,24 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
               }
               
               # Retrieve from AnnotationHub
-              showNotification(
-                paste0("Retrieving organism database from AnnotationHub (ID: ", ah_id, ")..."),
-                type = "message",
-                duration = 5
-              )
               
               ah <- AnnotationHub::AnnotationHub()
               orgdb(ah[[ah_id]])
-              
+              orgdb_text(paste0(ah_id, "_orgdb_object"))
               # Success message
-              # showNotification(
-              #   paste0("Successfully loaded organism database from AnnotationHub (ID: ", ah_id, ")"),
-              #   type = "message",
-              #   duration = 5
-              # )
+              shinyalert::closeAlert(id = db_load_alert_id)
               shinyalert::shinyalert(
-                title = "Organism database loaded successfully",
+                title = "Organism database retrieval done",
                 text = paste0("AnnotationHub ID: ", ah_id),
                 html = TRUE,
                 type = "success",
                 confirmButtonCol = "#dd4b39"
               )
-              
-            } 
-          }, error = function(e) {
+            }
+          },
+          error = function(e) {
             
+            shinyalert::closeAlert(id = db_load_alert_id)
             shinyalert::shinyalert(
               title = "Database Loading Error",
               text = div(
@@ -656,24 +675,90 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
             )
             
             return()
-            
-          }, warning = function(w) {
-            # Handle warnings
-            # showNotification(
-            #   paste0("Warning: ", w$message),
-            #   type = "warning",
-            #   duration = 8
-            # )
+          })
+      })
+      
+      observe({
+        req(query_type())
+        req(input$load_orgdb)
+        
+        tryCatch(
+          expr = {
+            db_load_alert_id <- shinyalert::shinyalert(
+              title = "Loading organism database",
+              text = tags$div(
+                style = "text-align: center;",
+                "This may take several minutes. Please be patient...",
+                tags$div(
+                  tags$img(src = "www/spinner.gif", width = "50px", height = "50px"),
+                  style = "margin-top: 20px;"
+                )
+              ),
+              type = "",
+              showConfirmButton = FALSE,
+              showCancelButton = FALSE,
+              timer = 0,
+              closeOnEsc = FALSE,
+              closeOnClickOutside = FALSE,
+              html = TRUE
+            )
+            if (query_type() == "gene" & grepl("^org\\.[A-Za-z]+\\..+\\.db$", input$model_orgdb)) {
+              
+              # Check if package is installed
+              if (!requireNamespace(input$model_orgdb, quietly = TRUE)) {
+                shinyalert::closeAlert(id = db_load_alert_id)
+                
+                shinyalert::shinyalert(
+                  title = "Missing Package",
+                  text = paste0("Package ", input$model_orgdb, " is not installed. Please install it using:\n",
+                                "<code>BiocManager::install('", input$model_orgdb, "')</code>"),
+                  html = TRUE,
+                  type = "error",
+                  confirmButtonCol = "#dd4b39"
+                )
+                return()
+              }
+              
+              # Load the package and get OrgDb object
+              requireNamespace(input$model_orgdb)
+              db <- get(input$model_orgdb, envir = asNamespace(input$model_orgdb))
+              
+              orgdb(db)
+              orgdb_text(input$model_orgdb)
+              shinyalert::closeAlert(id = db_load_alert_id)
+              
+              shinyalert::shinyalert(
+                text = paste0("Successfully loaded organism database: ", input$model_orgdb),
+                type = "success",
+                confirmButtonCol = "#dd4b39",
+                timer = 2000
+              )
+            }
+          },
+          error = function(e) {
+            shinyalert::closeAlert(id = db_load_alert_id)
             shinyalert::shinyalert(
-              title = "Warning",
-              text = w$message,
+              title = "Database Loading Error",
+              text = div(
+                p("An error occurred while loading the organism database:"),
+                tags$code(e$message),
+                p("Please check your input and try again.")
+              ),
               html = TRUE,
-              type = "warning",
+              type = "error",
               confirmButtonCol = "#dd4b39"
             )
-          })
-        } else {
+            
+            return()
+          }
+        )
+      })
+      
+      observe({
+        req(query_type())
+        if (query_type() == "metabolite") {
           orgdb("NULL")
+          orgdb_text("NULL")
         }
       })
       
@@ -689,6 +774,25 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
       observeEvent(input$submit_llm_interpretation, {
         req(enriched_functional_module())
         
+        module_annotation_alert_id <- shinyalert::shinyalert(
+          title = "Annotating modules",
+          text = tags$div(
+            style = "text-align: center;",
+            "This may take several minutes. Please be patient...",
+            tags$div(
+              tags$img(src = "www/spinner.gif", width = "50px", height = "50px"),
+              style = "margin-top: 20px;"
+            )
+          ),
+          type = "",
+          showConfirmButton = FALSE,
+          showCancelButton = FALSE,
+          timer = 0,
+          closeOnEsc = FALSE,
+          closeOnClickOutside = FALSE,
+          html = TRUE
+        )
+        
         # validate dir before processing
         embed_path <- trimws(input$embedding_output_dir_path)
         corpus_path <- if(!is.null(input$local_corpus_dir_path) && input$local_corpus_dir_path != "") {
@@ -697,6 +801,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
           NULL
         }
         if (is.null(embed_path) || embed_path == "") {
+          shinyalert::closeAlert(id = module_annotation_alert_id)
           # shiny::showModal(modalDialog(
           #   title = "Error",
           #   "Please specify an embeddings output directory.",
@@ -713,6 +818,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
           return()
         }
         if (!dir.exists(embed_path)) {
+          shinyalert::closeAlert(id = module_annotation_alert_id)
           # shiny::showModal(modalDialog(
           #   title = "Error", 
           #   "The specified embeddings output directory does not exist. Please create it first or specify an existing directory.",
@@ -729,6 +835,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
           return()
         }
         if (!is.null(corpus_path) && !dir.exists(corpus_path)) {
+          shinyalert::closeAlert(id = module_annotation_alert_id)
           # shiny::showModal(modalDialog(
           #   title = "Error",
           #   "The specified local corpus directory does not exist. Please specify an existing directory or leave it empty.",
@@ -774,19 +881,9 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
         #   size = "m"
         # ))
         
-        # showNotification("Module annotation is running in the background. Results will appear when ready.", 
-        #                  type = "message", 
-        #                  duration = 5)
-        shinyalert::shinyalert(  
-          title = "Module annotation started",
-          text = "Results will appear when ready.",
-          html = TRUE,
-          type = "info",
-          confirmButtonCol = "#dd4b39"
-        )
-
         if (is.null(enriched_functional_module())) {
-          removeModal()
+          shinyalert::closeAlert(id = module_annotation_alert_id)
+          # removeModal()
           # shiny::showModal(modalDialog(
           #   title = "Warning",
           #   "No enriched functional module data available. Please complete the previous steps or upload the data",
@@ -825,6 +922,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
             function(result) {
               enriched_functional_module(result)
               annotation_result(result@llm_module_interpretation)
+              shinyalert::closeAlert(id = module_annotation_alert_id)
               # showNotification("Module annotation completed successfully!", type = "message")
               shinyalert::shinyalert(
                 title = "Module annotation completed",
@@ -835,7 +933,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
             },
             # Error handler
             function(error) {
-              removeModal()
+              shinyalert::closeAlert(id = module_annotation_alert_id)
               # shiny::showModal(modalDialog(
               #   title = "Error",
               #   HTML(paste("An error occurred during module annotation:<br><pre>",
@@ -896,27 +994,27 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
 
       observeEvent(enriched_functional_module(), {
         req(annotation_result())
-        req(orgdb())
+        req(orgdb_text())
+        
         ### Save code
         interpretation_code <-
-          functional_module_annotation_code <-
-          sprintf(
-            '
-            functional_module_annotation <-
-              llm_interpret_module(
-                object = enriched_functional_module,
-                module_content_number_cutoff = %s,
-                api_provider = "%s",
-                llm_model = "%s",
-                embedding_model = "%s",
-                api_key = "%s",
-                embedding_output_dir = "%s",
-                local_corpus_dir = %s,
-                phenotype = "%s",
-                years = %s,
-                orgdb = %s
-              )
-            ',
+            sprintf(
+              '
+functional_module_annotation <-
+  llm_interpret_module(
+    object = enriched_functional_module,
+    module_content_number_cutoff = %s,
+    api_provider = "%s",
+    llm_model = "%s",
+    embedding_model = "%s",
+    api_key = "%s",
+    embedding_output_dir = "%s",
+    local_corpus_dir = %s,
+    phenotype = "%s",
+    years = %s,
+    orgdb = %s
+  )
+              ',
             ## wrap character inputs in quotes:
             input$module_content_number_cutoff,
             input$llm_api_provider,
@@ -924,12 +1022,23 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
             input$embedding_model,
             input$api_key,
             input$embedding_output_dir_path,
-            if (input$local_corpus_dir_path == "") NULL else (paste0('"', input$local_corpus_dir_path, '"')),
+            if (input$local_corpus_dir_path == "") "NULL" else (paste0('"', input$local_corpus_dir_path, '"')),
             input$phenotype,
             input$years,
-            as.character(substitute(orgdb))
+            orgdb_text()
           )
         llm_interpretation_code(interpretation_code)
+        
+        # print(input$module_content_number_cutoff)
+        # print(input$llm_api_provider)
+        # print(input$llm_model)
+        # print(input$embedding_model)
+        # print(input$api_key)
+        # print(input$embedding_output_dir_path)
+        # print(if (input$local_corpus_dir_path == "") "NULL" else (paste0('"', input$local_corpus_dir_path, '"')))
+        # print(input$phenotype)
+        # print(input$years)
+        # print(orgdb_text())
       })
 
       output$module_name <- renderText({
@@ -997,6 +1106,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
           #     footer = modalButton("Close")
           #   )
           # )
+          
           shinyalert::shinyalert(
             title = "No available code",
             html = TRUE,
@@ -1139,145 +1249,6 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
           writeLines(text_content, file, useBytes = TRUE)
         }
       )
-
-      # # Define enriched_functional_module as a reactive value
-      # llm_interpretation_result <- reactiveVal("")
-      #
-      # llm_interpretation_code <- reactiveVal()
-      #
-      # openai_key <- reactiveVal()
-      #
-      # observeEvent(input$submit_llm_interpretation, {
-      #   openai_key1 <-
-      #     Sys.getenv("chatgpt_api_key")
-      #
-      #   openai_key2 <-
-      #     input$openai_key
-      #
-      #   # Check if enriched_modules is available
-      #   if (is.null(enriched_functional_module()) ||
-      #       length(enriched_functional_module()) == 0) {
-      #     shiny::showModal(
-      #       modalDialog(
-      #         title = "Warning",
-      #         "No enriched functional modules data available.",
-      #         easyClose = TRUE,
-      #         footer = modalButton("Close")
-      #       )
-      #     )
-      #   } else {
-      #     if (openai_key1 != "") {
-      #       openai_key(openai_key1)
-      #     } else{
-      #       if (openai_key2 != "") {
-      #         openai_key(openai_key2)
-      #       } else{
-      #         openai_key("")
-      #       }
-      #     }
-      #
-      #     if (openai_key() == "") {
-      #       shiny::showModal(
-      #         modalDialog(
-      #           title = "Warning",
-      #           "No OpenAI Key provided. No interpretation will be generated.",
-      #           easyClose = TRUE,
-      #           footer = modalButton("Close")
-      #         )
-      #       )
-      #     } else{
-      #       set_chatgpt_api_key(api_key = openai_key())
-      #     }
-      #
-      #     # shinyjs::show("loading")
-      #
-      #     withProgress(message = 'Analysis in progress...', {
-      #       tryCatch({
-      #         llm_interpretation_result <-
-      #           interpret_pathways(
-      #             object = enriched_functional_module(),
-      #             p.adjust.cutoff = input$llm_interpretation_p_adjust_cutoff,
-      #             disease = input$llm_interpretation_disease,
-      #             count.cutoff = input$llm_interpretation_count_cutoff,
-      #             top_n = input$llm_interpretation_top_n
-      #           )
-      #         llm_interpretation_result(llm_interpretation_result)
-      #       },
-      #       error = function(e) {
-      #         shiny::showModal(modalDialog(
-      #           title = "Error",
-      #           paste("Details:", e$message),
-      #           easyClose = TRUE,
-      #           footer = modalButton("Close")
-      #         ))
-      #         llm_interpretation_result("No result")
-      #       })
-      #     })
-      #     # shinyjs::hide("loading")
-      #
-      #     ##save code
-      #     llm_interpretation_code <-
-      #       sprintf(
-      #         '
-      #       llm_interpretation_result <-
-      #       interpret_pathways(
-      #       object = enriched_functional_module,
-      #       p.adjust.cutoff = %s,
-      #       disease = %s,
-      #       count.cutoff = %s,
-      #       top_n = %s)
-      #       ',
-      #         input$llm_interpretation_p_adjust_cutoff,
-      #         paste0('"', input$llm_interpretation_disease, '"'),
-      #         input$llm_interpretation_count_cutoff,
-      #         input$llm_interpretation_top_n
-      #       )
-      #
-      #     llm_interpretation_code(llm_interpretation_code)
-      #   }
-      # })
-      #
-      # output$llm_interpretation_result <-
-      #   renderUI({
-      #     shiny::HTML(markdown::markdownToHTML(llm_interpretation_result(),
-      #                                          fragment.only = TRUE))
-      #   })
-      #
-      #
-      # output$llm_enriched_functional_modules1 <-
-      #   shiny::renderDataTable({
-      #     req(tryCatch(
-      #       enriched_functional_module()@merged_module$functional_module_result,
-      #       error = function(e)
-      #         NULL
-      #     ))
-      #   },
-      #   options = list(pageLength = 10,
-      #                  scrollX = TRUE))
-      #
-      # output$llm_enriched_functional_modules2 <-
-      #   shiny::renderDataTable({
-      #     req(tryCatch(
-      #       enriched_functional_module()@merged_module$result_with_module,
-      #       error = function(e)
-      #         NULL
-      #     ))
-      #   },
-      #   options = list(pageLength = 10,
-      #                  scrollX = TRUE))
-      #
-      # observe({
-      #   if (is.null(llm_interpretation_result()) ||
-      #       length(llm_interpretation_result()) == 0 ||
-      #       llm_interpretation_result() == "") {
-      #     shinyjs::disable("download_llm_interpretation_result")
-      #   } else {
-      #     shinyjs::enable("download_llm_interpretation_result")
-      #
-      #   }
-      # })
-      #
-      #
 
       ###Go to go2data_visualization tab
       ####if there is not enriched_functional_module, show a warning message

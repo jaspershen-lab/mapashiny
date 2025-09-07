@@ -321,11 +321,14 @@ pathway_clustering_server <- function(id, similarity_result, enriched_functional
       })
       
       eval_results_code_str <- sprintf(
-      'eval_results <- mapa::determine_optimal_clusters(object = similarity_result,
-                                               cutoff_range = c(%s, %s),
-                                               cutoff_increment = %s,
-                                               methods = "%s")
-      ',
+        '
+eval_results <- mapa::determine_optimal_clusters(
+  object = similarity_result,
+  cutoff_range = c(%s, %s),
+  cutoff_increment = %s,
+  methods = "%s"
+)
+        ',
       input$cutoff_min, 
       input$cutoff_max,
       input$cutoff_increment,
@@ -393,49 +396,70 @@ pathway_clustering_server <- function(id, similarity_result, enriched_functional
     observeEvent(input$submit_clustering, {
       req(similarity_result())
       
-      withProgress(message = 'Identifying modules...', {
-        tryCatch({
-          # Use the generic function for final clustering [cite: 11_get_functional_modules.R]
-          result <- mapa::get_functional_modules(
-            object = similarity_result(),
-            sim.cutoff = input$sim_cutoff,
-            cluster_method = input$cluster_method,
-            save_to_local = FALSE
+      identify_module_alert_id <- shinyalert::shinyalert(
+        title = "Identifying modules",
+        text = tags$div(
+          style = "text-align: center;",
+          "This may take several minutes. Please be patient...",
+          tags$div(
+            tags$img(src = "www/spinner.gif", width = "50px", height = "50px"),
+            style = "margin-top: 20px;"
           )
-          enriched_functional_module(result)
-          
-          # Switch the user's view to the results tab
-          updateTabsetPanel(session, "clustering_tabs", selected = "Final Clustering Result")
-          
-          # showNotification("Clustering complete.", type = "message")
-          shinyalert::shinyalert(
-            title = "Module identification complete",
-            text = "Go to Step2 to assess the module identification quality",
-            html = TRUE,
-            type = "success",
-            confirmButtonCol = "#dd4b39"
-          )
-          
-        }, error = function(e) {
-          # showModal(modalDialog(title = "Error", paste("Clustering failed:", e$message)))
-          shinyalert::shinyalert(
-            title = "Module identification failed",
-            text = e$message,
-            html = TRUE,
-            type = "error",
-            confirmButtonCol = "#dd4b39"
-          )
-        })
+        ),
+        type = "",
+        showConfirmButton = FALSE,
+        showCancelButton = FALSE,
+        timer = 0,
+        closeOnEsc = FALSE,
+        closeOnClickOutside = FALSE,
+        html = TRUE
+      )
+      
+      tryCatch({
+        # Use the generic function for final clustering [cite: 11_get_functional_modules.R]
+        result <- mapa::get_functional_modules(
+          object = similarity_result(),
+          sim.cutoff = input$sim_cutoff,
+          cluster_method = input$cluster_method,
+          save_to_local = FALSE
+        )
+        enriched_functional_module(result)
+        
+        # Switch the user's view to the results tab
+        updateTabsetPanel(session, "clustering_tabs", selected = "Final Clustering Result")
+        
+        # showNotification("Clustering complete.", type = "message")
+        shinyalert::shinyalert(
+          title = "Module identification complete",
+          text = "Go to Step2 to assess the module identification quality",
+          html = TRUE,
+          type = "success",
+          confirmButtonCol = "#dd4b39"
+        )
+        
+      }, error = function(e) {
+        shinyalert::closeAlert(id = identify_module_alert_id)
+        # showModal(modalDialog(title = "Error", paste("Clustering failed:", e$message)))
+        shinyalert::shinyalert(
+          title = "Module identification failed",
+          text = e$message,
+          html = TRUE,
+          type = "error",
+          confirmButtonCol = "#dd4b39"
+        )
       })
       
+      shinyalert::closeAlert(id = identify_module_alert_id)
+      
       clustering_code_str <- sprintf(
-      'enriched_functional_module <- 
-         mapa::get_functional_modules(
-           object = similarity_result,
-           sim.cutoff = %s,
-           cluster_method = "%s"
-         )
-      ',
+        '
+enriched_functional_module <- 
+  mapa::get_functional_modules(
+    object = similarity_result,
+    sim.cutoff = %s,
+    cluster_method = "%s"
+  )
+        ',
         input$sim_cutoff, 
         input$cluster_method)
       
@@ -584,65 +608,83 @@ pathway_clustering_server <- function(id, similarity_result, enriched_functional
           confirmButtonCol = "#dd4b39"
         )
       } else {
-        withProgress(message = 'Analysis in progress...', {
-          tryCatch(
-            {
-              if (sum(enriched_functional_module()@merged_module$functional_module_result$module_content_number > input$enirched_functional_module_plot_degree_cutoff) > 34) {
-                show_fm_module_color_legend(FALSE)
-                
-                # showNotification(
-                #   "Note: With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
-                #   type = "message",
-                #   duration = NULL
-                # )
-                
-                shinyalert::shinyalert(
-                  text = "With more than 34 modules, the legend is hidden in the display to improve readability. The legend will be included when you download the figure.",
-                  type = "info",
-                  html = TRUE,
-                  confirmButtonCol = "#dd4b39"
-                )
-              } else {
-                show_fm_module_color_legend(TRUE)
-              }
-              
-              plot <-
-                mapa::plot_similarity_network(
-                  object = enriched_functional_module(),
-                  level = "functional_module",
-                  degree_cutoff = input$enirched_functional_module_plot_degree_cutoff,
-                  text = input$enirched_functional_module_plot_text,
-                  text_all = input$enirched_functional_module_plot_text_all
-                ) + ggplot2::theme(aspect.ratio = 1)
-              
-              if (!show_fm_module_color_legend()) {
-                plot_without_module_legend <- 
-                  plot +
-                  ggplot2::guides(fill = "none")
-                
-                enirched_functional_module_plot_without_module_legend(plot_without_module_legend)
-              }
-              
-              enirched_functional_module_plot(plot)
-            },
-            error = function(e) {
-              # shiny::showModal(
-              #   modalDialog(
-              #     title = "Error",
-              #     paste("Details:", e$message),
-              #     easyClose = TRUE,
-              #     footer = modalButton("Close")
-              #   )
-              # )
-              shinyalert::shinyalert(
-                text = paste("Details:", e$message),
-                html = TRUE,
-                type = "error",
-                confirmButtonCol = "#dd4b39"
-              )
+        
+        plot_fm_sim_network_id <- shinyalert::shinyalert(
+          title = "Generating plot",
+          text = tags$div(
+            style = "text-align: center;",
+            "This may take several minutes. Please be patient...",
+            tags$div(
+              tags$img(src = "www/spinner.gif", width = "50px", height = "50px"),
+              style = "margin-top: 20px;"
+            )
+          ),
+          type = "",
+          showConfirmButton = FALSE,
+          showCancelButton = FALSE,
+          timer = 0,
+          closeOnEsc = FALSE,
+          closeOnClickOutside = FALSE,
+          html = TRUE
+        )
+        
+        tryCatch(
+          {
+            if (sum(enriched_functional_module()@merged_module$functional_module_result$module_content_number > input$enirched_functional_module_plot_degree_cutoff) > 34) {
+              show_fm_module_color_legend(FALSE)
+            } else {
+              show_fm_module_color_legend(TRUE)
             }
+            
+            plot <-
+              mapa::plot_similarity_network(
+                object = enriched_functional_module(),
+                level = "functional_module",
+                degree_cutoff = input$enirched_functional_module_plot_degree_cutoff,
+                text = input$enirched_functional_module_plot_text,
+                text_all = input$enirched_functional_module_plot_text_all
+              ) + ggplot2::theme(aspect.ratio = 1)
+            
+            if (!show_fm_module_color_legend()) {
+              plot_without_module_legend <- 
+                plot +
+                ggplot2::guides(fill = "none")
+              
+              enirched_functional_module_plot_without_module_legend(plot_without_module_legend)
+            }
+            
+            enirched_functional_module_plot(plot)
+          },
+          error = function(e) {
+            shinyalert::closeAlert(id = plot_fm_sim_network_id)
+            # shiny::showModal(
+            #   modalDialog(
+            #     title = "Error",
+            #     paste("Details:", e$message),
+            #     easyClose = TRUE,
+            #     footer = modalButton("Close")
+            #   )
+            # )
+            shinyalert::shinyalert(
+              text = paste("Details:", e$message),
+              html = TRUE,
+              type = "error",
+              confirmButtonCol = "#dd4b39"
+            )
+          }
+        )
+        
+        shinyalert::closeAlert(id = plot_fm_sim_network_id)
+        
+        if (!show_fm_module_color_legend()) {
+          shinyalert::shinyalert(
+            title = "Module color legend hidden in display",
+            text = "It will be included when you download the figure.",
+            html = TRUE,
+            type = "info",
+            confirmButtonCol = "#dd4b39"
           )
-        })
+        }
       }
     })
     
@@ -701,45 +743,66 @@ pathway_clustering_server <- function(id, similarity_result, enriched_functional
     observeEvent(input$assess_clustering, {
       req(enriched_functional_module())
       
-      withProgress(message = 'Assess clustering quality...', {
-        tryCatch({
-          # Use the generic function for final clustering [cite: 11_get_functional_modules.R]
-          assess_result <- mapa::assess_clustering_quality(
-            object = enriched_functional_module()
+      assess_res_alert_id <- shinyalert::shinyalert(
+        title = "Assessing module identification results",
+        text = tags$div(
+          style = "text-align: center;",
+          "This may take several minutes. Please be patient...",
+          tags$div(
+            tags$img(src = "www/spinner.gif", width = "50px", height = "50px"),
+            style = "margin-top: 20px;"
           )
-          
-          assess_clustering_result(assess_result)
-          
-          # Switch the user's view to the results tab
-          updateTabsetPanel(session, "clustering_tabs", selected = "Clustering Quality Assessment")
-          
-          # showNotification("Clustering quality assessment complete.", type = "message")
-          shinyalert::shinyalert(
-            title = "Module identification quality assessment complete",
-            text = "Switch to <strong>Module Annotation</strong> by clicking <strong style='color: #dd4b39;'>Next</strong>",
-            html = TRUE,
-            type = "success",
-            confirmButtonCol = "#dd4b39"
-          )
-          
-        }, error = function(e) {
-          # showModal(modalDialog(title = "Error", paste("Clustering quality assessment failed:", e$message)))
-          shinyalert::shinyalert(
-            title = "Module identification quality assessment failed",
-            text = e$message,
-            html = TRUE,
-            type = "error",
-            confirmButtonCol = "#dd4b39"
-          )
-        })
+        ),
+        type = "",
+        showConfirmButton = FALSE,
+        showCancelButton = FALSE,
+        timer = 0,
+        closeOnEsc = FALSE,
+        closeOnClickOutside = FALSE,
+        html = TRUE
+      )
+      
+      tryCatch({
+        # Use the generic function for final clustering [cite: 11_get_functional_modules.R]
+        assess_result <- mapa::assess_clustering_quality(
+          object = enriched_functional_module()
+        )
+        
+        assess_clustering_result(assess_result)
+        
+        # Switch the user's view to the results tab
+        updateTabsetPanel(session, "clustering_tabs", selected = "Quality assessment")
+        
+        # showNotification("Clustering quality assessment complete.", type = "message")
+        shinyalert::shinyalert(
+          title = "Module identification quality assessment complete",
+          text = "Switch to <strong>Module Annotation</strong> by clicking <strong style='color: #dd4b39;'>Next</strong>",
+          html = TRUE,
+          type = "success",
+          confirmButtonCol = "#dd4b39"
+        )
+        
+      }, error = function(e) {
+        shinyalert::closeAlert(id = assess_res_alert_id)
+        # showModal(modalDialog(title = "Error", paste("Clustering quality assessment failed:", e$message)))
+        shinyalert::shinyalert(
+          title = "Module identification quality assessment failed",
+          text = e$message,
+          html = TRUE,
+          type = "error",
+          confirmButtonCol = "#dd4b39"
+        )
       })
       
+      shinyalert::closeAlert(id = assess_res_alert_id)
+      
       assess_clustering_code_str <- sprintf(
-        'assess_clustering_result <- 
-         mapa::assess_clustering_quality(
-           object = enriched_functional_module
-         )
-      ')
+        '
+assess_clustering_result <- 
+  mapa::assess_clustering_quality(
+    object = enriched_functional_module
+  )
+        ')
       
       assess_clustering_code(assess_clustering_code_str)
     })

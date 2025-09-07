@@ -95,39 +95,59 @@ results_server <- function(id, enriched_functional_module, tab_switch) {
         } else {
           # shinyjs::show("loading")
 
-          withProgress(message = 'Analysis in progress...', {
-            tryCatch({
-              report_path <-
-                file.path("files",
-                          paste(sample(
-                            c(letters, LETTERS, 0:9),
-                            30, replace = TRUE
-                          ), collapse = ""))
-
-              mapa::report_functional_module(
-                object = enriched_functional_module(),
-                path = report_path,
-                type = "html"
+          generate_report_alert_id <- shinyalert::shinyalert(
+            title = "Generating result report",
+            text = tags$div(
+              style = "text-align: center;",
+              "This may take several minutes. Please be patient...",
+              tags$div(
+                tags$img(src = "www/spinner.gif", width = "50px", height = "50px"),
+                style = "margin-top: 20px;"
               )
-            },
-            error = function(e) {
-              # shiny::showModal(
-              #   modalDialog(
-              #     title = "Error",
-              #     paste("Details:", e$message),
-              #     easyClose = TRUE,
-              #     footer = modalButton("Close")
-              #   )
-              # )
-              shinyalert::shinyalert(
-                title = "Report generation failed",
-                text = e$message,
-                html = TRUE,
-                type = "error",
-                confirmButtonCol = "#dd4b39"
-              )
-            })
+            ),
+            type = "",
+            showConfirmButton = FALSE,
+            showCancelButton = FALSE,
+            timer = 0,
+            closeOnEsc = FALSE,
+            closeOnClickOutside = FALSE,
+            html = TRUE
+          )
+          
+          tryCatch({
+            report_path <-
+              file.path("files",
+                        paste(sample(
+                          c(letters, LETTERS, 0:9),
+                          30, replace = TRUE
+                        ), collapse = ""))
+            
+            mapa::report_functional_module(
+              object = enriched_functional_module(),
+              path = report_path,
+              type = "html"
+            )
+          },
+          error = function(e) {
+            shinyalert::closeAlert(id = generate_report_alert_id)
+            # shiny::showModal(
+            #   modalDialog(
+            #     title = "Error",
+            #     paste("Details:", e$message),
+            #     easyClose = TRUE,
+            #     footer = modalButton("Close")
+            #   )
+            # )
+            shinyalert::shinyalert(
+              title = "Report generation failed",
+              text = e$message,
+              html = TRUE,
+              type = "error",
+              confirmButtonCol = "#dd4b39"
+            )
           })
+          
+          shinyalert::closeAlert(id = generate_report_alert_id)
 
           report_path(report_path)
 
@@ -137,11 +157,11 @@ results_server <- function(id, enriched_functional_module, tab_switch) {
           report_code <-
             sprintf(
               '
-              report_functional_module(
-              object = enriched_functional_module,
-              path = %s,
-              type = "html")
-            ',
+report_functional_module(
+  object = enriched_functional_module,
+  path = %s,
+  type = "html")
+              ',
               paste0('"', report_path(), '"')
             )
           report_code(report_code)

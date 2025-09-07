@@ -503,6 +503,27 @@ upload_data_server <- function(id, processed_info, tab_switch) {
           return()
         }
 
+        shinyalert::shinyalert(
+          title = "Converting IDs ....",
+          text = tags$div(
+            style = "text-align: center;",
+            # "This may take several minutes. Please be patient...",
+            tags$div(
+              tags$img(src = "www/spinner.gif", width = "50px", height = "50px"),
+              style = "margin-top: 20px;"
+            )
+          ),
+          type = "",
+          # imageUrl = "www/spinner.gif",
+          # imageWidth = 50,
+          # imageHeight = 50,
+          showConfirmButton = FALSE,
+          showCancelButton = FALSE,
+          timer = 0,
+          closeOnEsc = FALSE,
+          closeOnClickOutside = FALSE,
+          html = TRUE
+        )
         # Process based on query type
         if (input$query_type == "gene") {
           # Set up conversion parameters
@@ -525,6 +546,8 @@ upload_data_server <- function(id, processed_info, tab_switch) {
           if (input$organism != "") {
             if (!grepl("^org\\.[A-Za-z]+\\..+\\.db$", input$organism)) {
               # showNotification("Invalid OrgDb package name. Expected format: org.XX.eg.db", type = "error")
+              shinyalert::closeAlert()
+              
               shinyalert::shinyalert(
                 title = "Invalid OrgDb package name",
                 text = "Expected format: <code>org.XX.eg.db</code>.",
@@ -537,6 +560,7 @@ upload_data_server <- function(id, processed_info, tab_switch) {
             
             # Check if package is installed
             if (!requireNamespace(input$organism, quietly = TRUE)) {
+              shinyalert::closeAlert()
               # shiny::showModal(modalDialog(
               #   title = "Missing Package",
               #   paste0("Package ", input$organism, " is not installed. Please install it using:\n",
@@ -561,7 +585,7 @@ upload_data_server <- function(id, processed_info, tab_switch) {
             ah_id <- NULL
             conversion_param <- sprintf(
               '
-              organism = %s',
+  organism = %s',
               input$organism
             )
           } else if (input$ah_id != "") {
@@ -569,8 +593,8 @@ upload_data_server <- function(id, processed_info, tab_switch) {
             ah_id <- input$ah_id
             conversion_param <- sprintf(
               '
-              ah_id = "%s",
-              return_orgdb = %s',
+  ah_id = "%s",
+  return_orgdb = %s',
               input$ah_id,
               input$return_orgdb
             )
@@ -589,11 +613,11 @@ upload_data_server <- function(id, processed_info, tab_switch) {
             
             conversion_code <- sprintf(
             '
-            result <- mapa::convert_id(
-              data = your_input_data,
-              query_type = "gene",
-              from_id_type = "%s",%s
-            )
+result <- mapa::convert_id(
+  data = your_input_data,
+  query_type = "gene",
+  from_id_type = "%s",%s
+)
             ',
             input$id_type,
             conversion_param
@@ -611,7 +635,9 @@ upload_data_server <- function(id, processed_info, tab_switch) {
             
             processed_info$variable_info <- data_values$converted_data
             processed_info$query_type <- input$query_type
-            # Show success message
+            
+            shinyalert::closeAlert()
+            
             # showNotification("Data successfully processed", type = "message")
             shinyalert::shinyalert(
               title = "Gene marker list successfully processed",
@@ -627,6 +653,8 @@ upload_data_server <- function(id, processed_info, tab_switch) {
             #   easyClose = TRUE,
             #   footer = modalButton("Close")
             # ))
+            shinyalert::closeAlert()
+            
             shinyalert::shinyalert(
               title = "ID conversion failed",
               text = e$message,
@@ -648,13 +676,13 @@ upload_data_server <- function(id, processed_info, tab_switch) {
             
             conversion_code <- sprintf(
               '
-            result <- mapa::convert_id(
-              data = your_input_data,
-              query_type = "metabolite",
-              from_id_type = "%s",
-              organism = "%s"
-            )
-            ',
+result <- mapa::convert_id(
+  data = your_input_data,
+  query_type = "metabolite",
+  from_id_type = "%s",
+  organism = "%s"
+)
+              ',
               input$met_id_type,
               input$met_organism
             )
@@ -666,7 +694,7 @@ upload_data_server <- function(id, processed_info, tab_switch) {
             processed_info$query_type <- input$query_type
             processed_info$organism <- input$met_organism
 
-            # Show success message
+            shinyalert::closeAlert()
             # showNotification("Data successfully processed", type = "message")
             shinyalert::shinyalert(
               title = "Metabolite marker list successfully processed",
@@ -676,6 +704,8 @@ upload_data_server <- function(id, processed_info, tab_switch) {
               confirmButtonCol = "#dd4b39"
             )
           }, error = function(e) {
+            shinyalert::closeAlert()
+            
             # shiny::showModal(modalDialog(
             #   title = "Error",
             #   paste("Conversion failed:", e$message),
