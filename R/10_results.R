@@ -16,6 +16,11 @@ results_ui <- function(id) {
                 column(4,
                        br(),
                        fluidRow(
+                         fileInput(inputId = ns("upload_enriched_functional_module"),
+                                   label = "Upload functional module (.rda)",
+                                   accept = ".rda")
+                       ),
+                       fluidRow(
                          actionButton(
                            inputId = ns("generate_report"),
                            label = "Generate report",
@@ -73,9 +78,42 @@ results_server <- function(id, enriched_functional_module, tab_switch) {
       report_code <- reactiveVal()
       report_path <- reactiveVal()
 
+      observeEvent(input$upload_enriched_functional_module, {
+        if (!is.null(input$upload_enriched_functional_module$datapath)) {
+          message("Loading data")
+          tempEnv <- new.env()
+          load(input$upload_enriched_functional_module$datapath,
+               envir = tempEnv)
+          
+          names <- ls(tempEnv)
+          
+          if (length(names) == 1) {
+            object <- get(names[1], envir = tempEnv)
+            if (!("merge_modules" %in% names(object@process_info))) {
+              shinyalert::shinyalert(
+                text = "Do <strong>Module Identification</strong> before generating result report.",
+                html = TRUE,
+                type = "error",
+                confirmButtonCol = "#dd4b39"
+              )
+            } else {
+              enriched_functional_module(get(names[1], envir = tempEnv)) 
+            }
+          } else {
+            message("The .rda file does not contain exactly one object.")
+            
+            shinyalert::shinyalert(
+              text = "The uploaded file should contain exactly one object.",
+              html = TRUE,
+              type = "error",
+              confirmButtonCol = "#dd4b39"
+            )
+          }
+        }
+      })
+      
       observeEvent(input$generate_report, {
-        # Check if enriched_functional_module and llm_interpretation_result are
-        #  available
+        # Check if enriched_functional_module and llm_interpretation_result are available
         if (is.null(enriched_functional_module()) ||
             length(enriched_functional_module()) == 0) {
           # shiny::showModal(
