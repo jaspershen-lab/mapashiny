@@ -996,8 +996,8 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
         req(annotation_result())
         req(orgdb_text())
         
-        ### Save code
-        interpretation_code <-
+        tryCatch({
+          interpretation_code <-
             sprintf(
               '
 functional_module_annotation <-
@@ -1015,32 +1015,42 @@ functional_module_annotation <-
     orgdb = %s
   )
               ',
-            ## wrap character inputs in quotes:
-            input$module_content_number_cutoff,
-            input$llm_api_provider,
-            input$llm_model,
-            input$embedding_model,
-            input$api_key,
-            input$embedding_output_dir_path,
-            if (input$local_corpus_dir_path == "") "NULL" else (paste0('"', input$local_corpus_dir_path, '"')),
-            input$phenotype,
-            input$years,
-            orgdb_text()
+              ## wrap character inputs in quotes:
+              input$module_content_number_cutoff,
+              input$llm_api_provider,
+              input$llm_model,
+              input$embedding_model,
+              input$api_key,
+              input$embedding_output_dir_path,
+              if (input$local_corpus_dir_path == "") "NULL" else (paste0('"', input$local_corpus_dir_path, '"')),
+              input$phenotype,
+              input$years,
+              orgdb_text()
+            )
+          llm_interpretation_code(interpretation_code)
+          
+          # print(input$module_content_number_cutoff)
+          # print(input$llm_api_provider)
+          # print(input$llm_model)
+          # print(input$embedding_model)
+          # print(input$api_key)
+          # print(input$embedding_output_dir_path)
+          # print(if (input$local_corpus_dir_path == "") "NULL" else (paste0('"', input$local_corpus_dir_path, '"')))
+          # print(input$phenotype)
+          # print(input$years)
+          # print(orgdb_text())
+          
+        }, error = function(e) {
+          # Show error alert to user
+          shinyalert(
+            text = paste("An error occurred while saving the functional module interpretation code:",
+                         e$message),
+            type = "error",
+            confirmButtonCol = "#dd4b39"
           )
-        llm_interpretation_code(interpretation_code)
-        
-        # print(input$module_content_number_cutoff)
-        # print(input$llm_api_provider)
-        # print(input$llm_model)
-        # print(input$embedding_model)
-        # print(input$api_key)
-        # print(input$embedding_output_dir_path)
-        # print(if (input$local_corpus_dir_path == "") "NULL" else (paste0('"', input$local_corpus_dir_path, '"')))
-        # print(input$phenotype)
-        # print(input$years)
-        # print(orgdb_text())
+        })
       })
-
+      
       output$module_name <- renderText({
         req(annotation_result(), input$module_selector)
         tryCatch(

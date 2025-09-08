@@ -166,7 +166,7 @@ data_visualization_ui <- function(id) {
                                       shinyWidgets::colorPickr(
                                         inputId = ns("barplot_go_color"),
                                         label = "GO",
-                                        selected = "#1F77B4FF",
+                                        selected = "#eeca40",
                                         theme = "monolith",
                                         width = "100%")
                                ),
@@ -174,7 +174,7 @@ data_visualization_ui <- function(id) {
                                       shinyWidgets::colorPickr(
                                         inputId = ns("barplot_kegg_color"),
                                         label = "KEGG",
-                                        selected = "#FF7F0EFF",
+                                        selected = "#fd7541",
                                         theme = "monolith",
                                         width = "100%")
                                ),
@@ -182,7 +182,7 @@ data_visualization_ui <- function(id) {
                                       shinyWidgets::colorPickr(
                                         inputId = ns("barplot_reactome_color"),
                                         label = "Reactome",
-                                        selected = "#2CA02CFF",
+                                        selected = "#23b9c7",
                                         theme = "monolith",
                                         width = "100%")
                                )
@@ -212,7 +212,7 @@ data_visualization_ui <- function(id) {
                                       shinyWidgets::colorPickr(
                                         inputId = ns("barplot_hmdb_color"),
                                         label = "HMDB",
-                                        selected = "#9467BDFF",
+                                        selected = "#7998ad",
                                         theme = "monolith",
                                         width = "100%")
                                ),
@@ -220,7 +220,7 @@ data_visualization_ui <- function(id) {
                                       shinyWidgets::colorPickr(
                                         inputId = ns("barplot_metkegg_color"),
                                         label = "KEGG",
-                                        selected = "#FF7F0EFF",
+                                        selected = "#fd7541",
                                         theme = "monolith",
                                         width = "100%")
                                )
