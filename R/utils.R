@@ -144,3 +144,39 @@ org2react <- c(
 # choices <- setNames(organisms_df$organism, 
 #                     paste0(organisms_df$species, " (", organisms_df$organism, ")"))
 # save(choices, file = "inst/app/www/met_org_kegg_choices.rda")
+
+# Validation function for expression data
+validate_expression_data <- function(data) {
+  # Check if it's a data frame
+  if (!is.data.frame(data)) {
+    return(list(valid = FALSE, message = "Data must be a data frame"))
+  }
+  
+  # Check if there's an 'id' column
+  if (!"id" %in% colnames(data)) {
+    return(list(valid = FALSE, message = "Missing required 'id' column"))
+  }
+  
+  # Check if there are additional columns (samples/groups)
+  if (ncol(data) < 2) {
+    return(list(valid = FALSE, message = "At least one sample/group column is required besides 'id'"))
+  }
+  
+  # Check if numeric columns exist (excluding id column)
+  numeric_cols <- sapply(data[, !colnames(data) %in% "id", drop = FALSE], is.numeric)
+  if (!any(numeric_cols)) {
+    return(list(valid = FALSE, message = "At least one numeric column is required for expression values"))
+  }
+  
+  # Check for duplicate IDs
+  if (any(duplicated(data$id))) {
+    return(list(valid = FALSE, message = "Duplicate IDs found in 'id' column"))
+  }
+  
+  # Check for missing IDs
+  if (any(is.na(data$id) | data$id == "")) {
+    return(list(valid = FALSE, message = "Missing or empty values in 'id' column"))
+  }
+  
+  return(list(valid = TRUE, message = "Valid expression data format"))
+}

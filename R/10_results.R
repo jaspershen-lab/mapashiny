@@ -16,6 +16,11 @@ results_ui <- function(id) {
                 column(4,
                        br(),
                        fluidRow(
+                         fileInput(inputId = ns("upload_enriched_functional_module"),
+                                   label = "Upload functional module (.rda)",
+                                   accept = ".rda")
+                       ),
+                       fluidRow(
                          actionButton(
                            inputId = ns("generate_report"),
                            label = "Generate report",
@@ -73,43 +78,111 @@ results_server <- function(id, enriched_functional_module, temp_dir, tab_switch)
 
       report_code <- reactiveVal()
       report_path <- reactiveVal(NULL)
+
+      observeEvent(input$upload_enriched_functional_module, {
+        if (!is.null(input$upload_enriched_functional_module$datapath)) {
+          message("Loading data")
+          tempEnv <- new.env()
+          load(input$upload_enriched_functional_module$datapath,
+               envir = tempEnv)
+          
+          names <- ls(tempEnv)
+          
+          if (length(names) == 1) {
+            object <- get(names[1], envir = tempEnv)
+            if (!("merge_modules" %in% names(object@process_info))) {
+              shinyalert::shinyalert(
+                text = "Do <strong>Module Identification</strong> before generating result report.",
+                html = TRUE,
+                type = "error",
+                confirmButtonCol = "#dd4b39"
+              )
+            } else {
+              enriched_functional_module(get(names[1], envir = tempEnv)) 
+            }
+          } else {
+            message("The .rda file does not contain exactly one object.")
+            
+            shinyalert::shinyalert(
+              text = "The uploaded file should contain exactly one object.",
+              html = TRUE,
+              type = "error",
+              confirmButtonCol = "#dd4b39"
+            )
+          }
+        }
+      })
       
       observeEvent(input$generate_report, {
         # Check if enriched_functional_module and llm_interpretation_result are available
         if (is.null(enriched_functional_module()) ||
             length(enriched_functional_module()) == 0) {
-          shiny::showModal(
-            modalDialog(
-              title = "Warning",
-              "No enriched functional modules data available.",
-              easyClose = TRUE,
-              footer = modalButton("Close")
-            )
+          # shiny::showModal(
+          #   modalDialog(
+          #     title = "Warning",
+          #     "No enriched functional modules data available.",
+          #     easyClose = TRUE,
+          #     footer = modalButton("Close")
+          #   )
+          # )
+          shinyalert::shinyalert(
+            title = "No enriched functional modules data",
+            html = TRUE,
+            type = "warning",
+            confirmButtonCol = "#dd4b39"
           )
         } else {
           # shinyjs::show("loading")
-          withProgress(message = 'Analysis in progress...', {
-            tryCatch({
-              temp_report_dir <- file.path(temp_dir(), "result_report")
-              report_path(temp_report_dir)
-              
-              mapa::report_functional_module(
-                object = enriched_functional_module(),
-                path = report_path(),
-                type = "html"
+
+          generate_report_alert_id <- shinyalert::shinyalert(
+            title = "Generating result report",
+            text = tags$div(
+              style = "text-align: center;",
+              "This may take several minutes. Please be patient...",
+              tags$div(
+                tags$img(src = "www/spinner.gif", width = "50px", height = "50px"),
+                style = "margin-top: 20px;"
               )
-            },
-            error = function(e) {
-              shiny::showModal(
-                modalDialog(
-                  title = "Error",
-                  paste("Details:", e$message),
-                  easyClose = TRUE,
-                  footer = modalButton("Close")
-                )
-              )
-            })
+            ),
+            type = "",
+            showConfirmButton = FALSE,
+            showCancelButton = FALSE,
+            timer = 0,
+            closeOnEsc = FALSE,
+            closeOnClickOutside = FALSE,
+            html = TRUE
+          )
+          
+          tryCatch({
+            temp_report_dir <- file.path(temp_dir(), "result_report")
+            report_path(temp_report_dir)
+            
+            mapa::report_functional_module(
+              object = enriched_functional_module(),
+              path = report_path(),
+              type = "html"
+            )
+          },
+          error = function(e) {
+            shinyalert::closeAlert(id = generate_report_alert_id)
+            # shiny::showModal(
+            #   modalDialog(
+            #     title = "Error",
+            #     paste("Details:", e$message),
+            #     easyClose = TRUE,
+            #     footer = modalButton("Close")
+            #   )
+            # )
+            shinyalert::shinyalert(
+              title = "Report generation failed",
+              text = e$message,
+              html = TRUE,
+              type = "error",
+              confirmButtonCol = "#dd4b39"
+            )
           })
+          
+          shinyalert::closeAlert(id = generate_report_alert_id)
 
           # shinyjs::hide("loading")
 
@@ -117,11 +190,11 @@ results_server <- function(id, enriched_functional_module, temp_dir, tab_switch)
           report_code <-
             sprintf(
               '
-              report_functional_module(
-              object = enriched_functional_module,
-              path = %s,
-              type = "html")
-            ',
+report_functional_module(
+  object = enriched_functional_module,
+  path = %s,
+  type = "html")
+              ',
               "result_report_dir"
             )
           report_code(report_code)
@@ -191,25 +264,40 @@ results_server <- function(id, enriched_functional_module, temp_dir, tab_switch)
       observeEvent(input$show_report_code, {
         if (is.null(report_code()) ||
             length(report_code()) == 0) {
-          shiny::showModal(
-            modalDialog(
-              title = "Warning",
-              "No available code",
-              easyClose = TRUE,
-              footer = modalButton("Close")
-            )
+          # shiny::showModal(
+          #   modalDialog(
+          #     title = "Warning",
+          #     "No available code",
+          #     easyClose = TRUE,
+          #     footer = modalButton("Close")
+          #   )
+          # )
+          shinyalert::shinyalert(
+            title = "No available code",
+            html = TRUE,
+            type = "warning",
+            confirmButtonCol = "#dd4b39"
           )
         } else{
           code_content <-
             report_code()
           code_content <-
             paste(code_content, collapse = "\n")
-          shiny::showModal(modalDialog(
-            title = "Code",
-            tags$pre(code_content),
-            easyClose = TRUE,
-            footer = modalButton("Close")
-          ))
+          # shiny::showModal(modalDialog(
+          #   title = "Code",
+          #   tags$pre(code_content),
+          #   easyClose = TRUE,
+          #   footer = modalButton("Close")
+          # ))
+          shinyalert::shinyalert(
+            text = paste0("<pre style='text-align: left; font-family: Consolas, Monaco, monospace; background-color: #f8f9fa; padding: 15px; border-radius: 5px; border: 1px solid #e9ecef; overflow-x: auto; white-space: pre-wrap; font-size: 13px; line-height: 1.4; margin: 0; max-height: 400px; overflow-y: auto;'>",
+                          htmltools::htmlEscape(code_content),
+                          "</pre>"),
+            html = TRUE,
+            type = "",
+            confirmButtonText = "Close",
+            confirmButtonCol = "#dd4b39"
+          )
         }
       })
     }
