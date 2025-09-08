@@ -44,7 +44,7 @@ MAPA needs OpenAI, Gemini, or SiliconFlow API key to annotate functional modules
 
 ## 🔗 More links
 
--   📖 [Citation](https://www.shen-lab.org/mapa-website/)
+-   📖 [Citation](https://doi.org/10.1101/2025.08.23.671949)
 
 -   🏠 [MAPA project website](https://www.shen-lab.org/mapa-website/)
 
