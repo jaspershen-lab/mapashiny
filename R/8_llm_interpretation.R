@@ -678,81 +678,81 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
           })
       })
       
-      observe({
-        req(query_type())
-        req(input$load_orgdb)
-        
-        tryCatch(
-          expr = {
-            db_load_alert_id <- shinyalert::shinyalert(
-              title = "Loading organism database",
-              text = tags$div(
-                style = "text-align: center;",
-                "This may take several minutes. Please be patient...",
-                tags$div(
-                  tags$img(src = "www/spinner.gif", width = "50px", height = "50px"),
-                  style = "margin-top: 20px;"
-                )
-              ),
-              type = "",
-              showConfirmButton = FALSE,
-              showCancelButton = FALSE,
-              timer = 0,
-              closeOnEsc = FALSE,
-              closeOnClickOutside = FALSE,
-              html = TRUE
-            )
-            if (query_type() == "gene" & grepl("^org\\.[A-Za-z]+\\..+\\.db$", input$model_orgdb)) {
-              
-              # Check if package is installed
-              if (!requireNamespace(input$model_orgdb, quietly = TRUE)) {
+      observeEvent(input$load_orgdb,
+        {
+          req(query_type())
+          
+          tryCatch(
+            expr = {
+              db_load_alert_id <- shinyalert::shinyalert(
+                title = "Loading organism database",
+                text = tags$div(
+                  style = "text-align: center;",
+                  "This may take several minutes. Please be patient...",
+                  tags$div(
+                    tags$img(src = "www/spinner.gif", width = "50px", height = "50px"),
+                    style = "margin-top: 20px;"
+                  )
+                ),
+                type = "",
+                showConfirmButton = FALSE,
+                showCancelButton = FALSE,
+                timer = 0,
+                closeOnEsc = FALSE,
+                closeOnClickOutside = FALSE,
+                html = TRUE
+              )
+              if (query_type() == "gene" & grepl("^org\\.[A-Za-z]+\\..+\\.db$", input$model_orgdb)) {
+                
+                # Check if package is installed
+                if (!requireNamespace(input$model_orgdb, quietly = TRUE)) {
+                  shinyalert::closeAlert(id = db_load_alert_id)
+                  
+                  shinyalert::shinyalert(
+                    title = "Missing Package",
+                    text = paste0("Package ", input$model_orgdb, " is not installed. Please install it using:\n",
+                                  "<code>BiocManager::install('", input$model_orgdb, "')</code>"),
+                    html = TRUE,
+                    type = "error",
+                    confirmButtonCol = "#dd4b39"
+                  )
+                  return()
+                }
+                
+                # Load the package and get OrgDb object
+                requireNamespace(input$model_orgdb)
+                db <- get(input$model_orgdb, envir = asNamespace(input$model_orgdb))
+                
+                orgdb(db)
+                orgdb_text(input$model_orgdb)
                 shinyalert::closeAlert(id = db_load_alert_id)
                 
                 shinyalert::shinyalert(
-                  title = "Missing Package",
-                  text = paste0("Package ", input$model_orgdb, " is not installed. Please install it using:\n",
-                                "<code>BiocManager::install('", input$model_orgdb, "')</code>"),
-                  html = TRUE,
-                  type = "error",
-                  confirmButtonCol = "#dd4b39"
+                  text = paste0("Successfully loaded organism database: ", input$model_orgdb),
+                  type = "success",
+                  confirmButtonCol = "#dd4b39",
+                  timer = 2000
                 )
-                return()
               }
-              
-              # Load the package and get OrgDb object
-              requireNamespace(input$model_orgdb)
-              db <- get(input$model_orgdb, envir = asNamespace(input$model_orgdb))
-              
-              orgdb(db)
-              orgdb_text(input$model_orgdb)
+            },
+            error = function(e) {
               shinyalert::closeAlert(id = db_load_alert_id)
-              
               shinyalert::shinyalert(
-                text = paste0("Successfully loaded organism database: ", input$model_orgdb),
-                type = "success",
-                confirmButtonCol = "#dd4b39",
-                timer = 2000
+                title = "Database Loading Error",
+                text = div(
+                  p("An error occurred while loading the organism database:"),
+                  tags$code(e$message),
+                  p("Please check your input and try again.")
+                ),
+                html = TRUE,
+                type = "error",
+                confirmButtonCol = "#dd4b39"
               )
+              
+              return()
             }
-          },
-          error = function(e) {
-            shinyalert::closeAlert(id = db_load_alert_id)
-            shinyalert::shinyalert(
-              title = "Database Loading Error",
-              text = div(
-                p("An error occurred while loading the organism database:"),
-                tags$code(e$message),
-                p("Please check your input and try again.")
-              ),
-              html = TRUE,
-              type = "error",
-              confirmButtonCol = "#dd4b39"
-            )
-            
-            return()
-          }
-        )
-      })
+          )
+        })
       
       observe({
         req(query_type())
