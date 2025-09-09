@@ -526,7 +526,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, temp_dir, 
         {
           req(enriched_functional_module())
           
-          if (!("merged_module" %in% names(enriched_functional_module()@process_info))) {
+          if (!("merge_modules" %in% names(enriched_functional_module()@process_info))) {
             return()
           }
           
@@ -547,7 +547,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, temp_dir, 
         req(enriched_functional_module())
         tryCatch(
           {
-            if (!("merged_module" %in% names(enriched_functional_module()@process_info))) {
+            if (!("merge_modules" %in% names(enriched_functional_module()@process_info))) {
               return()
             }
             enriched_functional_module()@process_info$merge_pathways@parameter$query_type
