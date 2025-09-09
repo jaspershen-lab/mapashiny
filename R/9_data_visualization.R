@@ -2101,7 +2101,7 @@ plot_module_info(
         
         req(enriched_functional_module())
         
-        if (!("merged_module" %in% names(enriched_functional_module()@process_info))) {
+        if (!("merge_modules" %in% names(enriched_functional_module()@process_info))) {
           shinyalert::shinyalert(
             text = "Please do <strong>Module Identification</strong> before Module Annotation.",
             type = "error",
