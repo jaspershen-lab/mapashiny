@@ -542,6 +542,11 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
       observe(
         {
           req(enriched_functional_module())
+          
+          if (!("merged_module" %in% names(enriched_functional_module()@process_info))) {
+            return()
+          }
+          
           max_module_content_number <- max(enriched_functional_module()@merged_module$functional_module_result$module_content_number)
           updateNumericInput(
             session,
@@ -557,7 +562,21 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
       ## Get organism annotation database
       query_type <- reactive({
         req(enriched_functional_module())
-        enriched_functional_module()@process_info$merge_pathways@parameter$query_type
+        tryCatch(
+          {
+            if (!("merged_module" %in% names(enriched_functional_module()@process_info))) {
+              return()
+            }
+            enriched_functional_module()@process_info$merge_pathways@parameter$query_type
+          },
+          error = function(e) {
+            shinyalert::shinyalert(
+              text = paste("Details:", e$message),
+              type = "error",
+              confirmButtonCol = "#dd4b39"
+            )
+          }
+        )
       })
       
       observe({

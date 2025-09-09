@@ -2098,6 +2098,19 @@ plot_module_info(
       ## Relationship network plot ----
       # Update the module ID
       observeEvent(list(enriched_functional_module(), input$relationship_network_level),{
+        
+        req(enriched_functional_module())
+        
+        if (!("merged_module" %in% names(enriched_functional_module()@process_info))) {
+          shinyalert::shinyalert(
+            text = "Please do <strong>Module Identification</strong> before Module Annotation.",
+            type = "error",
+            html = TRUE,
+            confirmButtonCol = "#dd4b39"
+          )
+          return()
+        }
+        
         if (!is.null(enriched_functional_module()) &
             length(enriched_functional_module()) != 0) {
           ####level is functional module
