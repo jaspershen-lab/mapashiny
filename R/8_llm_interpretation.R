@@ -998,7 +998,8 @@ llm_interpretation_server <- function(id, enriched_functional_module, temp_dir, 
             local_corpus_dir = local_corpus_dir,
             phenotype = phenotype,
             years = years,
-            orgdb = annotation_db
+            orgdb = annotation_db,
+            thread = 4
           )
         }) |>
           promises::then(
