@@ -178,13 +178,21 @@ llm_interpretation_ui <- function(id) {
                   ),
                   fluidRow(
                     column(
-                      12,
+                      8,
                       textInput(
                         ns("phenotype"),
                         "Disease or phenotype",
                         value = "NULL",
                         width = "100%"
                       )
+                    ),
+                    column(
+                      4,
+                      numericInput(ns("threads"),
+                                   "Threads",
+                                   value = 10,
+                                   min = 1,
+                                   max = 1000)
                     )
                   ),
                   # gene panel
@@ -884,6 +892,7 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
         llm_model <- input$llm_model
         embedding_model <- input$embedding_model
         api_key <- input$api_key
+        threads <- input$threads
         
         embedding_output_dir <- normalizePath(embed_path)
         local_corpus_dir <- if(!is.null(corpus_path)) normalizePath(corpus_path) else NULL
@@ -933,7 +942,8 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
             local_corpus_dir = local_corpus_dir,
             phenotype = phenotype,
             years = years,
-            orgdb = annotation_db
+            orgdb = annotation_db,
+            thread = threads
           )
         }) |>
           promises::then(
