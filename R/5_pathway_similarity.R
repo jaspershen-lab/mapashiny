@@ -592,51 +592,6 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
       shinyjs::toggleElement("embedcluster_params", condition = input$similarity_method == "embedcluster")
     }, ignoreNULL = FALSE)
     
-    observe({
-      req(enriched_pathways$query_type)
-      # cat("Query type:", enriched_pathways$query_type, "\n")
-      # cat("Similarity method:", input$similarity_method, "\n")
-      ## For gene + simcluster
-      shinyjs::toggleElement(
-        id = "sim_cluster_parameter_panel_gene",
-        condition = (enriched_pathways$query_type == "gene" && input$similarity_method == "simcluster")
-      )
-      shinyjs::toggleElement(
-        id = "table_panel_gene",
-        condition = (enriched_pathways$query_type == "gene" && input$similarity_method == "simcluster")
-      )
-      shinyjs::toggleElement(
-        id = "plot_panel_gene",
-        condition = (enriched_pathways$query_type == "gene" && input$similarity_method == "simcluster")
-      )
-      
-      ## For gene + embed
-      shinyjs::toggleElement(
-        id = "embed_parameter_panel_gene",
-        condition = (enriched_pathways$query_type == "gene" && input$similarity_method == "embedcluster")
-      )
-      
-      ## For metabolite + simcluster
-      shinyjs::toggleElement(
-        id = "sim_cluster_parameter_panel_metabolite",
-        condition = (enriched_pathways$query_type == "metabolite" && input$similarity_method == "simcluster")
-      )
-      shinyjs::toggleElement(
-        id = "table_panel_metabolite",
-        condition = (enriched_pathways$query_type == "metabolite" && input$similarity_method == "simcluster")
-      )
-      shinyjs::toggleElement(
-        id = "plot_panel_metabolite",
-        condition = (enriched_pathways$query_type == "metabolite" && input$similarity_method == "simcluster")
-      )
-      
-      ## For metabolite + embed
-      shinyjs::toggleElement(
-        id = "embed_parameter_panel_metabolite",
-        condition = (enriched_pathways$query_type == "metabolite" && input$similarity_method == "embedcluster")
-      )
-    })
-    
     go_orgdb <- reactiveVal(NULL)
     observe(
       { req(enriched_pathways$available_db, input$similarity_method)
@@ -1147,6 +1102,58 @@ similarity_result <-
       }
     )
     
+    observeEvent(input$similarity_method, {
+      shinyjs::toggleElement(
+        id = "simcluster_tabs",
+        condition = input$similarity_method == "simcluster"
+      )
+    })
+    
+    observe({
+      req(enriched_pathways$query_type)
+      req(input$similarity_method)
+      # cat("Query type:", enriched_pathways$query_type, "\n")
+      # cat("Similarity method:", input$similarity_method, "\n")
+      ## For gene + simcluster
+      shinyjs::toggleElement(
+        id = "sim_cluster_parameter_panel_gene",
+        condition = (enriched_pathways$query_type == "gene" && input$similarity_method == "simcluster")
+      )
+      shinyjs::toggleElement(
+        id = "table_panel_gene",
+        condition = (enriched_pathways$query_type == "gene" && input$similarity_method == "simcluster")
+      )
+      shinyjs::toggleElement(
+        id = "plot_panel_gene",
+        condition = (enriched_pathways$query_type == "gene" && input$similarity_method == "simcluster")
+      )
+      
+      ## For gene + embed
+      shinyjs::toggleElement(
+        id = "embed_parameter_panel_gene",
+        condition = (enriched_pathways$query_type == "gene" && input$similarity_method == "embedcluster")
+      )
+      
+      ## For metabolite + simcluster
+      shinyjs::toggleElement(
+        id = "sim_cluster_parameter_panel_metabolite",
+        condition = (enriched_pathways$query_type == "metabolite" && input$similarity_method == "simcluster")
+      )
+      shinyjs::toggleElement(
+        id = "table_panel_metabolite",
+        condition = (enriched_pathways$query_type == "metabolite" && input$similarity_method == "simcluster")
+      )
+      shinyjs::toggleElement(
+        id = "plot_panel_metabolite",
+        condition = (enriched_pathways$query_type == "metabolite" && input$similarity_method == "simcluster")
+      )
+      
+      ## For metabolite + embed
+      shinyjs::toggleElement(
+        id = "embed_parameter_panel_metabolite",
+        condition = (enriched_pathways$query_type == "metabolite" && input$similarity_method == "embedcluster")
+      )
+    })
     
     # --- DYNAMICALLY RENDER THE OUTPUT UI ----
     output$dynamic_output_panel <- renderUI({
