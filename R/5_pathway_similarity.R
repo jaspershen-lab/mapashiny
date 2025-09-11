@@ -1102,29 +1102,21 @@ similarity_result <-
       }
     )
     
-    observeEvent(input$similarity_method, {
-      shinyjs::toggleElement(
-        id = "simcluster_tabs",
-        condition = input$similarity_method == "simcluster"
-      )
-    })
+    # observeEvent(input$similarity_method, {
+    #   shinyjs::toggleElement(
+    #     id = "simcluster_tabs",
+    #     condition = input$similarity_method == "simcluster"
+    #   )
+    # })
     
     observe({
       req(enriched_pathways$query_type)
       req(input$similarity_method)
-      # cat("Query type:", enriched_pathways$query_type, "\n")
-      # cat("Similarity method:", input$similarity_method, "\n")
+      cat("Query type:", enriched_pathways$query_type, "\n")
+      cat("Similarity method:", input$similarity_method, "\n")
       ## For gene + simcluster
       shinyjs::toggleElement(
         id = "sim_cluster_parameter_panel_gene",
-        condition = (enriched_pathways$query_type == "gene" && input$similarity_method == "simcluster")
-      )
-      shinyjs::toggleElement(
-        id = "table_panel_gene",
-        condition = (enriched_pathways$query_type == "gene" && input$similarity_method == "simcluster")
-      )
-      shinyjs::toggleElement(
-        id = "plot_panel_gene",
         condition = (enriched_pathways$query_type == "gene" && input$similarity_method == "simcluster")
       )
       
@@ -1139,14 +1131,6 @@ similarity_result <-
         id = "sim_cluster_parameter_panel_metabolite",
         condition = (enriched_pathways$query_type == "metabolite" && input$similarity_method == "simcluster")
       )
-      shinyjs::toggleElement(
-        id = "table_panel_metabolite",
-        condition = (enriched_pathways$query_type == "metabolite" && input$similarity_method == "simcluster")
-      )
-      shinyjs::toggleElement(
-        id = "plot_panel_metabolite",
-        condition = (enriched_pathways$query_type == "metabolite" && input$similarity_method == "simcluster")
-      )
       
       ## For metabolite + embed
       shinyjs::toggleElement(
@@ -1158,80 +1142,49 @@ similarity_result <-
     # --- DYNAMICALLY RENDER THE OUTPUT UI ----
     output$dynamic_output_panel <- renderUI({
       req(input$similarity_method)
-      
+      req(enriched_pathways$query_type)
+
+      cat(input$similarity_method)
+      cat(enriched_pathways$query_type)
+
       # UI FOR SIMCLUSTER METHOD =====
-      if (input$similarity_method == 'simcluster') {
+      if (input$similarity_method == 'simcluster' && enriched_pathways$query_type == "gene") {
         tabsetPanel(
-          id = ns("simcluster_tabs"),
           ## Table ====
           tabPanel("Table",
-                   shinyjs::hidden(
-                     div(
-                       id = ns("table_panel_gene"),
-                       tabsetPanel(
-                         tabPanel(
-                           title = "GO",
-                           shiny::dataTableOutput(ns("merged_pathway_go")),
-                           br(),
-                           shinyjs::useShinyjs(),
-                           downloadButton(ns("download_merged_pathway_go"),
-                                          "Download",
-                                          class = "btn-primary",
-                                          style = "background-color: #d83428; color: white;") |> 
-                             shinyjs::disabled()
-                         ),
-                         tabPanel(
-                           title = "KEGG",
-                           shiny::dataTableOutput(ns("merged_pathway_kegg")),
-                           br(),
-                           shinyjs::useShinyjs(),
-                           downloadButton(ns("download_merged_pathway_kegg"),
-                                          "Download",
-                                          class = "btn-primary",
-                                          style = "background-color: #d83428; color: white;") |> 
-                             shinyjs::disabled()
-                         ),
-                         tabPanel(
-                           title = "Reactome",
-                           shiny::dataTableOutput(ns("merged_pathway_reactome")),
-                           br(),
-                           shinyjs::useShinyjs(),
-                           downloadButton(ns("download_merged_pathway_reactome"),
-                                          "Download",
-                                          class = "btn-primary",
-                                          style = "background-color: #d83428; color: white;") |> 
-                             shinyjs::disabled()
-                         )
-                       )
-                     )
-                   ),
-                   shinyjs::hidden(
-                     div(
-                       id = ns("table_panel_metabolite"),
-                       tabsetPanel(
-                         tabPanel(
-                           title = "SMPDB",
-                           shiny::dataTableOutput(ns("merged_pathway_hmdb")),
-                           br(),
-                           shinyjs::useShinyjs(),
-                           downloadButton(ns("download_merged_pathway_hmdb"),
-                                          "Download",
-                                          class = "btn-primary",
-                                          style = "background-color: #d83428; color: white;") |> 
-                             shinyjs::disabled()
-                         ),
-                         tabPanel(
-                           title = "KEGG",
-                           shiny::dataTableOutput(ns("merged_pathway_metkegg")),
-                           br(),
-                           shinyjs::useShinyjs(),
-                           downloadButton(ns("download_merged_pathway_metkegg"),
-                                          "Download",
-                                          class = "btn-primary",
-                                          style = "background-color: #d83428; color: white;") |> 
-                             shinyjs::disabled()
-                         )
-                       )
+                   tabsetPanel(
+                     tabPanel(
+                       title = "GO",
+                       shiny::dataTableOutput(ns("merged_pathway_go")),
+                       br(),
+                       shinyjs::useShinyjs(),
+                       downloadButton(ns("download_merged_pathway_go"),
+                                      "Download",
+                                      class = "btn-primary",
+                                      style = "background-color: #d83428; color: white;") |>
+                         shinyjs::disabled()
+                     ),
+                     tabPanel(
+                       title = "KEGG",
+                       shiny::dataTableOutput(ns("merged_pathway_kegg")),
+                       br(),
+                       shinyjs::useShinyjs(),
+                       downloadButton(ns("download_merged_pathway_kegg"),
+                                      "Download",
+                                      class = "btn-primary",
+                                      style = "background-color: #d83428; color: white;") |>
+                         shinyjs::disabled()
+                     ),
+                     tabPanel(
+                       title = "Reactome",
+                       shiny::dataTableOutput(ns("merged_pathway_reactome")),
+                       br(),
+                       shinyjs::useShinyjs(),
+                       downloadButton(ns("download_merged_pathway_reactome"),
+                                      "Download",
+                                      class = "btn-primary",
+                                      style = "background-color: #d83428; color: white;") |>
+                         shinyjs::disabled()
                      )
                    )
           ),
@@ -1239,168 +1192,95 @@ similarity_result <-
           ## Data visualization ====
           tabPanel(
             title = "Data visualization",
-            shinyjs::hidden(
-              div(
-                id = ns("plot_panel_gene"),
-                tabsetPanel(
-                  tabPanel(
-                    title = "GO",
-                    div(class = "scrollable-container",
-                        shiny::plotOutput(ns("enirched_module_go_plot"), 
-                                          width = "100%", height = "700px")
-                    ),
-                    br(),
-                    fluidRow(
-                      column(3,
-                             actionButton(ns("generate_enirched_module_plot_go"),
-                                          "Generate plot",
-                                          class = "btn-primary",
-                                          style = "background-color: #d83428; color: white;")
-                      ),
-                      column(3,
-                             checkboxInput(ns("enirched_module_plot_text_go"), "Text", FALSE)
-                      ),
-                      column(3,
-                             checkboxInput(ns("enirched_module_plot_text_all_go"), "Text all", FALSE)
-                      ),
-                      column(3,
-                             numericInput(
-                               ns("enirched_module_plot_degree_cutoff_go"),
-                               "Degree cutoff",
-                               value = 1,
-                               min = 0,
-                               max = 1000)
-                      )
-                    )
+            tabsetPanel(
+              tabPanel(
+                title = "GO",
+                div(class = "scrollable-container",
+                    shiny::plotOutput(ns("enirched_module_go_plot"),
+                                      width = "100%", height = "700px")
+                ),
+                br(),
+                fluidRow(
+                  column(3,
+                         actionButton(ns("generate_enirched_module_plot_go"),
+                                      "Generate plot",
+                                      class = "btn-primary",
+                                      style = "background-color: #d83428; color: white;")
                   ),
-                  tabPanel(
-                    title = "KEGG",
-                    div(class = "scrollable-container",
-                        shiny::plotOutput(ns("enirched_module_kegg_plot"), 
-                                          width = "100%", height = "700px")
-                    ),
-                    br(),
-                    fluidRow(
-                      column(3,
-                             actionButton(ns("generate_enirched_module_plot_kegg"),
-                                          "Generate plot",
-                                          class = "btn-primary",
-                                          style = "background-color: #d83428; color: white;")
-                      ),
-                      column(3,
-                             checkboxInput(ns("enirched_module_plot_text_kegg"), "Text", FALSE)
-                      ),
-                      column(3,
-                             checkboxInput(ns("enirched_module_plot_text_all_kegg"), "Text all", FALSE)
-                      ),
-                      column(3,
-                             numericInput(
-                               ns("enirched_module_plot_degree_cutoff_kegg"),
-                               "Degree cutoff",
-                               value = 1,
-                               min = 0,
-                               max = 1000
-                             )
-                      )
-                    )
+                  column(3,
+                         checkboxInput(ns("enirched_module_plot_text_go"), "Text", FALSE)
                   ),
-                  tabPanel(
-                    title = "Reactome",
-                    div(class = "scrollable-container",
-                        shiny::plotOutput(ns("enirched_module_reactome_plot"), 
-                                          width = "100%", height = "700px")
-                    ),
-                    br(),
-                    fluidRow(
-                      column(3,
-                             actionButton(ns("generate_enirched_module_plot_reactome"),
-                                          "Generate plot",
-                                          class = "btn-primary",
-                                          style = "background-color: #d83428; color: white;")
-                      ),
-                      column(3,
-                             checkboxInput(ns("enirched_module_plot_text_reactome"), "Text", FALSE)
-                      ),
-                      column(3,
-                             checkboxInput(ns("enirched_module_plot_text_all_reactome"), "Text all", FALSE)
-                      ),
-                      column(3,
-                             numericInput(
-                               ns("enirched_module_plot_degree_cutoff_reactome"),
-                               "Degree cutoff",
-                               value = 1,
-                               min = 0,
-                               max = 1000)
-                      )
-                    )
+                  column(3,
+                         checkboxInput(ns("enirched_module_plot_text_all_go"), "Text all", FALSE)
+                  ),
+                  column(3,
+                         numericInput(
+                           ns("enirched_module_plot_degree_cutoff_go"),
+                           "Degree cutoff",
+                           value = 1,
+                           min = 0,
+                           max = 1000)
                   )
                 )
-              )
-            ),
-            shinyjs::hidden(
-              div(
-                id = ns("plot_panel_metabolite"),
-                tabsetPanel(
-                  tabPanel(
-                    title = "SMPDB",
-                    div(class = "scrollable-container",
-                        shiny::plotOutput(ns("enirched_module_hmdb_plot"), 
-                                          width = "100%", height = "700px")
-                    ),
-                    br(),
-                    fluidRow(
-                      column(3,
-                             actionButton(ns("generate_enirched_module_plot_hmdb"),
-                                          "Generate plot",
-                                          class = "btn-primary",
-                                          style = "background-color: #d83428; color: white;")
-                      ),
-                      column(3,
-                             checkboxInput(ns("enirched_module_plot_text_hmdb"), "Text", FALSE)
-                      ),
-                      column(3,
-                             checkboxInput(ns("enirched_module_plot_text_all_hmdb"), "Text all", FALSE)
-                      ),
-                      column(3,
-                             numericInput(
-                               ns("enirched_module_plot_degree_cutoff_hmdb"),
-                               "Degree cutoff",
-                               value = 1,
-                               min = 0,
-                               max = 1000)
-                      )
-                    )
+              ),
+              tabPanel(
+                title = "KEGG",
+                div(class = "scrollable-container",
+                    shiny::plotOutput(ns("enirched_module_kegg_plot"),
+                                      width = "100%", height = "700px")
+                ),
+                br(),
+                fluidRow(
+                  column(3,
+                         actionButton(ns("generate_enirched_module_plot_kegg"),
+                                      "Generate plot",
+                                      class = "btn-primary",
+                                      style = "background-color: #d83428; color: white;")
                   ),
-                  tabPanel(
-                    title = "KEGG",
-                    div(class = "scrollable-container",
-                        shiny::plotOutput(ns("enirched_module_metkegg_plot"), 
-                                          width = "100%", height = "700px")
-                    ),
-                    br(),
-                    fluidRow(
-                      column(3,
-                             actionButton(ns("generate_enirched_module_plot_metkegg"),
-                                          "Generate plot",
-                                          class = "btn-primary",
-                                          style = "background-color: #d83428; color: white;")
-                      ),
-                      column(3,
-                             checkboxInput(ns("enirched_module_plot_text_metkegg"), "Text", FALSE)
-                      ),
-                      column(3,
-                             checkboxInput(ns("enirched_module_plot_text_all_metkegg"), "Text all", FALSE)
-                      ),
-                      column(3,
-                             numericInput(
-                               ns("enirched_module_plot_degree_cutoff_metkegg"),
-                               "Degree cutoff",
-                               value = 1,
-                               min = 0,
-                               max = 1000
-                             )
-                      )
-                    )
+                  column(3,
+                         checkboxInput(ns("enirched_module_plot_text_kegg"), "Text", FALSE)
+                  ),
+                  column(3,
+                         checkboxInput(ns("enirched_module_plot_text_all_kegg"), "Text all", FALSE)
+                  ),
+                  column(3,
+                         numericInput(
+                           ns("enirched_module_plot_degree_cutoff_kegg"),
+                           "Degree cutoff",
+                           value = 1,
+                           min = 0,
+                           max = 1000
+                         )
+                  )
+                )
+              ),
+              tabPanel(
+                title = "Reactome",
+                div(class = "scrollable-container",
+                    shiny::plotOutput(ns("enirched_module_reactome_plot"),
+                                      width = "100%", height = "700px")
+                ),
+                br(),
+                fluidRow(
+                  column(3,
+                         actionButton(ns("generate_enirched_module_plot_reactome"),
+                                      "Generate plot",
+                                      class = "btn-primary",
+                                      style = "background-color: #d83428; color: white;")
+                  ),
+                  column(3,
+                         checkboxInput(ns("enirched_module_plot_text_reactome"), "Text", FALSE)
+                  ),
+                  column(3,
+                         checkboxInput(ns("enirched_module_plot_text_all_reactome"), "Text all", FALSE)
+                  ),
+                  column(3,
+                         numericInput(
+                           ns("enirched_module_plot_degree_cutoff_reactome"),
+                           "Degree cutoff",
+                           value = 1,
+                           min = 0,
+                           max = 1000)
                   )
                 )
               )
@@ -1416,7 +1296,7 @@ similarity_result <-
             downloadButton(ns("download_simcluster_object"),
                            label = "Download",
                            class = "btn-primary",
-                           style = "background-color: #d83428; color: white;") |> 
+                           style = "background-color: #d83428; color: white;") |>
               shinyjs::disabled(),
             shinyBS::bsPopover(
               id = ns("download_simcluster_object_info"),
@@ -1427,8 +1307,126 @@ similarity_result <-
               options = list(container = "body")
             )
           )
-          #####
         )
+    } else if (input$similarity_method == 'simcluster' && enriched_pathways$query_type == "metabolite") {
+      tabsetPanel(
+        ## Table ====
+        tabPanel("Table",
+                 tabsetPanel(
+                   tabPanel(
+                     title = "SMPDB",
+                     shiny::dataTableOutput(ns("merged_pathway_hmdb")),
+                     br(),
+                     shinyjs::useShinyjs(),
+                     downloadButton(ns("download_merged_pathway_hmdb"),
+                                    "Download",
+                                    class = "btn-primary",
+                                    style = "background-color: #d83428; color: white;") |>
+                       shinyjs::disabled()
+                   ),
+                   tabPanel(
+                     title = "KEGG",
+                     shiny::dataTableOutput(ns("merged_pathway_metkegg")),
+                     br(),
+                     shinyjs::useShinyjs(),
+                     downloadButton(ns("download_merged_pathway_metkegg"),
+                                    "Download",
+                                    class = "btn-primary",
+                                    style = "background-color: #d83428; color: white;") |>
+                       shinyjs::disabled()
+                   )
+                 )
+        ),
+        #####
+        ## Data visualization ====
+        tabPanel(
+          title = "Data visualization",
+          tabsetPanel(
+            tabPanel(
+              title = "SMPDB",
+              div(class = "scrollable-container",
+                  shiny::plotOutput(ns("enirched_module_hmdb_plot"),
+                                    width = "100%", height = "700px")
+              ),
+              br(),
+              fluidRow(
+                column(3,
+                       actionButton(ns("generate_enirched_module_plot_hmdb"),
+                                    "Generate plot",
+                                    class = "btn-primary",
+                                    style = "background-color: #d83428; color: white;")
+                ),
+                column(3,
+                       checkboxInput(ns("enirched_module_plot_text_hmdb"), "Text", FALSE)
+                ),
+                column(3,
+                       checkboxInput(ns("enirched_module_plot_text_all_hmdb"), "Text all", FALSE)
+                ),
+                column(3,
+                       numericInput(
+                         ns("enirched_module_plot_degree_cutoff_hmdb"),
+                         "Degree cutoff",
+                         value = 1,
+                         min = 0,
+                         max = 1000)
+                )
+              )
+            ),
+            tabPanel(
+              title = "KEGG",
+              div(class = "scrollable-container",
+                  shiny::plotOutput(ns("enirched_module_metkegg_plot"),
+                                    width = "100%", height = "700px")
+              ),
+              br(),
+              fluidRow(
+                column(3,
+                       actionButton(ns("generate_enirched_module_plot_metkegg"),
+                                    "Generate plot",
+                                    class = "btn-primary",
+                                    style = "background-color: #d83428; color: white;")
+                ),
+                column(3,
+                       checkboxInput(ns("enirched_module_plot_text_metkegg"), "Text", FALSE)
+                ),
+                column(3,
+                       checkboxInput(ns("enirched_module_plot_text_all_metkegg"), "Text all", FALSE)
+                ),
+                column(3,
+                       numericInput(
+                         ns("enirched_module_plot_degree_cutoff_metkegg"),
+                         "Degree cutoff",
+                         value = 1,
+                         min = 0,
+                         max = 1000
+                       )
+                )
+              )
+            )
+          )
+        ),
+        #####
+        ## R object =====
+        tabPanel(
+          title = "R object",
+          verbatimTextOutput(ns("simcluster_object_output")),
+          br(),
+          shinyjs::useShinyjs(),
+          downloadButton(ns("download_simcluster_object"),
+                         label = "Download",
+                         class = "btn-primary",
+                         style = "background-color: #d83428; color: white;") |>
+            shinyjs::disabled(),
+          shinyBS::bsPopover(
+            id = ns("download_simcluster_object_info"),
+            title = "",
+            content = "You can download the functional module file for data visualization.",
+            placement = "right",
+            trigger = "hover",
+            options = list(container = "body")
+          )
+        )
+      )
     } else if (input$similarity_method == 'embedcluster' && length(similarity_result()) != 0 && is.list(similarity_result())) {
       # UI FOR EMBEDCLUSTER METHOD ====
         div(
