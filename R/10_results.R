@@ -226,6 +226,7 @@ report_functional_module(
             "Report.zip"
           },
           content = function(file) {
+            req(report_path())
             zip_path <-
               paste0(report_path(), "/Report.zip")
             zip(zipfile = zip_path,

@@ -1059,6 +1059,7 @@ enriched_pathways <-
             "enriched_pathways_go.csv"
           },
           content = function(file) {
+            req(enriched_pathways$enriched_pathways_res)
             write.csv(enriched_pathways$enriched_pathways_res@enrichment_go_result@result,
                       file,
                       row.names = FALSE)
@@ -1084,6 +1085,7 @@ enriched_pathways <-
             "enriched_pathways_kegg.csv"
           },
           content = function(file) {
+            req(enriched_pathways$enriched_pathways_res)
             write.csv(enriched_pathways$enriched_pathways_res@enrichment_kegg_result@result,
                       file,
                       row.names = FALSE)
@@ -1109,6 +1111,7 @@ enriched_pathways <-
             "enriched_pathways_reactome.csv"
           },
           content = function(file) {
+            req(enriched_pathways$enriched_pathways_res)
             write.csv(enriched_pathways$enriched_pathways_res@enrichment_reactome_result@result,
                       file,
                       row.names = FALSE)
@@ -1134,6 +1137,7 @@ enriched_pathways <-
             "enriched_pathways_hmdb.csv"
           },
           content = function(file) {
+            req(enriched_pathways$enriched_pathways_res)
             write.csv(enriched_pathways$enriched_pathways_res@enrichment_hmdb_result@result |> dplyr::rename(description = describtion),
                       file,
                       row.names = FALSE)
@@ -1159,6 +1163,7 @@ enriched_pathways <-
             "enriched_pathways_metkegg.csv"
           },
           content = function(file) {
+            req(enriched_pathways$enriched_pathways_res)
             write.csv(enriched_pathways$enriched_pathways_res@enrichment_metkegg_result@result |> dplyr::rename(description = describtion),
                       file,
                       row.names = FALSE)
@@ -1184,6 +1189,7 @@ enriched_pathways <-
             "enriched_pathways.rda"
           },
           content = function(file) {
+            req(enriched_pathways$enriched_pathways_res)
             enriched_pathways <-
               enriched_pathways$enriched_pathways_res
             save(enriched_pathways, file = file)
@@ -1204,6 +1210,7 @@ enriched_pathways <-
             "enriched_pathways.rda"
           },
           content = function(file) {
+            req(enriched_pathways$enriched_pathways_res)
             enriched_pathways <-
               enriched_pathways$enriched_pathways_res
             save(enriched_pathways, file = file)
