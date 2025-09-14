@@ -321,9 +321,18 @@ upload_data_server <- function(id, processed_info, tab_switch) {
             session,
             "organism",
             choices = list(
-              "Human (org.Hs.eg.db)" = "org.Hs.eg.db"
+              "Mouse (org.Mm.eg.db)" = "org.Mm.eg.db"
             ),
-            selected = "org.Hs.eg.db"
+            selected = "org.Mm.eg.db"
+          )
+          
+          updateSelectInput(
+            session,
+            "id_type",
+            choices = list(
+              "Symbol" = "symbol"
+            ),
+            selected = "symbol"
           )
           
           selected_example <- input$example_choice[1]
