@@ -536,6 +536,7 @@ enriched_functional_module <-
           "functional_module_result.csv"
         },
         content = function(file) {
+          req(enriched_functional_module())
           write.csv(
             enriched_functional_module()@merged_module$functional_module_result,
             file,
@@ -550,6 +551,7 @@ enriched_functional_module <-
           "enriched_functional_module.rda"
         },
         content = function(file) {
+          req(enriched_functional_module())
           enriched_functional_module_res <- enriched_functional_module()
           save(enriched_functional_module_res, file = file)
         }
@@ -881,6 +883,7 @@ assess_clustering_result <-
           "assess_clustering_quality_metrics.csv"
         },
         content = function(file) {
+          req(assess_clustering_result())
           write.csv(
             assess_clustering_result()$quality_metrics,
             file,
@@ -893,6 +896,7 @@ assess_clustering_result <-
       downloadHandler(
         filename = "assess_size_plot.pdf",
         content = function(file) {
+          req(assess_clustering_result())
           ggplot2::ggsave(
             file,
             plot = assess_clustering_result()$size_plot,
@@ -906,6 +910,7 @@ assess_clustering_result <-
       downloadHandler(
         filename = "assess_evaluation_plot.pdf",
         content = function(file) {
+          req(assess_clustering_result())
           ggplot2::ggsave(
             file,
             plot = assess_clustering_result()$evaluation_plot,
