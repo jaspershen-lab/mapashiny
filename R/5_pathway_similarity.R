@@ -1160,8 +1160,8 @@ similarity_result <-
                        downloadButton(ns("download_merged_pathway_go"),
                                       "Download",
                                       class = "btn-primary",
-                                      style = "background-color: #d83428; color: white;") |>
-                         shinyjs::disabled()
+                                      style = "background-color: #d83428; color: white;")
+                         # shinyjs::disabled()
                      ),
                      tabPanel(
                        title = "KEGG",
@@ -1171,8 +1171,8 @@ similarity_result <-
                        downloadButton(ns("download_merged_pathway_kegg"),
                                       "Download",
                                       class = "btn-primary",
-                                      style = "background-color: #d83428; color: white;") |>
-                         shinyjs::disabled()
+                                      style = "background-color: #d83428; color: white;")
+                         # shinyjs::disabled()
                      ),
                      tabPanel(
                        title = "Reactome",
@@ -1182,8 +1182,8 @@ similarity_result <-
                        downloadButton(ns("download_merged_pathway_reactome"),
                                       "Download",
                                       class = "btn-primary",
-                                      style = "background-color: #d83428; color: white;") |>
-                         shinyjs::disabled()
+                                      style = "background-color: #d83428; color: white;")
+                         # shinyjs::disabled()
                      )
                    )
           ),
@@ -1295,8 +1295,8 @@ similarity_result <-
             downloadButton(ns("download_simcluster_object"),
                            label = "Download",
                            class = "btn-primary",
-                           style = "background-color: #d83428; color: white;") |>
-              shinyjs::disabled(),
+                           style = "background-color: #d83428; color: white;"),
+              # shinyjs::disabled(),
             shinyBS::bsPopover(
               id = ns("download_simcluster_object_info"),
               title = "",
@@ -1307,7 +1307,8 @@ similarity_result <-
             )
           )
         )
-    } else if (input$similarity_method == 'simcluster' && enriched_pathways$query_type == "metabolite") {
+    } 
+      else if (input$similarity_method == 'simcluster' && enriched_pathways$query_type == "metabolite") {
       tabsetPanel(
         ## Table ====
         tabPanel("Table",
@@ -1320,8 +1321,8 @@ similarity_result <-
                      downloadButton(ns("download_merged_pathway_hmdb"),
                                     "Download",
                                     class = "btn-primary",
-                                    style = "background-color: #d83428; color: white;") |>
-                       shinyjs::disabled()
+                                    style = "background-color: #d83428; color: white;")
+                       # shinyjs::disabled()
                    ),
                    tabPanel(
                      title = "KEGG",
@@ -1331,8 +1332,8 @@ similarity_result <-
                      downloadButton(ns("download_merged_pathway_metkegg"),
                                     "Download",
                                     class = "btn-primary",
-                                    style = "background-color: #d83428; color: white;") |>
-                       shinyjs::disabled()
+                                    style = "background-color: #d83428; color: white;")
+                       # shinyjs::disabled()
                    )
                  )
         ),
@@ -1414,8 +1415,8 @@ similarity_result <-
           downloadButton(ns("download_simcluster_object"),
                          label = "Download",
                          class = "btn-primary",
-                         style = "background-color: #d83428; color: white;") |>
-            shinyjs::disabled(),
+                         style = "background-color: #d83428; color: white;"),
+            # shinyjs::disabled(),
           shinyBS::bsPopover(
             id = ns("download_simcluster_object_info"),
             title = "",
@@ -1426,7 +1427,8 @@ similarity_result <-
           )
         )
       )
-    } else if (input$similarity_method == 'embedcluster' && length(similarity_result()) != 0 && is.list(similarity_result())) {
+    } 
+      else if (input$similarity_method == 'embedcluster' && length(similarity_result()) != 0 && is.list(similarity_result())) {
       # UI FOR EMBEDCLUSTER METHOD ====
         div(
           class = "well",
@@ -1512,15 +1514,41 @@ similarity_result <-
     })
   
   # Download handlers for SimCluster tables and the final object [cite: 5_merge_pathways.R]
-  output$download_merged_pathway_go <- downloadHandler(filename = "merged_pathway_go.csv", content = function(file) { write.csv(similarity_result()@merged_pathway_go$module_result, file, row.names = FALSE) })
-  output$download_merged_pathway_kegg <- downloadHandler(filename = "merged_pathway_kegg.csv", content = function(file) { write.csv(similarity_result()@merged_pathway_kegg$module_result, file, row.names = FALSE) })
-  output$download_merged_pathway_reactome <- downloadHandler(filename = "merged_pathway_reactome.csv", content = function(file) { write.csv(similarity_result()@merged_pathway_reactome$module_result, file, row.names = FALSE) })
-  output$download_merged_pathway_hmdb <- downloadHandler(filename = "merged_pathway_hmdb.csv", content = function(file) { write.csv(similarity_result()@merged_pathway_hmdb$module_result, file, row.names = FALSE) })
-  output$download_merged_pathway_metkegg <- downloadHandler(filename = "merged_pathway_metkegg.csv", content = function(file) { write.csv(similarity_result()@merged_pathway_metkegg$module_result, file, row.names = FALSE) })
+  output$download_merged_pathway_go <- downloadHandler(
+    filename = "merged_pathway_go.csv", 
+    content = function(file) { 
+      req(similarity_result())
+      write.csv(similarity_result()@merged_pathway_go$module_result, file, row.names = FALSE) 
+    })
+  output$download_merged_pathway_kegg <- downloadHandler(
+    filename = "merged_pathway_kegg.csv", 
+    content = function(file) { 
+      req(similarity_result())
+      write.csv(similarity_result()@merged_pathway_kegg$module_result, file, row.names = FALSE) 
+    })
+  output$download_merged_pathway_reactome <- downloadHandler(
+    filename = "merged_pathway_reactome.csv", 
+    content = function(file) {
+      req(similarity_result())
+      write.csv(similarity_result()@merged_pathway_reactome$module_result, file, row.names = FALSE) 
+    })
+  output$download_merged_pathway_hmdb <- downloadHandler(
+    filename = "merged_pathway_hmdb.csv", 
+    content = function(file) { 
+      req(similarity_result())
+      write.csv(similarity_result()@merged_pathway_hmdb$module_result, file, row.names = FALSE) 
+    })
+  output$download_merged_pathway_metkegg <- downloadHandler(
+    filename = "merged_pathway_metkegg.csv", 
+    content = function(file) { 
+      req(similarity_result())
+      write.csv(similarity_result()@merged_pathway_metkegg$module_result, file, row.names = FALSE) 
+    })
   
   output$download_simcluster_object <- downloadHandler(
     filename = "sim_cluster_result.rda",
     content = function(file) {
+      req(similarity_result())
       sim_cluster_result <- similarity_result()
       save(sim_cluster_result, file = file)
     }

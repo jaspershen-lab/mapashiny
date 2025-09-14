@@ -3,20 +3,27 @@
 \docType{data}
 \name{example_ora_data}
 \alias{example_ora_data}
-\title{Example ORA Data}
+\title{Example Dataset for Over-Representation Analysis}
 \format{
-A data frame with 119 rows and 2 columns:
+A tibble with 66 rows and 3 columns:
 \describe{
-  \item{variable_id}{Character vector of gene identifiers (gene_1, gene_2, etc.)}
-  \item{ensembl}{Character vector of Ensembl gene IDs (ENSG format)}
+  \item{symbol}{Gene symbols}
+  \item{log2FC (6 vs 30mo)}{Log2 fold changes (all negative)}
+  \item{FDR (6 vs 30mo)}{False discovery rates (all < 0.05)}
 }
+}
+\source{
+Takasugi, M., et al. An atlas of the aging mouse proteome reveals the
+features of age-related post-transcriptional dysregulation.
+\emph{Nat Commun} \strong{15}, 8520 (2024).
+\doi{10.1038/s41467-024-52845-x}
 }
 \usage{
 example_ora_data
 }
 \description{
-A dataset containing example data for Over-Representation Analysis (ORA).
-Contains gene identifiers and their corresponding Ensembl IDs for pathway
-enrichment analysis.
+Significantly downregulated proteins from the muscle of aging mice
+(6 vs 30 months, male C57BL/6). Contains 66 proteins with |log2FC| ≥ 0.5
+and FDR < 0.05, suitable for pathway enrichment analysis.
 }
 \keyword{datasets}

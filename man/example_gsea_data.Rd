@@ -3,16 +3,27 @@
 \docType{data}
 \name{example_gsea_data}
 \alias{example_gsea_data}
-\title{Example GSEA Data}
+\title{Example Dataset for Gene Set Enrichment Analysis}
 \format{
-An object of class \code{data.frame} with 600 rows and 8 columns.
+A tibble with 5,290 rows and 3 columns:
+\describe{
+  \item{symbol}{Gene symbols}
+  \item{fc}{Fold changes (6 vs 30 months)}
+  \item{p_value_adjust}{Adjusted p-values}
+}
+}
+\source{
+Takasugi, M., et al. An atlas of the aging mouse proteome reveals the
+features of age-related post-transcriptional dysregulation.
+\emph{Nat Commun} \strong{15}, 8520 (2024).
+\doi{10.1038/s41467-024-52845-x}
 }
 \usage{
 example_gsea_data
 }
 \description{
-A dataset containing example data for Gene Set Enrichment Analysis (GSEA).
-Includes gene annotations, expression fold changes, and statistical significance
-measures for differential expression analysis.
+Complete proteomics dataset from liver of aging mice (6 vs 30 months,
+male C57BL/6). Contains 5,290 proteins with fold changes and adjusted
+p-values, suitable for gene set enrichment analysis (GSEA).
 }
 \keyword{datasets}
