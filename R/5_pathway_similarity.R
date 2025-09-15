@@ -20,10 +20,10 @@ pathway_similarity_ui <- function(id) {
                  ns("similarity_method"),
                  "Choose similarity method",
                  choices = c(
-                   "Traditional methods" = "simcluster",
-                   "Biotext embedding" = "embedcluster"
+                   "Biotext embedding" = "embedcluster",
+                   "Traditional methods" = "simcluster"
                  ),
-                 selected = "simcluster"
+                 selected = "embedcluster"
                ),
                # hr(),
                
