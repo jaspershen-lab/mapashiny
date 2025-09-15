@@ -53,7 +53,7 @@ pathway_clustering_ui <- function(id) {
                # br(),br(),
                
                h4("Step 1: Perform Module Identification"),
-               numericInput(ns("sim_cutoff"), "Similarity cutoff", value = 0.5, min = 0, max = 1, step = 0.05),
+               numericInput(ns("sim_cutoff"), "Similarity cutoff", value = 0.55, min = 0, max = 1, step = 0.05),
                selectInput(ns("cluster_method"), "Clustering method", 
                            choices = c("Hierarchical_ward.D" = "h_ward.D",
                                        "Hierarchical_ward.D2" = "h_ward.D2", 

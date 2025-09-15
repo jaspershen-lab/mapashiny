@@ -2741,6 +2741,8 @@ plot_relationship_network(
             confirmButtonCol = "#dd4b39"
           )
         } else {
+          # print(head(expression_data_uploaded()))
+          # print(input$relationship_heatmap_module_id)
           plot_heatmap_alert_id <- shinyalert::shinyalert(
             title = "Generating module-expression heatmap plot",
             text = tags$div(
