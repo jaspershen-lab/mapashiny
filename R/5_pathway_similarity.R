@@ -313,7 +313,7 @@ pathway_similarity_ui <- function(id) {
                                                "models/gemini-embedding-001" = "models/gemini-embedding-001"
                                              )
                                            ),
-                                           selected = "Qwen/Qwen3-Embedding-0.6B",
+                                           selected = "Qwen/Qwen3-Embedding-8B",
                                            options = list(
                                              create = TRUE,
                                              placeholder = "Select or type a model name"
@@ -572,7 +572,7 @@ pathway_similarity_server <- function(id, enriched_pathways, similarity_result, 
       
       # Set default selections based on API provider
       default_embedding <- switch(input$api_provider,
-                                  "siliconflow" = "Qwen/Qwen3-Embedding-0.6B",
+                                  "siliconflow" = "Qwen/Qwen3-Embedding-8B",
                                   "openai" = "text-embedding-3-small",
                                   "gemini" = "models/text-embedding-004"
       )

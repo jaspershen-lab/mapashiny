@@ -96,7 +96,7 @@ llm_interpretation_ui <- function(id) {
                                          "models/gemini-embedding-001" = "models/gemini-embedding-001"
                                        )
                                      ),
-                                     selected = "Qwen/Qwen3-Embedding-0.6B",
+                                     selected = "Qwen/Qwen3-Embedding-8B",
                                      options = list(
                                        create = TRUE,
                                        placeholder = "Select or type a model name"
@@ -123,7 +123,7 @@ llm_interpretation_ui <- function(id) {
                                          "models/gemini-2.5-flash" = "models/gemini-2.5-flash"
                                        )
                                      ),
-                                     selected = "Qwen/Qwen3-8B",
+                                     selected = "Qwen/Qwen3-30B-A3B-Thinking-2507",
                                      options = list(
                                        create = TRUE,
                                        placeholder = "Select or type a model name"
@@ -446,13 +446,13 @@ llm_interpretation_server <- function(id, enriched_functional_module, tab_switch
         
         # Set default selections based on API provider
         default_embedding <- switch(input$llm_api_provider,
-                                    "siliconflow" = "Qwen/Qwen3-Embedding-0.6B",
+                                    "siliconflow" = "Qwen/Qwen3-Embedding-8B",
                                     "openai" = "text-embedding-3-small",
                                     "gemini" = "models/text-embedding-004"
         )
         
         default_llm <- switch(input$llm_api_provider,
-                              "siliconflow" = "Qwen/Qwen3-8B",
+                              "siliconflow" = "Qwen/Qwen3-30B-A3B-Thinking-2507",
                               "openai" = "gpt-4o-mini-2024-07-18",
                               "gemini" = "models/gemini-1.5-flash"
         )
