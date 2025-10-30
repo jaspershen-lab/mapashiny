@@ -544,7 +544,32 @@ enrich_pathway_server <- function(id, processed_info, enriched_pathways, tab_swi
           condition = input$analysis_type == "do_gsea"
         )
       })
-
+      
+      observe({
+        req(variable_info())
+        req(input$analysis_type)
+        
+        if(input$analysis_type == "do_gsea") {
+          ranking_col_options <- tryCatch(
+            {colnames(variable_info())[!colnames(variable_info()) %in% c("ensembl", "entrezid", "uniprot", "symbol")]},
+            error = function(e) {
+              shinyalert::shinyalert(
+                title = "Ranking metrics error",
+                text = e$message,
+                html = TRUE,
+                type = "error",
+                confirmButtonCol = "#dd4b39"
+              )
+              return(NULL)
+            }
+          )
+          updateSelectInput(
+            session, "order_by",
+            choices = ranking_col_options
+          )
+        }
+      })
+      
       # Toggle database-specific parameter panels
       observe({
         req(input$pathway_database)
@@ -743,28 +768,6 @@ enrich_pathway_server <- function(id, processed_info, enriched_pathways, tab_swi
           enriched_pathways$enriched_pathways_res <- result
           
           shinyalert::closeAlert()
-          
-          observe({
-            if(input$analysis_type == "do_gsea") {
-              updateTextInput(session,
-                              "go_keytype",
-                              value = "ENTREZID")
-              shinyjs::disable("go_keytype")
-            } else {
-              shinyjs::enable("go_keytype")
-            }
-          })
-          
-          observe({
-            if(input$analysis_type == "do_gsea") {
-              updateSelectInput(session,
-                                "kegg_keytype",
-                                selected = "kegg")
-              shinyjs::disable("kegg_keytype")
-            } else {
-              shinyjs::enable("kegg_keytype")
-            }
-          })
           
           # shinyjs::hide("loading")
           
