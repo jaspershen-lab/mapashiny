@@ -266,11 +266,11 @@ upload_data_server <- function(id, processed_info, tab_switch) {
         )
       })
 
-      # Update metabolite ID type when organism changes
-      updateSelectizeInput(session, 
-                           "met_organism", 
-                           choices = choices,
-                           server = TRUE)
+      # # Update metabolite ID type when organism changes
+      # updateSelectizeInput(session, 
+      #                      "met_organism", 
+      #                      choices = choices,
+      #                      server = TRUE)
       
       observeEvent(input$met_organism, {
         if (!is.null(input$met_organism)) {
@@ -315,6 +315,49 @@ upload_data_server <- function(id, processed_info, tab_switch) {
       # Load data from file upload or example selection
       # Observer for gene example data selection
       observeEvent(input$example_choice, {
+        if (length(input$example_choice) == 0) {
+          updateSelectInput(
+            session,
+            "organism",
+            choices = c(
+              " " = "",
+              "Human (org.Hs.eg.db)" = "org.Hs.eg.db",
+              "Mouse (org.Mm.eg.db)" = "org.Mm.eg.db",
+              "Rat (org.Rn.eg.db)" = "org.Rn.eg.db",
+              "Fly (org.Dm.eg.db)" = "org.Dm.eg.db",
+              "Zebrafish (org.Dr.eg.db)" = "org.Dr.eg.db",
+              "Arabidopsis (org.At.tair.db)" = "org.At.tair.db",
+              "Yeast (org.Sc.sgd.db)" = "org.Sc.sgd.db",
+              "Worm (org.Ce.eg.db)" = "org.Ce.eg.db",
+              "Pig (org.Ss.eg.db)" = "org.Ss.eg.db",
+              "Bovine (org.Bt.eg.db)" = "org.Bt.eg.db",
+              "Rhesus (org.Mmu.eg.db)" = "org.Mmu.eg.db",
+              "Canine (org.Cf.eg.db)" = "org.Cf.eg.db",
+              "E. coli strain K12(org.EcK12.eg.db)" = "org.EcK12.eg.db",
+              "E coli strain Sakai" = "org.EcSakai.eg.db",
+              "Chicken (org.Gg.eg.db)" = "org.Gg.eg.db",
+              "Xenopus (org.Xl.eg.db)" = "org.Xl.eg.db",
+              "Chimp (org.Pt.eg.db)" = "org.Pt.eg.db",
+              "Anopheles (org.Ag.eg.db)" = "org.Ag.eg.db",
+              "Malaria (org.Pf.plasmo.db)" = "org.Pf.plasmo.db",
+              "Myxococcus xanthus DK 1622" = "org.Mxanthus.db"
+            ),
+            selected = ""
+          )
+          
+          updateSelectInput(
+            session,
+            "id_type",
+            choices = list(
+              "ENSEMBL" = "ensembl",
+              "UniProt" = "uniprot",
+              "EntrezID" = "entrezid",
+              "Symbol" = "symbol"
+            ),
+            selected = "ensembl"
+          )
+        }
+        
         if (input$query_type == "gene" && length(input$example_choice) > 0) {
           # Select the organism directly
           updateSelectInput(
@@ -392,6 +435,39 @@ upload_data_server <- function(id, processed_info, tab_switch) {
       
       # Observer for metabolite example data selection
       observeEvent(input$met_example_choice, {
+        if (length(input$met_example_choice) == 0) {
+          
+          updateSelectizeInput(session,
+                               "met_organism",
+                               choices = choices,
+                               server = TRUE)
+          
+          if (!is.null(input$met_organism)) {
+            if (input$met_organism == "hsa") {
+              # For human (hsa), show both KEGG and HMDB options
+              updateSelectInput(
+                session,
+                "met_id_type",
+                choices = list(
+                  "KEGG ID" = "keggid",
+                  "HMDB ID" = "hmdbid"
+                ),
+                selected = "hmdbid"  # Default to HMDB for human
+              )
+            } else {
+              # For non-human organisms, only show KEGG
+              updateSelectInput(
+                session,
+                "met_id_type",
+                choices = list(
+                  "KEGG ID" = "keggid"
+                ),
+                selected = "keggid"
+              )
+            }
+          }
+        }
+        
         if (input$query_type == "metabolite" && length(input$met_example_choice) > 0) {
           # Select the organism directly
           updateSelectInput(
