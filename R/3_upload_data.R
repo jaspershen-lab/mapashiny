@@ -629,7 +629,7 @@ upload_data_server <- function(id, processed_info, tab_switch) {
 
           # Validate OrgDb format
           if (input$organism != "") {
-            if (!grepl("^org\\.[A-Za-z]+\\..+\\.db$", input$organism)) {
+            if (!grepl("^org\\.[A-Za-z0-9]+\\..+\\.db$", input$organism)) {
               # showNotification("Invalid OrgDb package name. Expected format: org.XX.eg.db", type = "error")
               shinyalert::closeAlert()
               
