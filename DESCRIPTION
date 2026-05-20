@@ -35,6 +35,7 @@ Imports:
     shinyalert,
     shinyBS,
     shinydashboard,
+    shinyFiles,
     shinyjs,
     shinyWidgets,
     stringr,

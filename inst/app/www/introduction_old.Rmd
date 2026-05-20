@@ -1,0 +1,52 @@
+---
+title: ""
+output: 
+  html_document:
+    toc: false
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+    number_sections: false
+date: "2025-08-23"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## ℹ️ About
+
+**MAPA** (Functional Module Identification and Annotation for Pathway Analysis Results Using LLM) is a streamlined workflow for pathway-enrichment analysis and enrichment result interpretation that turns large omics datasets into clear biological insight. It is developed by the [Shen Lab at Nanyang Technological University, Singapore](https://www.shen-lab.org/). It:
+
+1.  **Pathway analysis: Detects enriched pathways** from your data via over-representation analysis (ORA) or gene set enrichment analysis (GSEA).
+
+2.  **Functional module identification: Clusters overlapping or functional-related pathways** into functional modules, so every informative pathway—not just the "top 5 or 10"—contributes to the story.
+
+3.  **Functional module annotation: Summaries each module with large-language models (LLM)** (e.g., ChatGPT), linking the results to the latest findings in literature from PubMed.
+
+The outcome is a fast, reproducible, and user-friendly pipeline that reduces redundancy and delivers biologically meaningful interpretations for enrichment results.
+
+📔 The MAPA tutorial is available at [https://www.shen-lab.org/mapa-tutorial/](https://www.shen-lab.org/mapa-tutorial/).
+
+## 🗣️ Note
+
+MAPA needs OpenAI, Gemini or SiliconFlow API key to annotate functional modules with LLM. If you do not have an API key, please contact us, and we will (1) provide you with a temporary key for testing purpose, or (2) run the annotation step for you and send you the results.
+
+## 📥 Contact us
+
+-   📩 Email [xiaotao.shen\@outlook.com](xiaotao.shen@outlook.com)
+
+-   🏠 Shen Lab website [shen-lab.org](https://www.shen-lab.org/)
+
+-   💬 WeChat [jaspershen1990](https://jaspershen.github.io/image/wechat_QR.jpg)
+
+-   🐦 Twitter [xiaotaoshen1990](https://twitter.com/xiaotaoshen1990)
+
+## 🔗 More links
+
+-   📖 [Citation](https://doi.org/10.1101/2025.08.23.671949)
+
+-   🏠 [MAPA project website](https://www.shen-lab.org/mapa-website/)
+
+-   📔 [MAPA tutorial](https://www.shen-lab.org/mapa-tutorial/)
+

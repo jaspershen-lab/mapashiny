@@ -1,196 +1,101 @@
-intro_cleaned_content <- grep("<(/?(html|head|body))>", 
-                              readLines(app_sys("app/www/introduction.html")),
-                              invert = TRUE, value = TRUE)
-
-load("inst/app/www/met_org_kegg_choices.rda")
-
-# tutorial_cleaned_content <- grep("<(/?(html|head|body))>", 
-#                                  readLines(app_sys("app/www/tutorials.html")),
-#                                  invert = TRUE, value = TRUE)
-
-#' The application User-Interface
+#' Application UI
 #'
-#' @param request Internal parameter for `{shiny}`.
-#'     DO NOT REMOVE.
+#' @param request Internal shiny parameter — do not remove.
 #' @import shiny
-#' @import shinydashboard
-#' 
+#' @import bslib
 #' @noRd
 app_ui <- function(request) {
   tagList(
-    # Leave this function for adding external resources
     golem_add_external_resources(),
-    # Your application UI logic
-    shinydashboard::dashboardPage(
-      skin = "red",
-      
-      shinydashboard::dashboardHeader(title = "MAPA"),
-      
-      ## sidebar of the app ====
-      shinydashboard::dashboardSidebar(
-        sidebarMenu(
-          id = "tabs",
-          menuItem(text = "Introduction", tabName = "introduction", icon = icon("info-circle")),
-          # menuItem(text = "Tutorial", tabName = "tutorial", icon = icon("book")),
-          menuItem(text = "Data Upload", tabName = "upload_data", icon = icon("upload")),
-          menuItem(text = "Pathway Enrichment", tabName = "enrich_pathways", icon = icon("cogs")),
-          menuItem(text = "Pathway Similarity Calculation", tabName = "pathway_similarity", icon = icon("project-diagram")),
-          menuItem(text = "Module Identification", tabName = "pathway_clustering", icon = icon("sitemap")),
-          # menuItem(text = "Pathway Clustering", tabName = NULL, icon = icon("sitemap"),
-          #          menuItem(text = HTML("Method1: SimCluster"), tabName = NULL,
-          #                   menuSubItem(text = "Step1: Merge Pathways", tabName = "merge_pathways", icon = NULL),
-          #                   menuSubItem(text = "Step2: Merge Modules", tabName = "merge_modules", icon = NULL)
-          #          ),
-          #          menuItem(text = HTML("Method2: EmbedCluster"), tabName = "embed_cluster_pathways")
-          # ),
-          menuItem(text = "Module Annotation", tabName = "llm_interpretation", icon = icon("brain")),
-          menuItem(text = "Data Visualization", tabName = "data_visualization", icon = icon("chart-line")),
-          menuItem(text = "Results & Report", tabName = "results", icon = icon("clipboard-list"))
-        )
-      ),
-      
-      ## dashboard body code ====
-      shinydashboard::dashboardBody(
-        shinyjs::useShinyjs(),
-        
+    shinyjs::useShinyjs(),
+
+    bslib::page_sidebar(
+      title  = navbar_brand(),
+      theme  = mapa_theme(),
+
+      # ── Sidebar ──────────────────────────────────────────────────────────
+      sidebar = bslib::sidebar(
+        id     = "main_sidebar",
+        width  = 275,
+        bg     = "#1A3A5C",
+        fg     = "#FFFFFF",
+        open   = list(desktop = "open", mobile = "closed"),
+        border = FALSE,
+        padding = "0px",
+
+        # Mode toggle
         div(
-          id = "loading",
-          hidden = TRUE,
-          class = "loading-style",
-          "",
-          tags$img(src = "loading.gif",
-                   height = "200px")
-        ),
-        
-        ### tabitems ====
-        tabItems(
-          #### 1. Introduction tab ====
-          tabItem(tabName = "introduction",
-                  fluidPage(
-                    titlePanel("Introduction of MAPA"),
-                    fluidRow(
-                      column(12,
-                             htmltools::HTML(intro_cleaned_content)
-                      )
-                    )
-                  )),
-          
-          # #### 2. Tutorial tab ====
-          # tabItem(tabName = "tutorial",
-          #         fluidPage(
-          #           titlePanel("Tutorials of MAPA"),
-          #           fluidRow(
-          #             column(12,
-          #                    htmltools::HTML(tutorial_cleaned_content)
-          #             )
-          #           )
-          #         )),
-          
-          #### 3. Upload data tab ====
-          upload_data_ui("upload_data_tab"),
-          
-          #### 4. Enrich pathways tab ====
-          enrich_pathway_ui("enrich_pathway_tab"),
-          
-          # #### 5-6. Pathway clustering tab ===
-          # #### 5a. Merge pathways tab ====
-          # merge_pathways_ui("merge_pathways_tab"),
-          # 
-          # #### 6a. Merge modules tab ====
-          # merge_modules_ui("merge_modules_tab"),
-          # 
-          # #### 5-6b. Embed and cluster pathways tab =====
-          # embed_cluster_pathways_ui("embed_cluster_pathways_tab"),
-          # Replace the old clustering tabs with the new ones
-          #### 5. Pathway Similarity tab ====
-          pathway_similarity_ui("pathway_similarity_tab"),
-          
-          #### 6. Pathway Clustering tab ====
-          pathway_clustering_ui("pathway_clustering_tab"),
-          
-          #### 7. Translation tab ====
-          
-          #### 8. LLM Interpretation tab ====
-          llm_interpretation_ui("llm_interpretation_tab"),
-          
-          #### 9. Data visualization tab ====
-          data_visualization_ui("data_visualization_tab"),
-          
-          #### 10. Result and report tab =====
-          results_ui("results_tab")
-        ),
-        
-        ### footer ====
-        tags$footer(
-          div(
-            class = "app-footer",
-            tags$img(
-              src = "www/shen_lab_logo.png",
-              class = "footer-logo"
-            ),
-            div(
-              class = "footer-content",
-              HTML("The Shen Lab at Nanyang Technological University Singapore"),
-              HTML("<br>"),
-              tags$a(
-                href = "http://www.shen-lab.org",
-                target = "_blank",
-                class = "footer-link",
-                tags$i(class = "fa fa-house footer-icon"),
-                " Shen Lab"
-              ),
-              tags$a(
-                href = "https://www.shen-lab.org/#contact",
-                target = "_blank",
-                class = "footer-link",
-                tags$i(class = "fa fa-envelope footer-icon"),
-                " Email"
-              ),
-              tags$a(
-                href = "https://github.com/jaspershen/mapa",
-                target = "_blank",
-                class = "footer-link",
-                tags$i(class = "fa fa-github footer-icon"),
-                " GitHub"
-              )
-            ),
-            tags$img(
-              src = "www/mapa_logo.png",
-              class = "footer-logo-right"
-            )
+          class = "mode-toggle-container",
+          shinyWidgets::radioGroupButtons(
+            inputId  = "analysis_mode",
+            label    = NULL,
+            choices  = c("Single-Omics" = "so", "Multi-Omics" = "mo"),
+            justified = TRUE,
+            size     = "sm",
+            selected = "so"
           )
+        ),
+
+        # Step navigation (server-rendered)
+        uiOutput("sidebar_step_nav"),
+
+      ),
+
+      # ── Main content ─────────────────────────────────────────────────────
+      div(
+        id    = "main_app_body",
+        class = "mode-so",
+
+        bslib::navset_hidden(
+          id = "step_panels",
+
+          # Landing
+          bslib::nav_panel("landing",    mod_landing_ui("landing")),
+
+          # ── Single-omics steps ──
+          bslib::nav_panel("so_upload",  mod_so_upload_ui("so_upload")),
+          bslib::nav_panel("so_enrich",  mod_so_enrich_ui("so_enrich")),
+          bslib::nav_panel("so_sim",     mod_so_similarity_ui("so_sim")),
+          bslib::nav_panel("so_modules", mod_so_modules_ui("so_modules")),
+
+          # ── Multi-omics steps ──
+          bslib::nav_panel("mo_upload",  mod_mo_upload_ui("mo_upload")),
+          bslib::nav_panel("mo_enrich",  mod_mo_enrich_ui("mo_enrich")),
+          bslib::nav_panel("mo_network", mod_mo_network_ui("mo_network")),
+          bslib::nav_panel("mo_modules", mod_mo_modules_ui("mo_modules")),
+
+          # ── LLM annotation (mode-specific) ──
+          bslib::nav_panel("so_llm", mod_so_llm_ui("so_llm")),
+          bslib::nav_panel("mo_llm", mod_mo_llm_ui("mo_llm")),
+          bslib::nav_panel("so_viz",     mod_so_viz_ui("so_viz")),
+          bslib::nav_panel("mo_viz",     mod_mo_viz_ui("mo_viz")),
+          bslib::nav_panel("so_report",  mod_so_report_ui("so_report")),
+          bslib::nav_panel("mo_report",  mod_mo_report_ui("mo_report"))
         )
       )
     )
   )
 }
 
-#' Add external Resources to the Application
-#'
-#' This function is internally used to add external
-#' resources inside the Shiny application.
-#'
+#' Register external resources (CSS, JS, favicon)
 #' @import shiny
 #' @importFrom golem add_resource_path activate_js favicon bundle_resources
 #' @noRd
 golem_add_external_resources <- function() {
-  add_resource_path(
-    "www",
-    app_sys("app/www")
-  )
+  golem::add_resource_path("www", app_sys("app/www"))
 
   tags$head(
-    favicon(ext = 'png'),
-    bundle_resources(
-      path = app_sys("app/www"),
-      app_title = "mapashiny"
+    golem::favicon(ext = "png"),
+    golem::bundle_resources(path = app_sys("app/www"), app_title = "MAPA"),
+    tags$link(
+      rel  = "stylesheet",
+      type = "text/css",
+      href = "www/custom.css"
     ),
-    
-    # Add external CSS file
-    tags$link(rel = "stylesheet", type = "text/css", href = "www/app.css"),
-    # Add external JS file
-    tags$script(src = "www/app.js")
-    # Add here other external resources
-    # for example, you can add shinyalert::useShinyalert()
+    # Font Awesome for icons
+    tags$link(
+      rel  = "stylesheet",
+      href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    )
   )
 }

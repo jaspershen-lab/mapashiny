@@ -7,7 +7,7 @@ output:
       collapsed: false
       smooth_scroll: true
     number_sections: false
-date: "2025-08-23"
+date: "2026-05-15"
 ---
 
 ```{r setup, include=FALSE}
@@ -16,37 +16,85 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## ℹ️ About
 
-**MAPA** (Functional Module Identification and Annotation for Pathway Analysis Results Using LLM) is a streamlined workflow for pathway-enrichment analysis and enrichment result interpretation that turns large omics datasets into clear biological insight. It is developed by the [Shen Lab at Nanyang Technological University, Singapore](https://www.shen-lab.org/). It:
+**MAPA** (**M**odular **A**nalysis and **P**henotype-informed **A**nnotation using large language models) is a semantic-biological network framework for functional module discovery and interpretation in single-omics and multi-omics data. MAPA is developed by the [Shen Lab at Nanyang Technological University, Singapore](https://www.shen-lab.org/), and **MAPAShiny** provides an interactive web interface for running MAPA analyses and exploring the results.
 
-1.  **Pathway analysis: Detects enriched pathways** from your data via over-representation analysis (ORA) or gene set enrichment analysis (GSEA).
+MAPA is designed to help users move from long lists of omics features or enriched pathways to coherent, biologically interpretable functional modules. Instead of treating pathways as isolated enrichment results, MAPA integrates molecular interactions and pathway-level functional context into a shared analytical space, enabling genes, proteins, metabolites, and pathways to be compared and interpreted together.
 
-2.  **Functional module identification: Clusters overlapping or functional-related pathways** into functional modules, so every informative pathway—not just the "top 5 or 10"—contributes to the story.
+## 🚀 What MAPA does
 
-3.  **Functional module annotation: Summaries each module with large-language models (LLM)** (e.g., ChatGPT), linking the results to the latest findings in literature from PubMed.
+1.  **Input preparation and pathway enrichment**  
+    MAPA accepts phenotype-associated molecular features from transcriptomics, proteomics, and metabolomics data. It supports over-representation analysis (ORA) and gene set enrichment analysis (GSEA) to identify enriched pathways or Gene Ontology terms.
 
-The outcome is a fast, reproducible, and user-friendly pipeline that reduces redundancy and delivers biologically meaningful interpretations for enrichment results.
+2.  **Pathway functional context encoding**  
+    MAPA converts pathway and GO term names/descriptions into biological text embeddings, referred to as **biotext embeddings**. This allows MAPA to quantify functional similarity between pathways, including pathways from different databases such as GO, KEGG, and Reactome.
 
-📔 The MAPA tutorial is available at [https://www.shen-lab.org/mapa-tutorial/](https://www.shen-lab.org/mapa-tutorial/).
+3.  **Semantic-biological network construction**  
+    In multi-omics analysis, MAPA constructs a unified network containing both molecular nodes and pathway nodes. Molecular nodes are linked through curated biological relationships, pathway nodes are linked through biotext embedding similarity, and molecule-pathway edges are defined by pathway annotations.
+
+4.  **Functional module discovery**  
+    MAPA identifies coherent functional modules from the similarity structure. In single-omics analysis, modules are groups of functionally related pathways. In multi-omics analysis, modules may contain genes, proteins, metabolites, and pathways from different omics layers. MAPA uses network propagation with random walk with restart (RWR) to capture broader functional relationships beyond direct molecular connections.
+
+5.  **Literature-informed LLM annotation**  
+    MAPA uses a retrieval-augmented LLM workflow to interpret each functional module. Relevant literature can be retrieved from PubMed, pathway database references, and optional user-uploaded materials. The selected evidence is then used to generate a structured module name, biological summary, optional phenotype-related interpretation, and a confidence score.
+
+6.  **Visualization and reporting**  
+    MAPAShiny provides interactive outputs for exploring enrichment results, functional modules, module networks, pathway-molecule relationships, expression heatmaps, and structured analysis reports.
+
+## 📦 Typical input and output
+
+**Input** may include:
+
+-   Differential or phenotype-associated genes, proteins, or metabolites
+-   Ranked molecular lists for GSEA-based analysis
+-   Optional phenotype or experimental context
+-   Optional user-provided literature for module annotation
+
+**Output** may include:
+
+-   Enriched pathways or GO terms
+-   Functional modules with pathway and molecular components
+-   Module-level network visualizations
+-   LLM-assisted module names and biological summaries
+-   Phenotype-informed interpretation when context is provided
+-   Confidence scores reflecting functional coherence
+-   Exportable tables and structured analysis reports
 
 ## 🗣️ Note
 
-MAPA needs OpenAI, Gemini or SiliconFlow API key to annotate functional modules with LLM. If you do not have an API key, please contact us, and we will (1) provide you with a temporary key for testing purpose, or (2) run the annotation step for you and send you the results.
+LLM-based functional module annotation requires an API key from OpenAI, Gemini, or SiliconFlow. If you do not have an API key, please contact us, and we can either provide a temporary key for testing purposes or help run the annotation step for you.
+
+The MAPA confidence score should be interpreted as an annotation-level coherence score rather than a calibrated statistical probability.
+
+## 📔 Documentation
+
+The MAPA tutorial is available at [https://www.shen-lab.org/mapa-tutorial/](https://www.shen-lab.org/mapa-tutorial/).
+
+The MAPA project website is available at [https://www.shen-lab.org/mapa-website/](https://www.shen-lab.org/mapa-website/).
 
 ## 📥 Contact us
 
--   📩 Email [xiaotao.shen\@outlook.com](xiaotao.shen@outlook.com)
+-   📩 Xiaotao Shen: [xiaotao.shen\@ntu.edu.sg](mailto:xiaotao.shen@ntu.edu.sg)
 
--   🏠 Shen Lab website [shen-lab.org](https://www.shen-lab.org/)
+-   📩 Chuchu Wang: [chuchu.wang\@ntu.edu.sg](mailto:chuchu.wang@ntu.edu.sg)
 
--   💬 WeChat [jaspershen1990](https://jaspershen.github.io/image/wechat_QR.jpg)
+-   🏠 Shen Lab website: [shen-lab.org](https://www.shen-lab.org/)
 
--   🐦 Twitter [xiaotaoshen1990](https://twitter.com/xiaotaoshen1990)
+-   💬 WeChat: [jaspershen1990](https://jaspershen.github.io/image/wechat_QR.jpg)
+
+-   🐦 Twitter/X: [xiaotaoshen1990](https://twitter.com/xiaotaoshen1990)
 
 ## 🔗 More links
 
 -   📖 [Citation](https://doi.org/10.1101/2025.08.23.671949)
 
--   🏠 [MAPA project website](https://www.shen-lab.org/mapa-website/)
+-   🧬 [MAPA GitHub repository](https://github.com/jaspershen-lab/mapa)
 
--   📔 [MAPA tutorial](https://www.shen-lab.org/mapa-tutorial/)
+-   💻 [MAPAShiny GitHub repository](https://github.com/jaspershen-lab/mapashiny)
 
+-   🧾 [MAPA manuscript analysis scripts](https://github.com/jaspershen-lab/mapa_manuscript)
+
+-   🐳 [MAPA Docker image](https://hub.docker.com/r/jaspershenlab/mapa)
+
+-   🐳 [MAPAShiny Docker image](https://hub.docker.com/r/jaspershenlab/mapashiny)
+
+-   🌐 [Hosted MAPAShiny app](https://mapashiny.jaspershenlab.com)

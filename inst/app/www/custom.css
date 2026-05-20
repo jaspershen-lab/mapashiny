@@ -1,70 +1,701 @@
-/* Make sidebar wider */
-.main-sidebar {
-  width: 230px !important;
+/* ============================================================
+   MAPA Academic Theme
+   ============================================================ */
+
+/* ── Design tokens ─────────────────────────────────────────── */
+:root {
+  --mapa-navy:       #1A3A5C;
+  --mapa-navy-dark:  #122844;
+  --mapa-blue:       #2C6FAC;
+  --mapa-blue-light: #EBF4FF;
+  --mapa-teal:       #0D9488;
+  --mapa-purple:     #7C3AED;
+  --mapa-purple-light: #F3EEFF;
+  --mapa-green:      #16A34A;
+  --mapa-bg:         #F7F9FB;
+  --mapa-card-bg:    #FFFFFF;
+  --mapa-text:       #1E293B;
+  --mapa-muted:      #64748B;
+  --mapa-border:     #E2E8F0;
+  --mapa-shadow-sm:  0 1px 4px rgba(0,0,0,.06);
+  --mapa-shadow:     0 2px 12px rgba(0,0,0,.08);
+  --mapa-shadow-lg:  0 8px 32px rgba(0,0,0,.12);
+  --mapa-radius:     10px;
+  --mapa-radius-lg:  14px;
+  --step-size:       30px;
+
+  /* Mode-specific accent (overridden by .mode-so / .mode-mo) */
+  --accent:          var(--mapa-blue);
+  --accent-light:    var(--mapa-blue-light);
 }
 
-/* Content wrapper padding */
-.content-wrapper {
-  padding-bottom: 120px;
+/* ── Typography ────────────────────────────────────────────── */
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  background: var(--mapa-bg);
+  color: var(--mapa-text);
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Loading style */
-.loading-style {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  z-index: 100;
+h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.02em; }
+.text-muted { color: var(--mapa-muted) !important; }
+
+/* ── Page / Navbar ─────────────────────────────────────────── */
+.navbar,
+.bslib-page-sidebar > .navbar {
+  background: var(--mapa-navy) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,.20);
+  padding: 0 20px;
+  min-height: 52px;
 }
 
-/* Footer styles */
-.app-footer {
-  background-color: #ecf0f4;
+.navbar-home-link { text-decoration: none; transition: opacity .15s ease; }
+.navbar-home-link:hover { opacity: .80; }
+
+/* ── Sidebar ───────────────────────────────────────────────── */
+.bslib-sidebar-layout > .sidebar,
+.bslib-sidebar-layout > .bslib-sidebar-panel {
+  background: var(--mapa-navy) !important;
+  border-right: none !important;
+  box-shadow: 2px 0 16px rgba(0,0,0,.12);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Mode toggle ───────────────────────────────────────────── */
+.mode-toggle-container {
+  padding: 14px 14px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.10);
+  flex-shrink: 0;
+}
+
+.mode-toggle-container .btn-group { width: 100%; }
+
+.mode-toggle-container .btn {
+  background: rgba(255,255,255,.08);
+  border-color: rgba(255,255,255,.15) !important;
+  color: rgba(255,255,255,.65);
+  font-size: 12px;
+  font-weight: 500;
+  transition: all .18s ease;
+  padding: 5px 0;
+}
+
+.mode-toggle-container .btn:hover {
+  background: rgba(255,255,255,.14);
+  color: #fff;
+}
+
+.mode-toggle-container .btn.active {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #fff !important;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.12);
+}
+
+/* ── Step navigation ───────────────────────────────────────── */
+.step-nav {
+  padding: 12px 10px 8px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.step-item {
   display: flex;
   align-items: center;
-  justify-content: left;
-  padding: 10px;
-  height: 80px;
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  z-index: 100;
-  border-top: 1px solid #ccc;
+  padding: 9px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .15s;
+  margin-bottom: 2px;
+  gap: 10px;
 }
 
-.footer-logo {
-  height: 50px;
-  margin-right: 15px;
+.step-item:hover { background: rgba(255,255,255,.08); }
+.step-item.active { background: rgba(255,255,255,.13); }
+.step-item.pending { opacity: .55; cursor: default; }
+
+.step-number {
+  width: var(--step-size);
+  height: var(--step-size);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: all .2s;
 }
 
-.footer-content {
-  text-align: left;
+/* Pending */
+.step-item.pending .step-number {
+  background: rgba(255,255,255,.12);
+  color: rgba(255,255,255,.5);
+  border: 1.5px solid rgba(255,255,255,.18);
 }
 
-.footer-link {
-  text-align: left;
-  margin-left: 10px;
+/* Active — colour driven by mode class */
+.mode-so .step-item.active .step-number {
+  background: var(--mapa-blue);
+  color: #fff;
+  box-shadow: 0 0 0 3px rgba(44,111,172,.35);
 }
 
-.footer-icon {
-  color: #e04c3c;
+.mode-mo .step-item.active .step-number {
+  background: var(--mapa-purple);
+  color: #fff;
+  box-shadow: 0 0 0 3px rgba(124,58,237,.35);
 }
 
-.footer-logo-right {
-  height: 50px;
-  margin-left: 15px;
+/* Completed */
+.step-item.completed .step-number {
+  background: var(--mapa-green);
+  color: #fff;
 }
 
-/* Normal-weight labels */
-.normal-label {
-  font-weight: normal !important;
+.step-text { flex: 1; min-width: 0; }
+
+.step-title {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: rgba(255,255,255,.85);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Scrollable container with border for plots or content */
-.scrollable-container {
-  width: 100%;
-  height: 500px;
-  overflow: auto;
-  border: 1px solid #ccc;
+.step-item.active .step-title  { color: #fff; font-weight: 600; }
+
+.step-desc {
+  font-size: 10.5px;
+  color: rgba(255,255,255,.45);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Connector line between steps */
+.step-connector {
+  width: 2px;
+  height: 10px;
+  background: rgba(255,255,255,.12);
+  margin: 0 0 0 calc(10px + var(--step-size)/2);
+}
+
+.step-connector.completed { background: var(--mapa-green); }
+
+/* ── Sidebar footer ────────────────────────────────────────── */
+.sidebar-footer {
+  padding: 12px 14px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  flex-shrink: 0;
+}
+
+.sidebar-footer-link { display: inline-block; }
+.sidebar-footer-link img { transition: opacity .18s ease; }
+.sidebar-footer-link:hover img { opacity: 1 !important; }
+
+/* ── Mode accent classes ───────────────────────────────────── */
+.mode-so {
+  --accent:       var(--mapa-blue);
+  --accent-light: var(--mapa-blue-light);
+}
+
+.mode-mo {
+  --accent:                  var(--mapa-purple);
+  --accent-light:            var(--mapa-purple-light);
+  /* Bootstrap 5.3 CSS-variable overrides so checkboxes / radios pick up purple */
+  --bs-primary:              #7C3AED;
+  --bs-primary-rgb:          124, 58, 237;
+  --bs-component-active-bg:  #7C3AED;
+  --bs-form-check-bg:        #7C3AED;
+}
+
+/* ── Multi-omics: override Bootstrap checkbox / radio / select colours ── */
+#main_app_body.mode-mo .form-check-input:checked,
+#main_app_body.mode-mo .form-check-input[type="checkbox"]:checked,
+#main_app_body.mode-mo .form-check-input[type="radio"]:checked {
+  background-color: #7C3AED !important;
+  border-color:     #7C3AED !important;
+}
+
+#main_app_body.mode-mo .form-check-input:focus {
+  border-color: #7C3AED !important;
+  box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, .25) !important;
+}
+
+#main_app_body.mode-mo .form-control:focus,
+#main_app_body.mode-mo .form-select:focus {
+  border-color: #7C3AED !important;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, .15) !important;
+}
+
+#main_app_body.mode-mo .selectize-input.focus {
+  border-color: #7C3AED !important;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, .15) !important;
+}
+
+#main_app_body.mode-mo .selectize-dropdown-content .option.selected,
+#main_app_body.mode-mo .selectize-dropdown-content .option:hover {
+  background: #F3EEFF;
+  color: #7C3AED;
+}
+
+/* ── Multi-omics: slider (ion.RangeSlider) ──────────────────── */
+#main_app_body.mode-mo .irs--shiny .irs-bar,
+#main_app_body.mode-mo .irs--shiny .irs-bar--single {
+  background: #7C3AED !important;
+  border-top-color:    #7C3AED !important;
+  border-bottom-color: #7C3AED !important;
+}
+
+#main_app_body.mode-mo .irs--shiny .irs-handle,
+#main_app_body.mode-mo .irs--shiny .irs-handle.single {
+  background: #7C3AED !important;
+  border-color: #7C3AED !important;
+}
+
+#main_app_body.mode-mo .irs--shiny .irs-from,
+#main_app_body.mode-mo .irs--shiny .irs-to,
+#main_app_body.mode-mo .irs--shiny .irs-single {
+  background: #7C3AED !important;
+}
+
+#main_app_body.mode-mo .irs--shiny .irs-from::before,
+#main_app_body.mode-mo .irs--shiny .irs-to::before,
+#main_app_body.mode-mo .irs--shiny .irs-single::before {
+  border-top-color: #7C3AED !important;
+}
+
+/* ── Multi-omics: nav-tabs (bslib navset_card_tab) ──────────── */
+#main_app_body.mode-mo .nav-tabs .nav-link {
+  color: var(--mapa-muted);
+}
+
+#main_app_body.mode-mo .nav-tabs .nav-link:hover {
+  color: #7C3AED;
+  border-color: transparent transparent #7C3AED;
+}
+
+#main_app_body.mode-mo .nav-tabs .nav-link.active {
+  color: #7C3AED !important;
+  border-bottom-color: #7C3AED !important;
+}
+
+/* ── Step page ─────────────────────────────────────────────── */
+.step-page {
+  padding: 28px 32px;
+  max-width: 1200px;
+}
+
+.step-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  background: rgba(var(--accent), .08);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.step-heading {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--mapa-text);
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.step-subtitle {
+  font-size: .875rem;
+  color: var(--mapa-muted);
+  margin-bottom: 24px;
+}
+
+/* ── Cards ─────────────────────────────────────────────────── */
+.card {
+  border: 1px solid var(--mapa-border) !important;
+  border-radius: var(--mapa-radius) !important;
+  box-shadow: var(--mapa-shadow-sm) !important;
+  transition: box-shadow .2s;
+}
+
+.card:hover { box-shadow: var(--mapa-shadow) !important; }
+
+.step-card > .card-header,
+.card-header {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  padding: 12px 16px;
+  background: #FFFFFF !important;
+  border-bottom: 1px solid var(--mapa-border) !important;
+  border-radius: calc(var(--mapa-radius) - 1px) calc(var(--mapa-radius) - 1px) 0 0 !important;
+}
+
+/* Mode-coloured card header top accent bar */
+.mode-so .step-card > .card-header {
+  background: linear-gradient(to bottom, var(--mapa-blue-light), #FFFFFF) !important;
+  color: var(--mapa-blue);
+}
+
+.mode-mo .step-card > .card-header {
+  background: linear-gradient(to bottom, var(--mapa-purple-light), #FFFFFF) !important;
+  color: var(--mapa-purple);
+}
+
+/* ── Navigation buttons ────────────────────────────────────── */
+.step-nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  margin-top: 16px;
+  border-top: 1px solid var(--mapa-border);
+}
+
+.btn-step-back {
+  background: transparent;
+  border: 1px solid var(--mapa-border);
+  color: var(--mapa-muted);
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 8px 18px;
+  transition: all .18s;
+}
+.btn-step-back:hover {
+  background: var(--mapa-bg);
+  color: var(--mapa-text);
+  border-color: #94A3B8;
+}
+
+.btn-step-next {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #fff !important;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 8px 22px;
+  transition: all .18s;
+}
+
+.btn-step-next:hover {
+  filter: brightness(0.88);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+/* Disabled state: dark gray background, white text, full opacity.
+   High-specificity selectors (.btn.btn-step-next) to beat Bootstrap's
+   .btn-default:disabled / .btn:disabled rules that may come later. */
+.btn.btn-step-next:disabled,
+.btn.btn-step-next[disabled],
+.btn.btn-step-next.disabled,
+.btn-step-next:disabled,
+.btn-step-next[disabled],
+.btn-step-next.disabled {
+  background: #495057 !important;
+  border-color: #495057 !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  cursor: not-allowed;
+}
+
+/* Download accent button — adapts to SO (blue) / MO (purple) accent.
+   !important on background/border/display/width to override Bootstrap's
+   btn-default class that Shiny's downloadButton injects. */
+.btn-mapa-dl {
+  background: var(--accent) !important;
+  border: 1px solid var(--accent) !important;
+  color: #fff !important;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 7px 18px;
+  transition: all .18s;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  width: fit-content !important;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  white-space: nowrap;
+}
+.btn-mapa-dl:hover { filter: brightness(0.88); color: #fff !important; }
+
+/* ── Mode button colours on landing ───────────────────────── */
+.btn-so {
+  background: var(--mapa-blue) !important;
+  border-color: var(--mapa-blue) !important;
+  color: #fff !important;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all .18s;
+}
+.btn-so:hover { filter: brightness(.88); }
+
+.btn-mo {
+  background: var(--mapa-purple) !important;
+  border-color: var(--mapa-purple) !important;
+  color: #fff !important;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all .18s;
+}
+.btn-mo:hover { filter: brightness(.88); }
+
+/* ── Landing page ──────────────────────────────────────────── */
+.landing-page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 48px 24px 32px;
+}
+
+.landing-title {
+  font-size: 3.2rem;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  background: linear-gradient(135deg, var(--mapa-navy) 0%, var(--mapa-blue) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+}
+
+.landing-subtitle {
+  font-size: 1.05rem;
+  color: var(--mapa-muted);
+  line-height: 1.6;
+}
+
+/* Mode selection cards */
+.mode-card {
+  border: 2px solid var(--mapa-border) !important;
+  border-radius: var(--mapa-radius-lg) !important;
+  cursor: pointer;
+  padding: 28px 24px;
+  transition: transform .22s, box-shadow .22s, border-color .22s;
+  height: 100%;
+}
+
+.mode-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--mapa-shadow-lg) !important;
+}
+
+.mode-so-card:hover, .mode-so-card.selected {
+  border-color: var(--mapa-blue) !important;
+  box-shadow: 0 0 0 3px rgba(44,111,172,.12), var(--mapa-shadow-lg) !important;
+}
+
+.mode-mo-card:hover, .mode-mo-card.selected {
+  border-color: var(--mapa-purple) !important;
+  box-shadow: 0 0 0 3px rgba(124,58,237,.12), var(--mapa-shadow-lg) !important;
+}
+
+.mode-icon {
+  font-size: 2.4rem;
+  margin-bottom: 14px;
+  color: var(--mapa-muted);
+}
+
+.mode-so-card .mode-icon { color: var(--mapa-blue); }
+.mode-mo-card .mode-icon { color: var(--mapa-purple); }
+
+.mode-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.mode-so-card .mode-title { color: var(--mapa-blue); }
+.mode-mo-card .mode-title { color: var(--mapa-purple); }
+
+.mode-desc {
+  font-size: .875rem;
+  color: var(--mapa-muted);
+  line-height: 1.65;
+  margin-bottom: 16px;
+}
+
+.mode-steps-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: .82rem;
+  color: var(--mapa-text);
+}
+
+.mode-steps-list li {
+  padding: 3px 0;
+  border-bottom: 1px solid var(--mapa-border);
+}
+
+.mode-steps-list li:last-child { border-bottom: none; }
+
+/* ── Landing page – info sections ──────────────────────────── */
+.landing-section-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--mapa-navy);
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.info-step-card {
+  background: var(--mapa-surface);
+  border: 1px solid var(--mapa-border);
+  border-radius: var(--mapa-radius);
+  padding: 18px 20px;
+  height: 100%;
+}
+
+.landing-step-badge {
+  display: inline-block;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--mapa-blue);
+  background: rgba(44,111,172,.1);
+  border: 1px solid rgba(44,111,172,.2);
+  border-radius: 20px;
+  padding: 2px 10px;
+  margin-bottom: 8px;
+}
+
+.info-step-card h5 {
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--mapa-navy);
+  margin-bottom: 6px;
+}
+
+.links-card {
+  background: var(--mapa-surface);
+  border: 1px solid var(--mapa-border);
+  border-radius: var(--mapa-radius);
+  padding: 16px 18px;
+}
+
+.links-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: .875rem;
+}
+
+.links-list li { padding: 3px 0; }
+
+.links-list a {
+  color: var(--mapa-blue);
+  text-decoration: none;
+}
+
+.links-list a:hover { text-decoration: underline; }
+
+/* ── Multi-omics omics-layer badges ────────────────────────── */
+.omics-upload-row,
+.omics-status-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.omics-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.omics-T { background: #DBEAFE; color: #1D4ED8; }
+.omics-P { background: #FCE7F3; color: #9D174D; }
+.omics-M { background: #D1FAE5; color: #065F46; }
+
+/* ── Forms ─────────────────────────────────────────────────── */
+.form-label { font-weight: 500; font-size: 13px; }
+
+.form-control,
+.form-select,
+.selectize-input {
+  border-color: var(--mapa-border);
+  border-radius: 7px !important;
+  font-size: 13px;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent) !important;
+}
+
+/* ── Data tables ───────────────────────────────────────────── */
+.dataTable thead th {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--mapa-muted);
+  background: var(--mapa-bg);
+  border-bottom: 2px solid var(--mapa-border);
+}
+
+.dataTable tbody tr:hover td { background: var(--mapa-blue-light); }
+
+/* ── Alert / status boxes ──────────────────────────────────── */
+.alert {
+  border-radius: 8px;
+  font-size: 13px;
+  border: none;
+  padding: 9px 14px;
+}
+
+/* ── Scrollbar ─────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E0; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+/* ── Value boxes ───────────────────────────────────────────── */
+.bslib-value-box {
+  border-radius: var(--mapa-radius) !important;
+  border: 1px solid var(--mapa-border) !important;
+}
+
+/* ── Control / result panel layout ────────────────────────── */
+/* Left control panels size to their own content; not stretched to
+   match the right result panel. Targets every 2-column control/result
+   split across all modules (3/9 inside tabs, 4/8 at page level,
+   5/7 in upload). */
+bslib-layout-columns[col-widths-sm="3,9"],
+bslib-layout-columns[col-widths-sm="4,8"],
+bslib-layout-columns[col-widths-sm="5,7"] {
+  align-items: start !important;
+}
+
+/* ── Responsive tweaks ─────────────────────────────────────── */
+@media (max-width: 768px) {
+  .step-page { padding: 16px; }
+  .landing-title { font-size: 2.2rem; }
 }
