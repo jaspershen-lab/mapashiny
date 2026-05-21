@@ -216,24 +216,7 @@ mod_so_llm_ui <- function(id) {
                            value = 20, min = 5, max = 100),
               numericInput(ns("gpt_filter"),
                            "Keep top-N after LLM re-ranking",
-                           value = 5, min = 1, max = 50),
-              tags$hr(class = "my-2"),
-              tags$label("Embedding cache folder", class = "control-label"),
-              tags$p(
-                class = "text-muted small mb-1",
-                tags$strong("Note:"),
-                " folder contents are cleared before each run."
-              ),
-              div(
-                class = "d-flex gap-2 align-items-center mb-1",
-                shinyFiles::shinyDirButton(
-                  ns("embed_dir"),
-                  label = "Browse…",
-                  title = "Select embedding cache folder",
-                  class = "btn btn-outline-secondary btn-sm"
-                )
-              ),
-              uiOutput(ns("embed_dir_display"))
+                           value = 5, min = 1, max = 50)
             )
           )
         ),
@@ -305,27 +288,6 @@ mod_so_llm_server <- function(id, so_data, annotated_modules,
         return()
       }
       show_code_modal(llm_code())
-    })
-
-    # ── Folder picker ────────────────────────────────────────────────────────
-    dir_roots <- c(Home = path.expand("~"))
-
-    shinyFiles::shinyDirChoose(input, "embed_dir",
-                               roots = dir_roots, session = session)
-
-    embedding_dir <- reactive({
-      if (is.integer(input$embed_dir))
-        file.path(tempdir(), "mapa_llm_embedding")
-      else
-        shinyFiles::parseDirPath(dir_roots, input$embed_dir)
-    })
-
-    output$embed_dir_display <- renderUI({
-      d <- embedding_dir()
-      tags$p(
-        class = "text-muted small mb-0 text-break",
-        if (is.integer(input$embed_dir)) tags$em(paste0("Default: ", d)) else d
-      )
     })
 
     # ── Update model dropdowns when provider changes ─────────────────────────
@@ -460,7 +422,7 @@ mod_so_llm_server <- function(id, so_data, annotated_modules,
       }
 
       # Extract reactive values before future_promise
-      embed_dir    <- embedding_dir()
+      embed_dir    <- tempfile("mapa_embed_")
       llm_model    <- input$llm_model
       embed_model  <- input$embed_model
       api_key      <- input$api_key
@@ -555,6 +517,7 @@ mod_so_llm_server <- function(id, so_data, annotated_modules,
               )
               result@merged_module[["functional_module_result"]] <- merged_df
             }
+            unlink(embed_dir, recursive = TRUE)
             annotated_modules(result)
 
             org_part <- if (identical(organism_type, "non_model")) {
@@ -579,6 +542,7 @@ mod_so_llm_server <- function(id, so_data, annotated_modules,
             )
           },
           function(err) {
+            unlink(embed_dir, recursive = TRUE)
             shinyalert::closeAlert(id = alert_id)
             shinyalert::shinyalert(
               title = "LLM Annotation Failed",
