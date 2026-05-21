@@ -2,6 +2,11 @@
 # To deploy, run: rsconnect::deployApp()
 # Or use the blue button on top of this file
 
+# Redirect R package cache to /root/.cache on the server
+if (file.exists("/root/.cache")) {
+  Sys.setenv(XDG_CACHE_HOME = "/root/.cache")
+}
+
 # Load all R files directly instead of using pkgload
 r_files <- list.files("R", pattern = "\\.R$", full.names = TRUE)
 for (file in r_files) {
