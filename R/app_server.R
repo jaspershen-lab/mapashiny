@@ -4,6 +4,7 @@
 #' @import shiny
 #' @noRd
 app_server <- function(input, output, session) {
+  print(tools::R_user_dir("mapa", which = "cache"))
 
   # ── Step definitions ──────────────────────────────────────────────────────
 
