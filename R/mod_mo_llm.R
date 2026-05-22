@@ -47,7 +47,8 @@ mod_mo_llm_ui <- function(id) {
                   "OpenAI"      = "openai",
                   "Gemini"      = "gemini",
                   "SiliconFlow" = "siliconflow"
-                )
+                ),
+                selected = "siliconflow"
               ),
               selectizeInput(
                 ns("llm_model"), "LLM model",
@@ -63,15 +64,15 @@ mod_mo_llm_ui <- function(id) {
                   "SiliconFlow" = list(
                     "Qwen/Qwen3-8B"                    = "Qwen/Qwen3-8B",
                     "Qwen/Qwen3-14B"                   = "Qwen/Qwen3-14B",
-                    "Qwen/Qwen3-30B-A3B-Thinking-2507" =
-                      "Qwen/Qwen3-30B-A3B-Thinking-2507",
-                    "Qwen/Qwen3-32B"                   = "Qwen/Qwen3-32B"
+                    "Qwen/Qwen3-32B"                   = "Qwen/Qwen3-32B",
+                    "Qwen/Qwen3.5-397B-A17B" = "Qwen/Qwen3.5-397B-A17B"
                   )
                 ),
-                selected = "gpt-4o-mini-2024-07-18",
+                selected = "Qwen/Qwen3-8B",
                 options  = list(create = TRUE,
                                 placeholder = "Select or type a model name")
               ),
+              uiOutput(ns("llm_model_hint")),
               selectizeInput(
                 ns("embed_model"), "Embedding model",
                 choices = list(
@@ -90,10 +91,11 @@ mod_mo_llm_ui <- function(id) {
                     "Qwen/Qwen3-Embedding-8B"   = "Qwen/Qwen3-Embedding-8B"
                   )
                 ),
-                selected = "text-embedding-3-small",
+                selected = "Qwen/Qwen3-Embedding-8B",
                 options  = list(create = TRUE,
                                 placeholder = "Select or type a model name")
               ),
+              uiOutput(ns("embed_model_hint")),
               passwordInput(ns("api_key"), "API key"),
               selectizeInput(
                 ns("orgdb"),
@@ -331,6 +333,25 @@ mod_mo_llm_server <- function(id, mo_data, annotated_modules,
                            choices = embed_choices, selected = default_embed)
       updateSelectizeInput(session, "llm_model",
                            choices = llm_choices, selected = default_llm)
+    })
+
+    # ── Format hints for custom model entry ──────────────────────────────────
+    output$llm_model_hint <- renderUI({
+      hint <- switch(input$api_provider,
+        openai      = "Custom entry format: model-name  (e.g. o3-mini, gpt-4.1)",
+        gemini      = "Custom entry format: models/model-name  (e.g. models/gemini-2.0-flash)",
+        siliconflow = "Custom entry format: Provider/model-name  (e.g. deepseek-ai/DeepSeek-V3)"
+      )
+      tags$small(class = "text-muted d-block mb-2", hint)
+    })
+
+    output$embed_model_hint <- renderUI({
+      hint <- switch(input$api_provider,
+        openai      = "Custom entry format: model-name  (e.g. text-embedding-3-large)",
+        gemini      = "Custom entry format: models/model-name  (e.g. models/gemini-embedding-001)",
+        siliconflow = "Custom entry format: Provider/model-name  (e.g. BAAI/bge-large-en-v1.5)"
+      )
+      tags$small(class = "text-muted d-block mb-2", hint)
     })
 
     # ── Helper: populate module selector from a mo_modules list ─────────────
