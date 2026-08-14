@@ -17,8 +17,8 @@ mod_mo_upload_ui <- function(id) {
   step_page(
     .badge_label = "Multi-Omics  •  Step 1",
     .title       = "Upload Multi-Omics Marker Data",
-    .subtitle    = paste("Upload marker lists for each omics layer,",
-                         "then convert IDs before proceeding."),
+    .subtitle    = paste("Upload marker lists for any two or three omics layers,",
+                         "then convert their IDs before proceeding."),
 
     bslib::layout_columns(
       col_widths = c(5, 7),
@@ -44,6 +44,7 @@ mod_mo_upload_ui <- function(id) {
           div(class = "d-flex align-items-center gap-2 mb-2",
             div(class = "omics-badge omics-T", "T"),
             tags$strong("Transcriptomics"),
+            uiOutput(ns("input_format_T"), inline = TRUE),
             uiOutput(ns("status_chip_T"), inline = TRUE)
           ),
           fileInput(ns("file_transcriptome"), NULL,
@@ -66,6 +67,7 @@ mod_mo_upload_ui <- function(id) {
           div(class = "d-flex align-items-center gap-2 mb-2",
             div(class = "omics-badge omics-P", "P"),
             tags$strong("Proteomics"),
+            uiOutput(ns("input_format_P"), inline = TRUE),
             uiOutput(ns("status_chip_P"), inline = TRUE)
           ),
           fileInput(ns("file_proteome"), NULL,
@@ -88,6 +90,7 @@ mod_mo_upload_ui <- function(id) {
           div(class = "d-flex align-items-center gap-2 mb-2",
             div(class = "omics-badge omics-M", "M"),
             tags$strong("Metabolomics"),
+            uiOutput(ns("input_format_M"), inline = TRUE),
             uiOutput(ns("status_chip_M"), inline = TRUE)
           ),
           fileInput(ns("file_metabolome"), NULL,
@@ -102,8 +105,8 @@ mod_mo_upload_ui <- function(id) {
         ),
 
         tags$p(class = "small text-muted mt-2",
-               "All three layers are required. Convert IDs for each",
-               "layer before proceeding."),
+               "At least two omics layers are required. Convert IDs for each",
+               "uploaded layer before proceeding."),
 
         step_nav_buttons(ns, back = FALSE, next_label = "Proceed to Enrichment",
                          show_code = TRUE)
@@ -130,14 +133,56 @@ mod_mo_upload_server <- function(id, mo_data, go_next, go_back, mode) {
 
     mo_upload_code <- reactiveVal(NULL)
 
+    output$input_format_T <- renderUI({
+      .input_format_popover(
+        query_type = "gene",
+        id_type = input$id_type_transcriptome,
+        layer_label = "Transcriptomics",
+        multi_omics = TRUE
+      )
+    })
+    output$input_format_P <- renderUI({
+      .input_format_popover(
+        query_type = "gene",
+        id_type = input$id_type_proteome,
+        layer_label = "Proteomics",
+        multi_omics = TRUE
+      )
+    })
+    output$input_format_M <- renderUI({
+      .input_format_popover(
+        query_type = "metabolite",
+        id_type = input$met_id_type,
+        layer_label = "Metabolomics",
+        multi_omics = TRUE
+      )
+    })
+
     .build_mo_upload_code <- function() {
       org_str <- input$organism %||% "org.Hs.eg.db"
       met_org <- .MO_ORG_TO_KEGG[[org_str]] %||% "hsa"
-      sprintf(
-        "# Transcriptomics\ntranscriptomics_converted <- mapa::convert_id(\n  data = your_transcriptome_data,\n  query_type = \"gene\",\n  from_id_type = \"%s\",\n  organism = %s\n)\n\n# Proteomics\nproteomics_converted <- mapa::convert_id(\n  data = your_proteome_data,\n  query_type = \"gene\",\n  from_id_type = \"%s\",\n  organism = %s\n)\n\n# Metabolomics\nmetabolomics_converted <- mapa::convert_id(\n  data = your_metabolome_data,\n  query_type = \"metabolite\",\n  from_id_type = \"%s\",\n  organism = \"%s\"\n)",
-        input$id_type_transcriptome %||% "symbol", org_str,
-        input$id_type_proteome      %||% "symbol", org_str,
-        input$met_id_type           %||% "keggid", met_org)
+      code <- character(0)
+
+      if (!is.null(data_values$converted_T)) {
+        code <- c(code, sprintf(
+          "# Transcriptomics\ntranscriptomics_converted <- mapa::convert_id(\n  data = your_transcriptome_data,\n  query_type = \"gene\",\n  from_id_type = \"%s\",\n  organism = %s\n)",
+          input$id_type_transcriptome %||% "symbol", org_str
+        ))
+      }
+      if (!is.null(data_values$converted_P)) {
+        code <- c(code, sprintf(
+          "# Proteomics\nproteomics_converted <- mapa::convert_id(\n  data = your_proteome_data,\n  query_type = \"gene\",\n  from_id_type = \"%s\",\n  organism = %s\n)",
+          input$id_type_proteome %||% "symbol", org_str
+        ))
+      }
+      if (!is.null(data_values$converted_M)) {
+        code <- c(code, sprintf(
+          "# Metabolomics\nmetabolomics_converted <- mapa::convert_id(\n  data = your_metabolome_data,\n  query_type = \"metabolite\",\n  from_id_type = \"%s\",\n  organism = \"%s\"\n)",
+          input$met_id_type %||% "keggid", met_org
+        ))
+      }
+
+      paste(code, collapse = "\n\n")
     }
 
     load_file <- function(fi) {
@@ -419,16 +464,20 @@ mod_mo_upload_server <- function(id, mo_data, go_next, go_back, mode) {
         list(raw = data_values$raw_M, conv = data_values$converted_M,
              name = "Metabolomics")
       )
+      if (!.mo_has_minimum_layers(lapply(layers, `[[`, "raw"))) {
+        shinyalert::shinyalert(
+          title = "At least two omics layers required",
+          text  = paste0(
+            "Please upload any two of Transcriptomics, Proteomics, and ",
+            "Metabolomics before proceeding."
+          ),
+          type = "warning", html = TRUE, confirmButtonCol = "#dd4b39"
+        )
+        return()
+      }
+
       for (layer in layers) {
-        if (is.null(layer$raw)) {
-          shinyalert::shinyalert(
-            title = paste(layer$name, "required"),
-            text  = paste("Please upload a", tolower(layer$name), "file."),
-            type  = "warning", html = TRUE, confirmButtonCol = "#dd4b39"
-          )
-          return()
-        }
-        if (is.null(layer$conv)) {
+        if (!is.null(layer$raw) && is.null(layer$conv)) {
           shinyalert::shinyalert(
             title = paste("Convert", layer$name, "IDs first"),
             text  = paste0("Click <strong>Convert ", layer$name,

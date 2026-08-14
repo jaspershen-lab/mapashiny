@@ -84,13 +84,22 @@ app_ui <- function(request) {
 golem_add_external_resources <- function() {
   golem::add_resource_path("www", app_sys("app/www"))
 
+  # A content hash prevents a running development app (or a newly installed
+  # build with the same package version) from reusing stale CSS.
+  css_path <- app_sys("app/www/custom.css")
+  css_version <- if (file.exists(css_path)) {
+    unname(tools::md5sum(css_path))
+  } else {
+    as.character(utils::packageVersion("mapashiny"))
+  }
+
   tags$head(
     golem::favicon(ext = "png"),
     golem::bundle_resources(path = app_sys("app/www"), app_title = "MAPA"),
     tags$link(
       rel  = "stylesheet",
       type = "text/css",
-      href = "www/custom.css"
+      href = paste0("www/custom.css?v=", css_version)
     ),
     # Font Awesome for icons
     tags$link(

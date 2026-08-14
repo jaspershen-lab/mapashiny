@@ -699,3 +699,95 @@ bslib-layout-columns[col-widths-sm="5,7"] {
   .step-page { padding: 16px; }
   .landing-title { font-size: 2.2rem; }
 }
+/* ── Input format popovers ─────────────────────────────────── */
+.input-format-trigger,
+button.input-format-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  padding: 0;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  background: transparent !important;
+  color: var(--mapa-muted);
+  font-size: 0.7rem;
+  line-height: 1;
+  vertical-align: middle;
+  cursor: pointer;
+  opacity: 0.68;
+  box-shadow: none !important;
+  transition: color .15s ease, background-color .15s ease,
+              border-color .15s ease, opacity .15s ease;
+}
+
+.input-format-trigger .input-format-glyph {
+  display: block;
+  position: relative;
+  top: -0.01rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.72rem;
+  font-style: italic;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.input-format-trigger:hover,
+.input-format-trigger:focus,
+.input-format-trigger:focus-visible {
+  color: var(--accent) !important;
+  border-color: var(--accent) !important;
+  background: rgba(44, 111, 172, 0.08) !important;
+  background: color-mix(in srgb, var(--accent) 9%, transparent) !important;
+  outline: none !important;
+  opacity: 1;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 12%, transparent) !important;
+}
+
+.input-format-popover {
+  --bs-popover-max-width: 410px;
+  --bs-popover-border-color: var(--mapa-border);
+  --bs-popover-border-radius: var(--mapa-radius);
+  --bs-popover-header-bg: #f8fafc;
+  --bs-popover-header-color: var(--mapa-navy);
+  max-width: 410px;
+  border: 1px solid var(--mapa-border);
+  border-radius: var(--mapa-radius);
+  box-shadow: var(--mapa-shadow);
+}
+
+.input-format-popover-so {
+  --bs-popover-header-bg: var(--mapa-blue-light);
+  --bs-popover-header-color: var(--mapa-blue);
+}
+
+.input-format-popover-mo {
+  --bs-popover-header-bg: var(--mapa-purple-light);
+  --bs-popover-header-color: var(--mapa-purple);
+}
+
+.input-format-popover .popover-header {
+  padding: 0.65rem 0.85rem;
+  border-bottom-color: var(--mapa-border);
+  border-radius: calc(var(--mapa-radius) - 1px) calc(var(--mapa-radius) - 1px) 0 0;
+  font-size: 0.84rem;
+  font-weight: 650;
+}
+
+.input-format-popover .popover-body {
+  padding: 0.8rem 0.9rem;
+  color: var(--mapa-text);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.input-format-example {
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #dee2e6;
+  border-radius: 0.35rem;
+  background: #f8f9fa;
+  color: #212529;
+  font-size: 0.76rem;
+  white-space: pre-wrap;
+}

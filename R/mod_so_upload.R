@@ -49,7 +49,12 @@ mod_so_upload_ui <- function(id) {
         ),
         tags$hr(class = "my-3"),
 
-        fileInput(ns("file"), "Or upload your own file",
+        div(
+          class = "d-flex align-items-center gap-2 mb-1",
+          tags$span(class = "form-label mb-0", "Or upload your own file"),
+          uiOutput(ns("input_format_info"), inline = TRUE)
+        ),
+        fileInput(ns("file"), NULL,
                   accept = c(".csv", ".xlsx"),
                   placeholder = "No file selected"),
 
@@ -170,6 +175,17 @@ mod_so_upload_server <- function(id, so_data, go_next, go_back, mode) {
     updateSelectizeInput(session, "met_organism",
                          choices = kegg_choices,
                          server  = TRUE)
+
+    # Input requirements follow the selected query and identifier types.
+    output$input_format_info <- renderUI({
+      is_gene <- !isTRUE(input$query_type == "metabolite")
+      .input_format_popover(
+        query_type = if (is_gene) "gene" else "metabolite",
+        id_type = if (is_gene) input$id_type else input$met_id_type,
+        layer_label = if (is_gene) "Gene" else "Metabolite",
+        multi_omics = FALSE
+      )
+    })
 
     # Only show HMDB option for human; KEGG-only for all other organisms
     observeEvent(input$met_organism, {

@@ -414,11 +414,12 @@ mod_mo_llm_server <- function(id, mo_data, annotated_modules,
     }, ignoreNULL = TRUE)
 
     # ── Sync orgdb selector when coming from the normal upload flow ──────────
-    observeEvent(mo_data$transcriptome_org, {
-      req(mo_data$transcriptome_org)
+    observe({
+      gene_org <- mo_data$transcriptome_org %||% mo_data$proteome_org
+      req(gene_org)
       updateSelectizeInput(session, "orgdb",
-                           selected = mo_data$transcriptome_org)
-    }, ignoreNULL = TRUE)
+                           selected = gene_org)
+    })
 
     # ── Status banner ────────────────────────────────────────────────────────
     output$llm_status <- renderUI({

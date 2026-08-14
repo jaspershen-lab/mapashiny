@@ -17,6 +17,7 @@ Imports:
     AnnotationHub,
     BiocGenerics,
     BiocManager,
+    bslib,
     Cairo,
     clusterProfiler,
     config,

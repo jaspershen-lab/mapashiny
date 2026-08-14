@@ -107,6 +107,7 @@ app_server <- function(input, output, session) {
     proteome_id_type      = NULL,
     metabolome_data       = NULL,
     metabolome_id_type    = NULL,  # e.g. "HMDB"
+    metabolome_org        = NULL,  # e.g. "hsa"
     # Step 2 – enrichment results (functional_module S4 objects)
     transcriptome_enrich  = NULL,
     proteome_enrich       = NULL,
