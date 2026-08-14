@@ -157,10 +157,15 @@ mod_mo_enrich_server <- function(id, mo_data, go_next, go_back, mode) {
     enrich_m       <- reactiveVal(NULL)
     mo_enrich_code <- reactiveVal(NULL)
 
-    # ── Disable Run button until transcriptomics data is present ─────
+    # ── Disable Run button until any two omics layers are present ────
     observe({
-      if (is.null(mo_data$transcriptome_data)) shinyjs::disable("btn_next")
-      else                                      shinyjs::enable("btn_next")
+      input_layers <- list(
+        mo_data$transcriptome_data,
+        mo_data$proteome_data,
+        mo_data$metabolome_data
+      )
+      if (.mo_has_minimum_layers(input_layers)) shinyjs::enable("btn_next")
+      else                                      shinyjs::disable("btn_next")
     })
 
     # ── Show reproducible R code ──────────────────────────────────────
@@ -182,6 +187,14 @@ mod_mo_enrich_server <- function(id, mo_data, go_next, go_back, mode) {
       if (n_done == 0)
         status_alert(
           "Configure parameters then click Run Enrichment.", "info"
+        )
+      else if (n_done < 2)
+        status_alert(
+          paste0(
+            n_done, " layer enriched successfully; at least two are needed ",
+            "to proceed."
+          ),
+          "warning"
         )
       else
         status_alert(
@@ -312,9 +325,9 @@ mod_mo_enrich_server <- function(id, mo_data, go_next, go_back, mode) {
       }
     }
 
-    # "Proceed" button appears only after at least one layer enriched
+    # "Proceed" button appears only after at least two layers enriched
     output$proceed_ui <- renderUI({
-      req(!all(sapply(list(enrich_t(), enrich_p(), enrich_m()), is.null)))
+      req(.mo_has_minimum_layers(list(enrich_t(), enrich_p(), enrich_m())))
       actionButton(
         ns("btn_proceed"),
         tagList("Proceed to Next Step",
@@ -327,7 +340,19 @@ mod_mo_enrich_server <- function(id, mo_data, go_next, go_back, mode) {
 
     # ── Run enrichment ────────────────────────────────────────────────
     observeEvent(input$btn_next, {
-      req(mo_data$transcriptome_data)
+      input_layers <- list(
+        mo_data$transcriptome_data,
+        mo_data$proteome_data,
+        mo_data$metabolome_data
+      )
+      if (!.mo_has_minimum_layers(input_layers)) {
+        shinyalert::shinyalert(
+          title = "At least two omics layers required",
+          text = "Return to Step 1 and provide any two omics datasets.",
+          type = "warning", html = TRUE, confirmButtonCol = "#dd4b39"
+        )
+        return()
+      }
 
       shinyalert::shinyalert(
         title = "Running enrichment...",
@@ -377,14 +402,16 @@ mod_mo_enrich_server <- function(id, mo_data, go_next, go_back, mode) {
         do.call(mapa::enrich_pathway, params)
       }
 
-      # ── Transcriptomics ──
-      t_result <- tryCatch(
-        run_gene_layer(mo_data$transcriptome_data, mo_data$transcriptome_org),
-        error = function(e) {
-          warning("Transcriptomics enrichment failed: ", e$message)
-          NULL
-        }
-      )
+      # ── Transcriptomics (optional) ──
+      t_result <- if (!is.null(mo_data$transcriptome_data)) {
+        tryCatch(
+          run_gene_layer(mo_data$transcriptome_data, mo_data$transcriptome_org),
+          error = function(e) {
+            warning("Transcriptomics enrichment failed: ", e$message)
+            NULL
+          }
+        )
+      } else NULL
 
       # ── Proteomics (optional) ──
       p_result <- if (!is.null(mo_data$proteome_data)) {
@@ -428,8 +455,20 @@ mod_mo_enrich_server <- function(id, mo_data, go_next, go_back, mode) {
       mo_data$proteome_enrich      <- p_result
       mo_data$metabolome_enrich    <- m_result
 
+      if (!.mo_has_minimum_layers(list(t_result, p_result, m_result))) {
+        shinyalert::shinyalert(
+          title = "Fewer than two layers enriched",
+          text = paste0(
+            "At least two enrichment results are required for multi-omics ",
+            "network construction. Review the warnings and input data, then retry."
+          ),
+          type = "warning", html = TRUE, confirmButtonCol = "#dd4b39"
+        )
+      }
+
       if (!all(sapply(list(t_result, p_result, m_result), is.null))) {
-        org_str  <- mo_data$transcriptome_org %||% "org.Hs.eg.db"
+        org_str  <- mo_data$transcriptome_org %||%
+          mo_data$proteome_org %||% "org.Hs.eg.db"
         met_org  <- mo_data$metabolome_org %||% "hsa"
         gene_dbs <- input$gene_databases %||% c("go", "kegg", "reactome")
         met_dbs  <- input$met_databases  %||% "metkegg"
@@ -437,17 +476,53 @@ mod_mo_enrich_server <- function(id, mo_data, go_next, go_back, mode) {
                                  else sprintf('c(%s)', paste0('"', v, '"', collapse = ", "))
         org_line <- if (!is.null(org_str) && nzchar(org_str))
           sprintf("\n  go.orgdb = %s,", org_str) else ""
-        mo_enrich_code(sprintf(
-          "# Transcriptomics enrichment\ntranscriptomics_enrich <- mapa::enrich_pathway(\n  variable_info = transcriptomics_converted,\n  query_type = \"gene\",\n  database = %s,\n  pvalueCutoff = %s,\n  pAdjustMethod = \"%s\",\n  minGSSize = %s,\n  maxGSSize = %s,%s\n  go.keytype = \"%s\",\n  go.ont = \"%s\",\n  kegg.keytype = \"%s\",\n  save_to_local = FALSE\n)\n\n# Proteomics enrichment (same parameters)\nproteomics_enrich <- mapa::enrich_pathway(\n  variable_info = proteomics_converted,\n  query_type = \"gene\",\n  database = %s,\n  ...\n)\n\n# Metabolomics enrichment\nmetabolomics_enrich <- mapa::enrich_pathway(\n  variable_info = metabolomics_converted,\n  query_type = \"metabolite\",\n  database = %s,\n  met_organism = \"%s\",\n  pvalueCutoff = %s,\n  pAdjustMethod = \"%s\",\n  minGSSize = %s,\n  maxGSSize = %s,\n  save_to_local = FALSE\n)",
-          fmt_dbs(gene_dbs),
-          input$p_cutoff, input$p_adjust_method,
-          input$min_gs_size, input$max_gs_size,
-          org_line, input$go_keytype %||% "ENTREZID",
-          input$go_ont %||% "ALL", input$kegg_keytype %||% "kegg",
-          fmt_dbs(gene_dbs),
-          fmt_dbs(met_dbs), met_org,
-          input$p_cutoff, input$p_adjust_method,
-          input$min_gs_size, input$max_gs_size))
+        gene_code <- function(label, result_name, input_name) {
+          sprintf(
+            paste0(
+              "# %s enrichment\n",
+              "%s <- mapa::enrich_pathway(\n",
+              "  variable_info = %s,\n",
+              "  query_type = \"gene\",\n",
+              "  database = %s,\n",
+              "  pvalueCutoff = %s,\n",
+              "  pAdjustMethod = \"%s\",\n",
+              "  minGSSize = %s,\n",
+              "  maxGSSize = %s,%s\n",
+              "  go.keytype = \"%s\",\n",
+              "  go.ont = \"%s\",\n",
+              "  kegg.keytype = \"%s\",\n",
+              "  save_to_local = FALSE\n",
+              ")"
+            ),
+            label, result_name, input_name, fmt_dbs(gene_dbs),
+            input$p_cutoff, input$p_adjust_method,
+            input$min_gs_size, input$max_gs_size, org_line,
+            input$go_keytype %||% "ENTREZID",
+            input$go_ont %||% "ALL", input$kegg_keytype %||% "kegg"
+          )
+        }
+
+        code <- character(0)
+        if (!is.null(mo_data$transcriptome_data)) {
+          code <- c(code, gene_code(
+            "Transcriptomics", "transcriptomics_enrich",
+            "transcriptomics_converted"
+          ))
+        }
+        if (!is.null(mo_data$proteome_data)) {
+          code <- c(code, gene_code(
+            "Proteomics", "proteomics_enrich", "proteomics_converted"
+          ))
+        }
+        if (!is.null(mo_data$metabolome_data)) {
+          code <- c(code, sprintf(
+            "# Metabolomics enrichment\nmetabolomics_enrich <- mapa::enrich_pathway(\n  variable_info = metabolomics_converted,\n  query_type = \"metabolite\",\n  database = %s,\n  met_organism = \"%s\",\n  pvalueCutoff = %s,\n  pAdjustMethod = \"%s\",\n  minGSSize = %s,\n  maxGSSize = %s,\n  save_to_local = FALSE\n)",
+            fmt_dbs(met_dbs), met_org,
+            input$p_cutoff, input$p_adjust_method,
+            input$min_gs_size, input$max_gs_size
+          ))
+        }
+        mo_enrich_code(paste(code, collapse = "\n\n"))
       }
     })
 

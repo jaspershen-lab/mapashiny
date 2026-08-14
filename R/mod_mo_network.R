@@ -19,7 +19,7 @@ mod_mo_network_ui <- function(id) {
       status_alert(
         paste0(
           "Upload enrichment objects (.rda) saved from Step 2 to use them ",
-          "here without re-running enrichment."
+          "here without re-running enrichment. Any two omics layers are sufficient."
         ),
         "info"
       ),
@@ -260,6 +260,17 @@ mod_mo_network_server <- function(id, mo_data, go_next, go_back, mode) {
     net_code    <- reactiveVal(NULL)
     db_checked  <- reactiveVal(0)  # incremented after a download to refresh UI
 
+    # ── Require any two enrichment layers for network construction ───
+    observe({
+      enrichment_layers <- list(
+        mo_data$transcriptome_enrich,
+        mo_data$proteome_enrich,
+        mo_data$metabolome_enrich
+      )
+      if (.mo_has_minimum_layers(enrichment_layers)) shinyjs::enable("btn_next")
+      else                                           shinyjs::disable("btn_next")
+    })
+
     observeEvent(input$btn_code, {
       if (is.null(net_code())) {
         shinyalert::shinyalert(
@@ -428,23 +439,39 @@ mod_mo_network_server <- function(id, mo_data, go_next, go_back, mode) {
     observeEvent(input$btn_proceed, go_next())
 
     # ── Auto-load enrichment files on upload ──────────────────────────
-    .load_rda <- function(path) {
+    .load_rda <- function(path, object_names) {
       env <- new.env(parent = emptyenv())
-      load(path, envir = env)
-      get(ls(env)[1], envir = env)
+      loaded <- load(path, envir = env)
+      matched <- intersect(object_names, loaded)
+      if (length(matched) > 0) return(get(matched[[1]], envir = env))
+      if (length(loaded) == 1L) return(get(loaded[[1]], envir = env))
+      stop(
+        "The uploaded file does not contain the expected enrichment object: ",
+        paste(object_names, collapse = ", "),
+        call. = FALSE
+      )
     }
 
     observeEvent(input$upload_t_enrich, {
       req(input$upload_t_enrich)
-      mo_data$transcriptome_enrich <- .load_rda(input$upload_t_enrich$datapath)
+      mo_data$transcriptome_enrich <- .load_rda(
+        input$upload_t_enrich$datapath,
+        c("transcriptomics_enrich", "transcriptome_enrich", "T_enrich")
+      )
     })
     observeEvent(input$upload_p_enrich, {
       req(input$upload_p_enrich)
-      mo_data$proteome_enrich <- .load_rda(input$upload_p_enrich$datapath)
+      mo_data$proteome_enrich <- .load_rda(
+        input$upload_p_enrich$datapath,
+        c("proteomics_enrich", "proteome_enrich", "P_enrich")
+      )
     })
     observeEvent(input$upload_m_enrich, {
       req(input$upload_m_enrich)
-      mo_data$metabolome_enrich <- .load_rda(input$upload_m_enrich$datapath)
+      mo_data$metabolome_enrich <- .load_rda(
+        input$upload_m_enrich$datapath,
+        c("metabolomics_enrich", "metabolome_enrich", "M_enrich")
+      )
     })
 
     # ── Update embedding model choices on provider change ─────────────
@@ -462,7 +489,22 @@ mod_mo_network_server <- function(id, mo_data, go_next, go_back, mode) {
 
     # ── Main build pipeline ───────────────────────────────────────────
     observeEvent(input$btn_next, {
-      req(mo_data$transcriptome_enrich)
+      enrichment_layers <- list(
+        mo_data$transcriptome_enrich,
+        mo_data$proteome_enrich,
+        mo_data$metabolome_enrich
+      )
+      if (!.mo_has_minimum_layers(enrichment_layers)) {
+        shinyalert::shinyalert(
+          title = "At least two enrichment results required",
+          text = paste0(
+            "Complete Step 2 or upload any two of the transcriptomics, ",
+            "proteomics, and metabolomics enrichment objects."
+          ),
+          type = "warning", html = TRUE, confirmButtonCol = "#dd4b39"
+        )
+        return()
+      }
 
       shinyalert::shinyalert(
         title = "Building multi-omics network...",
@@ -496,7 +538,9 @@ mod_mo_network_server <- function(id, mo_data, go_next, go_back, mode) {
       db_checked(db_checked() + 1)
 
       # 2. Build network tables
-      taxon_id <- .orgdb_to_taxon_id(mo_data$transcriptome_org)
+      gene_org <- mo_data$transcriptome_org %||%
+        mo_data$proteome_org %||% "org.Hs.eg.db"
+      taxon_id <- .orgdb_to_taxon_id(gene_org)
       network_tables <- tryCatch(
         mapa::build_network_tables(
           transcriptome_enrich = mo_data$transcriptome_enrich,
@@ -574,6 +618,7 @@ mod_mo_network_server <- function(id, mo_data, go_next, go_back, mode) {
 
       shinyalert::closeAlert()
 
+      mo_data$network_tables <- network_tables
       mo_data$mnet_obj   <- mnet_obj
       mo_data$sim_matrix <- sim_matrix
       sim_result(sim_matrix)
@@ -584,13 +629,19 @@ mod_mo_network_server <- function(id, mo_data, go_next, go_back, mode) {
           input$api_provider, input$embed_model
         )
       } else ""
+      t_enrich_ref <- if (is.null(mo_data$transcriptome_enrich)) "NULL"
+                      else "transcriptome_enrich"
+      p_enrich_ref <- if (is.null(mo_data$proteome_enrich)) "NULL"
+                      else "proteome_enrich"
+      m_enrich_ref <- if (is.null(mo_data$metabolome_enrich)) "NULL"
+                      else "metabolome_enrich"
       net_code(sprintf(
         paste0(
           "# Step 1: Build network tables\n",
           "network_tables <- mapa::build_network_tables(\n",
-          "  transcriptome_enrich = transcriptome_enrich,\n",
-          "  proteome_enrich = proteome_enrich,\n",
-          "  metabolome_enrich = metabolome_enrich,\n",
+          "  transcriptome_enrich = %s,\n",
+          "  proteome_enrich = %s,\n",
+          "  metabolome_enrich = %s,\n",
           "  taxon_id = %s,\n",
           "  string_score_cutoff = %s,\n",
           "  tf_confidence_levels = \"%s\"\n",
@@ -608,6 +659,7 @@ mod_mo_network_server <- function(id, mo_data, go_next, go_back, mode) {
           "  lambda = %s, delta1 = %s, delta2 = %s\n",
           ")"
         ),
+        t_enrich_ref, p_enrich_ref, m_enrich_ref,
         taxon_id, input$string_score, input$tf_confidence,
         embed_source, embed_part,
         input$min_path_sim, input$r, input$eta,
