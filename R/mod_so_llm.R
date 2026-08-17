@@ -21,11 +21,13 @@ mod_so_llm_ui <- function(id) {
       # ── Left: controls ───────────────────────────────────────────────
       tagList(
         mapa_card(
-          "Upload Clustering Result",
+          "Clustering Result",
+          uiOutput(ns("carryover_ui")),
+          optional_upload_caption("Step 4 · Module Identification"),
           tags$p(
             class = "text-muted small mb-2",
-            "Upload the .rda object from the Module Identification step",
-            "to bypass the previous steps."
+            "Uploading the .rda object from the Module Identification step",
+            "lets you bypass the previous steps."
           ),
           fileInput(
             ns("upload_modules"), NULL,
@@ -267,6 +269,15 @@ mod_so_llm_server <- function(id, so_data, annotated_modules,
     future::plan(future::sequential)
 
     llm_code <- reactiveVal(NULL)
+
+    # ── Carry-over banner (is Step 4's result already in the session?) ───────
+    output$carryover_ui <- renderUI({
+      carryover_status(
+        !is.null(so_data$functional_modules),
+        "Step 4 · Module Identification",
+        ready_detail = "Functional modules were carried over from the previous step."
+      )
+    })
 
     # ── Disable Run button until module result is present ────────────────────
     observe({

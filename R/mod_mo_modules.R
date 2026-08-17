@@ -10,10 +10,13 @@ mod_mo_modules_ui <- function(id) {
 
     # ── Upload card (full width, above parameters) ──
     mapa_card(
-      "Upload Network Results",
-      status_alert(
-        "Upload network outputs (.rda) saved from Step 3 to skip re-building the network.",
-        "info"
+      "Network Results",
+      uiOutput(ns("carryover_ui")),
+      optional_upload_caption("Step 3 · Network Construction and Encoding"),
+      tags$p(
+        class = "text-muted small mb-2",
+        paste0("Uploading the network outputs (.rda) saved from Step 3 lets ",
+               "you skip re-building the network.")
       ),
       bslib::layout_columns(
         col_widths = c(6, 6),
@@ -95,6 +98,24 @@ mod_mo_modules_server <- function(id, mo_data, go_next, go_back, mode) {
         shinyjs::disable("btn_next")
       else
         shinyjs::enable("btn_next")
+    })
+
+    # ── Carry-over banner (is Step 3's result already in the session?) ─
+    output$carryover_ui <- renderUI({
+      missing <- c(
+        if (is.null(mo_data$mnet_obj))   "network object",
+        if (is.null(mo_data$sim_matrix)) "similarity matrix"
+      )
+      carryover_status(
+        length(missing) == 0,
+        "Step 3 · Network Construction and Encoding",
+        ready_detail = paste0("The network object and similarity matrix were ",
+                              "carried over from the previous step."),
+        upload_hint  = paste0(
+          "Run Step 3 first, or upload the ", paste(missing, collapse = " and "),
+          " below to resume from here."
+        )
+      )
     })
 
     # ── Show reproducible R code ──────────────────────────────────────

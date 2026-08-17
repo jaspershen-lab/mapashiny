@@ -11,11 +11,13 @@ mod_mo_viz_ui <- function(id) {
     shinyjs::useShinyjs(),
 
     mapa_card(
-      "Upload Module Result",
+      "Module Result",
+      uiOutput(ns("carryover_ui")),
+      optional_upload_caption("Step 5 · LLM Module Annotation"),
       tags$p(
         class = "text-muted small mb-2",
-        "Upload the .rda object from multi-omics clustering (or LLM annotation)",
-        "to populate the plots below."
+        "Uploading the .rda object from multi-omics clustering (or LLM annotation)",
+        "populates the plots below."
       ),
       fileInput(
         ns("upload_modules"), NULL,
@@ -142,6 +144,19 @@ mod_mo_viz_ui <- function(id) {
 mod_mo_viz_server <- function(id, annotated_modules, mode, go_next, go_back, mo_data = NULL) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
+
+    # ── Carry-over banner (are annotated modules already in the session?) ─
+    output$carryover_ui <- renderUI({
+      carryover_status(
+        !is.null(annotated_modules()),
+        "Step 5 · LLM Module Annotation",
+        ready_detail = "Annotated modules were carried over from the previous step.",
+        upload_hint  = paste0(
+          "Run the earlier steps first, or upload the .rda saved from ",
+          "multi-omics clustering (or LLM annotation) to plot it here."
+        )
+      )
+    })
 
     # ── Upload module result ─────────────────────────────────────────
     observeEvent(input$upload_modules, {

@@ -15,13 +15,16 @@ mod_mo_network_ui <- function(id) {
 
     # ── Upload card (full width, above parameters) ──
     mapa_card(
-      "Upload Enrichment Results",
-      status_alert(
+      "Enrichment Results",
+      uiOutput(ns("carryover_ui")),
+      optional_upload_caption("Step 2 · Pathway Enrichment"),
+      tags$p(
+        class = "text-muted small mb-2",
         paste0(
-          "Upload enrichment objects (.rda) saved from Step 2 to use them ",
-          "here without re-running enrichment. Any two omics layers are sufficient."
-        ),
-        "info"
+          "Uploading enrichment objects (.rda) saved from Step 2 lets you use ",
+          "them here without re-running enrichment. Any two omics layers are ",
+          "sufficient."
+        )
       ),
       bslib::layout_columns(
         col_widths = c(4, 4, 4),
@@ -269,6 +272,27 @@ mod_mo_network_server <- function(id, mo_data, go_next, go_back, mode) {
       )
       if (.mo_has_minimum_layers(enrichment_layers)) shinyjs::enable("btn_next")
       else                                           shinyjs::disable("btn_next")
+    })
+
+    # ── Carry-over banner (is Step 2's result already in the session?) ─
+    output$carryover_ui <- renderUI({
+      loaded <- c(
+        if (!is.null(mo_data$transcriptome_enrich)) "Transcriptomics",
+        if (!is.null(mo_data$proteome_enrich))      "Proteomics",
+        if (!is.null(mo_data$metabolome_enrich))    "Metabolomics"
+      )
+      carryover_status(
+        length(loaded) >= 2,
+        "Step 2 · Pathway Enrichment",
+        ready_detail = paste0("Layers carried over: ",
+                              paste(loaded, collapse = ", "), "."),
+        upload_hint  = paste0(
+          "Run Step 2 first, or upload any two enrichment objects (.rda) ",
+          "below to resume from here.",
+          if (length(loaded) == 1)
+            paste0(" Currently loaded: ", loaded, ".") else ""
+        )
+      )
     })
 
     observeEvent(input$btn_code, {

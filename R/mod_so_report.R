@@ -17,10 +17,12 @@ mod_so_report_ui <- function(id) {
 
       mapa_card(
         "Export Options",
+        uiOutput(ns("carryover_ui")),
+        optional_upload_caption("the earlier analysis steps"),
         tags$p(
           class = "text-muted small mb-1",
-          "Upload the .rda object from clustering (or LLM annotation)",
-          "to populate the report."
+          "Uploading the .rda object from clustering (or LLM annotation)",
+          "populates the report."
         ),
         fileInput(
           ns("upload_modules"), NULL,
@@ -66,6 +68,19 @@ mod_so_report_server <- function(id, annotated_modules, so_data, mo_data, mode,
 
     report_path <- reactiveVal(NULL)
     report_dir  <- reactiveVal(NULL)
+
+    # ── Carry-over banner (are annotated modules already in the session?) ─
+    output$carryover_ui <- renderUI({
+      carryover_status(
+        !is.null(annotated_modules()),
+        "Step 5 · LLM Module Annotation",
+        ready_detail = "Annotated modules were carried over — just click Generate Report.",
+        upload_hint  = paste0(
+          "Run the earlier steps first, or upload the .rda saved from ",
+          "clustering (or LLM annotation) to report on it here."
+        )
+      )
+    })
 
     # ── Upload module result ─────────────────────────────────────────
     observeEvent(input$upload_modules, {
