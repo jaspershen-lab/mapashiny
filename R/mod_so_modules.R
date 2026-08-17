@@ -14,6 +14,8 @@ mod_so_modules_ui <- function(id) {
 
       mapa_card(
         "Clustering Parameters",
+        uiOutput(ns("carryover_ui")),
+        optional_upload_caption("Step 3 · Pathway Similarity Computation"),
         fileInput(ns("upload_similarity"),
                   "Upload similarity result (.rda)",
                   accept = ".rda"),
@@ -73,6 +75,15 @@ mod_so_modules_server <- function(id, so_data, go_next, go_back, mode) {
     observe({
       if (is.null(so_data$similarity_result)) shinyjs::disable("btn_next")
       else                                     shinyjs::enable("btn_next")
+    })
+
+    # ── Carry-over banner (is Step 3's result already in the session?) ─
+    output$carryover_ui <- renderUI({
+      carryover_status(
+        !is.null(so_data$similarity_result),
+        "Step 3 · Pathway Similarity Computation",
+        ready_detail = "The similarity result was carried over from the previous step."
+      )
     })
 
     # ── .rda download button above the status banner ──────────────────

@@ -75,6 +75,8 @@ mod_so_similarity_ui <- function(id) {
       mapa_card(
         "Similarity Parameters",
 
+        uiOutput(ns("carryover_ui")),
+        optional_upload_caption("Step 2 · Pathway Enrichment"),
         fileInput(ns("upload_enriched"),
                   "Upload enrichment result (.rda)",
                   accept = ".rda"),
@@ -135,6 +137,15 @@ mod_so_similarity_server <- function(id, so_data, go_next, go_back, mode) {
     observe({
       if (is.null(so_data$enriched_pathways)) shinyjs::disable("btn_next")
       else                                     shinyjs::enable("btn_next")
+    })
+
+    # ── Carry-over banner (is Step 2's result already in the session?) ─
+    output$carryover_ui <- renderUI({
+      carryover_status(
+        !is.null(so_data$enriched_pathways),
+        "Step 2 · Pathway Enrichment",
+        ready_detail = "Enriched pathways were carried over from the previous step."
+      )
     })
 
     # ── .rda download button above the status banner ──────────────────

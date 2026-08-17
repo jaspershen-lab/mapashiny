@@ -211,6 +211,58 @@ show_code_modal <- function(code_str) {
   )
 }
 
+#' Banner telling the user whether upstream results are already in the session
+#'
+#' Steps that accept an .rda saved from an earlier step use this to make clear
+#' that the upload is only a fallback: as long as the session has not been
+#' restarted, the previous step's result is carried over automatically and the
+#' user can go straight to the settings.
+#'
+#' @param has_data     logical — is the upstream result already available?
+#' @param from_step    character, e.g. "Step 2 · Pathway Enrichment"
+#' @param ready_detail optional extra line shown under the "ready" message
+#' @param upload_hint  optional replacement for the default "please upload" line
+#' @noRd
+carryover_status <- function(has_data, from_step, ready_detail = NULL,
+                             upload_hint = NULL) {
+  if (isTRUE(has_data)) {
+    status_alert(
+      tags$span(
+        tags$strong(from_step, " results are already loaded in this session."),
+        " Continue with the settings below — no upload needed.",
+        if (!is.null(ready_detail))
+          tagList(tags$br(), tags$small(ready_detail))
+      ),
+      "success"
+    )
+  } else {
+    status_alert(
+      tags$span(
+        tags$strong("No ", from_step, " result in this session."),
+        " ",
+        upload_hint %||% paste0(
+          "Run that step first, or upload the .rda you saved from it to ",
+          "resume from here."
+        )
+      ),
+      "info"
+    )
+  }
+}
+
+#' Caption marking a "resume from file" upload control as optional
+#'
+#' @param from_step character, e.g. "Step 2 · Pathway Enrichment"
+#' @noRd
+optional_upload_caption <- function(from_step) {
+  tags$p(
+    class = "text-muted small mb-2",
+    tags$span(class = "badge rounded-pill bg-secondary me-1", "Optional"),
+    paste0("Only needed if you did not run ", from_step,
+           " in this session (e.g. after reopening the app).")
+  )
+}
+
 #' Inline status alert
 #' @noRd
 status_alert <- function(text, type = c("info", "success", "warning", "danger")) {

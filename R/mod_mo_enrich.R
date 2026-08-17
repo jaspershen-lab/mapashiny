@@ -231,28 +231,58 @@ mod_mo_enrich_server <- function(id, mo_data, go_next, go_back, mode) {
     output$tab_status_P <- layer_tab_status(enrich_p, "P")
     output$tab_status_M <- layer_tab_status(enrich_m, "M")
 
-    # ── Combined download button (all enrichment objects) ────────────
+    # ── Per-layer download buttons (one .rda file per omics layer) ───
+    # Each file holds a single enrichment object, which is what Step 3
+    # expects; layers that were not enriched are not offered at all.
+    .dl_layers <- list(
+      list(rv = enrich_t, output_id = "download_T", obj_name = "transcriptomics_enrich",
+           stub = "transcriptomics_enrichment", badge = "T", label = "Transcriptomics"),
+      list(rv = enrich_p, output_id = "download_P", obj_name = "proteomics_enrich",
+           stub = "proteomics_enrichment",      badge = "P", label = "Proteomics"),
+      list(rv = enrich_m, output_id = "download_M", obj_name = "metabolomics_enrich",
+           stub = "metabolomics_enrichment",    badge = "M", label = "Metabolomics")
+    )
+
     output$download_all_ui <- renderUI({
-      req(!all(sapply(list(enrich_t(), enrich_p(), enrich_m()), is.null)))
-      downloadButton(
-        ns("download_all"),
-        "Enrichment result (.rda)",
-        class = "btn-mapa-dl mb-2"
+      available <- Filter(function(l) !is.null(l$rv()), .dl_layers)
+      req(length(available) > 0)
+      tagList(
+        tags$p(
+          class = "text-muted small mb-1",
+          "Each layer downloads as its own .rda file, ready to upload in Step 3."
+        ),
+        div(
+          class = "d-flex flex-wrap gap-2 mb-2",
+          lapply(available, function(l) {
+            downloadButton(
+              ns(l$output_id),
+              tagList(
+                div(class = paste0("omics-badge omics-", l$badge,
+                                   " d-inline-flex me-1"), l$badge),
+                paste0(l$label, " (.rda)")
+              ),
+              class = "btn-mapa-dl mb-1"
+            )
+          })
+        )
       )
     })
 
-    output$download_all <- downloadHandler(
-      filename = function() {
-        paste0("enrichment_all_", Sys.Date(), ".rda")
-      },
-      content = function(file) {
-        transcriptomics_enrich <- enrich_t()
-        proteomics_enrich      <- enrich_p()
-        metabolomics_enrich    <- enrich_m()
-        save(transcriptomics_enrich, proteomics_enrich, metabolomics_enrich,
-             file = file)
-      }
-    )
+    for (.l in .dl_layers) {
+      local({
+        layer <- .l
+        output[[layer$output_id]] <- downloadHandler(
+          filename = function() paste0(layer$stub, "_", Sys.Date(), ".rda"),
+          content  = function(file) {
+            obj <- layer$rv()
+            req(obj)
+            env <- new.env(parent = emptyenv())
+            assign(layer$obj_name, obj, envir = env)
+            save(list = layer$obj_name, file = file, envir = env)
+          }
+        )
+      })
+    }
 
     # ── Per-layer result tabs (rendered after enrichment) ────────────
     make_layer_result_tabs <- function(enrich_rv, layer_id) {
