@@ -340,9 +340,21 @@ mod_mo_upload_server <- function(id, mo_data, go_next, go_back, mode) {
     # ── Example dataset ───────────────────────────────────────────────
     observeEvent(input$eg_demo, {
       tryCatch({
-        data("demo_mo_T_data", envir = environment())
-        data("demo_mo_P_data", envir = environment())
-        data("demo_mo_M_data", envir = environment())
+        utils::data(
+          "demo_mo_T_data",
+          package = "mapashiny",
+          envir = environment()
+        )
+        utils::data(
+          "demo_mo_P_data",
+          package = "mapashiny",
+          envir = environment()
+        )
+        utils::data(
+          "demo_mo_M_data",
+          package = "mapashiny",
+          envir = environment()
+        )
 
         data_values$raw_T       <- demo_mo_T_data
         data_values$converted_T <- NULL

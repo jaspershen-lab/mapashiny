@@ -227,7 +227,11 @@ mod_so_upload_server <- function(id, so_data, go_next, go_back, mode) {
     # ── Example datasets ─────────────────────────────────────────────────────
     observeEvent(input$eg_ora, {
       tryCatch({
-        data("example_ora_data", envir = environment())
+        utils::data(
+          "example_ora_data",
+          package = "mapashiny",
+          envir = environment()
+        )
         data_values$raw_data       <- example_ora_data
         data_values$converted_data <- NULL
 
@@ -252,7 +256,11 @@ mod_so_upload_server <- function(id, so_data, go_next, go_back, mode) {
 
     observeEvent(input$eg_gsea, {
       tryCatch({
-        data("example_gsea_data", envir = environment())
+        utils::data(
+          "example_gsea_data",
+          package = "mapashiny",
+          envir = environment()
+        )
         data_values$raw_data       <- example_gsea_data
         data_values$converted_data <- NULL
 
@@ -277,7 +285,11 @@ mod_so_upload_server <- function(id, so_data, go_next, go_back, mode) {
 
     observeEvent(input$eg_metabolite, {
       tryCatch({
-        data("example_met_data", envir = environment())
+        utils::data(
+          "example_met_data",
+          package = "mapashiny",
+          envir = environment()
+        )
         data_values$raw_data       <- example_met_data
         data_values$converted_data <- NULL
 
