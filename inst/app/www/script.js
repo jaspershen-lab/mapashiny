@@ -1,3 +1,4 @@
+
 $( document ).ready(function() {
   // Custom function to toggle sidebar
 function toggleSidebar() {
